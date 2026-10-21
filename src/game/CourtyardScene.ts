@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import {move,project,SPAWN,STEP,type Point} from '../core/game.js';
 import {WorldView} from './WorldView.js';
 import {KnightSprite} from './KnightSprite.js';
+import {facingForInput,type Facing} from '../core/facing.js';
 declare global{
   interface Window{vireldenDebug?:()=>{position:Point;screen:Point;moving:boolean;character:ReturnType<KnightSprite['snapshot']>}}
 }
@@ -11,7 +12,7 @@ export class CourtyardScene extends Phaser.Scene{
   private accumulator=0;
   private view!:WorldView;
   private moving=false;
-  private facing=1;
+  private facing:Facing='east';
   preload(){KnightSprite.preload(this);}
   create(){
     this.view=new WorldView(this);
@@ -22,7 +23,7 @@ export class CourtyardScene extends Phaser.Scene{
     const up=(event:KeyboardEvent)=>{this.held.delete(event.code);};
     const clear=()=>{this.held.clear();this.accumulator=0;};
     const visibility=()=>{if(document.hidden)clear();};
-    const reset=()=>{this.position={...SPAWN};this.moving=false;this.facing=1;clear();this.view.draw(this.position,false,this.facing);};
+    const reset=()=>{this.position={...SPAWN};this.moving=false;this.facing='east';clear();this.view.draw(this.position,false,this.facing);};
     window.addEventListener('keydown',down);window.addEventListener('keyup',up);
     window.addEventListener('blur',clear);document.addEventListener('visibilitychange',visibility);
     document.getElementById('reset')?.addEventListener('click',reset);
@@ -51,7 +52,7 @@ export class CourtyardScene extends Phaser.Scene{
     // Render frames between fixed simulation steps keep the current walk state.
     if(!input.x && !input.y)this.moving=false;
     else if(stepped)this.moving=Math.hypot(this.position.x-before.x,this.position.y-before.y)>.001;
-    if(input.x)this.facing=Math.sign(input.x);
+    this.facing=facingForInput(input,this.facing);
     this.view.draw(this.position,this.moving,this.facing);
   }
 }

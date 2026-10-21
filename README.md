@@ -1,9 +1,18 @@
 # Virelden — The Courtyard
 
-A small **Phaser + TypeScript + Vite** starter: one isometric stone courtyard and one movable knight. The character now has generated full-plate artwork, a standing pose and a six-frame walk cycle for left/right movement. The environment remains placeholder geometry in Virelden's muted dark fantasy style.
+A small **Phaser + TypeScript + Vite** starter: one isometric stone courtyard and one movable knight. The character has generated full-plate artwork, idle poses and six-frame walk cycles for east/west and all four isometric diagonals. The environment remains placeholder geometry in Virelden's muted dark fantasy style.
 
 **Controls:** WASD or arrow keys to walk. **Reset position** returns to the centre.
 The courtyard edges and four pillars are solid. Keyboard and desktop browser first.
+
+| Direction | Keys |
+| --- | --- |
+| Northeast | W + D |
+| Northwest | W + A |
+| Southeast | S + D |
+| Southwest | S + A |
+
+Equivalent arrow-key pairs also work. W/S alone switch to rear/front artwork while retaining the last horizontal side.
 
 ## Develop entirely in your browser
 

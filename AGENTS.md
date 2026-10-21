@@ -7,7 +7,7 @@ Read README.md, docs/PROJECT_BRIEF.md and docs/STATUS.md, then inspect the curre
 Phaser + TypeScript + Vite. One 2D isometric courtyard and one movable character.
 The owner's latest request explicitly resets the larger prototype. Do not reintroduce combat, enemies, stamina, rolling, inventory, quests or saving unless requested.
 Keep a severe, muted dark fantasy tone. The environment uses placeholder geometry; the generated knight is a first animation proof. Artwork does not establish new lore canon.
-The generated knight wears fully enclosed metal plate with no cloth. Preserve that constraint. His current art supports left/right walking; front/back directions are not authored. See docs/CHARACTER_ART.md.
+The generated knight wears fully enclosed metal plate with no cloth. Preserve that constraint. His art supports east/west and northeast/northwest/southeast/southwest walking. Exact north/south use rear/front artwork with the previous horizontal side. See docs/CHARACTER_ART.md.
 Never commit private GM lore, secrets or credentials to this public repository.
 
 ## Workflow

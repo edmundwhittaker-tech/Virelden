@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import {SIZE,PILLARS,project,type Point} from '../core/game.js';
 import {KnightSprite} from './KnightSprite.js';
+import type {Facing} from '../core/facing.js';
 type Graphics=Phaser.GameObjects.Graphics;
 function poly(g:Graphics,points:Point[],color:number,stroke=0x465052){
   g.fillStyle(color).fillPoints(points,true);
@@ -48,7 +49,7 @@ export class WorldView{
     for(const p of PILLARS)column(scene,p.x,p.y,p.radius,p.height);
     this.actor=new KnightSprite(scene);
   }
-  draw(position:Point,moving:boolean,facing:number){
+  draw(position:Point,moving:boolean,facing:Facing){
     this.actor.draw(position,moving,facing);
   }
   characterSnapshot(){return this.actor.snapshot();}
