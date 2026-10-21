@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import {SIZE,PILLARS,project,type Point} from '../core/game.js';
+import {KnightSprite} from './KnightSprite.js';
 type Graphics=Phaser.GameObjects.Graphics;
 function poly(g:Graphics,points:Point[],color:number,stroke=0x465052){
   g.fillStyle(color).fillPoints(points,true);
@@ -21,10 +22,9 @@ function column(scene:Phaser.Scene,x:number,y:number,radius:number,height:number
   g.lineStyle(2,0x89918a,.25).lineBetween(c.x-6,c.y-20,c.x-6,c.y-height+30);
   g.lineStyle(1,0xb3a078,.4).lineBetween(d.x+6,d.y-height+28,c.x-6,c.y-height+28);
 }
-/** Replaceable procedural placeholder art; no external assets. */
+/** Courtyard geometry and a replaceable animated character renderer. */
 export class WorldView{
-  private actor:Graphics;
-  private walkTime=0;
+  private actor:KnightSprite;
   constructor(scene:Phaser.Scene){
     const floor=scene.add.graphics().setDepth(-1000);
     const edges=[{x:0,y:0},{x:SIZE,y:0},{x:SIZE,y:SIZE},{x:0,y:SIZE}].map(project);
@@ -46,21 +46,11 @@ export class WorldView{
       floor.lineStyle(3,0x6c7269,.65).lineBetween(edges[0].x,edges[0].y-30,end.x,end.y-30);
     }
     for(const p of PILLARS)column(scene,p.x,p.y,p.radius,p.height);
-    this.actor=scene.add.graphics();
+    this.actor=new KnightSprite(scene);
   }
-  draw(position:Point,moving:boolean,facing:number,dt:number){
-    this.walkTime=moving?this.walkTime+dt*11:0;
-    const p=project(position),g=this.actor,stride=Math.sin(this.walkTime)*4,bob=moving?Math.abs(Math.sin(this.walkTime))*2:0;
-    g.clear().setDepth(p.y);
-    g.fillStyle(0x02070a,.6).fillEllipse(p.x,p.y+1,34,14);
-    g.lineStyle(6,0x151e25).lineBetween(p.x-5,p.y-14,p.x-7+stride,p.y).lineBetween(p.x+5,p.y-14,p.x+7-stride,p.y);
-    poly(g,[{x:p.x,y:p.y-40-bob},{x:p.x+16,y:p.y-7},{x:p.x,y:p.y-3},{x:p.x-16,y:p.y-7}],0x4f3435,0x61484a);
-    g.fillStyle(0x74838a).fillRoundedRect(p.x-9,p.y-35-bob,18,22,3);
-    g.fillStyle(0x9da8a6).fillCircle(p.x,p.y-43-bob,9);
-    g.lineStyle(2,0x1e2a31).lineBetween(p.x-6,p.y-43-bob,p.x+6,p.y-43-bob);
-    g.fillStyle(0xc0ae83).fillCircle(p.x+facing*3,p.y-42-bob,1.5);
-    g.lineStyle(3,0x9ba6a5).lineBetween(p.x-13,p.y-31-bob,p.x-15-stride*.4,p.y-18-bob).lineBetween(p.x+13,p.y-31-bob,p.x+15+stride*.4,p.y-18-bob);
-    g.lineStyle(2,0xb09a6d).lineBetween(p.x-7,p.y-15,p.x+7,p.y-15);
+  draw(position:Point,moving:boolean,facing:number){
+    this.actor.draw(position,moving,facing);
   }
+  characterSnapshot(){return this.actor.snapshot();}
 }
 
