@@ -1,84 +1,78 @@
-# Virelden
+# Virelden — The Courtyard
 
-A browser-first **2D isometric dark-fantasy action RPG**, built with **Phaser + TypeScript + Vite**. Separate from the old Unity experiment and the Virelden lore website.
+A small **Phaser + TypeScript + Vite** starter: one isometric stone courtyard and one movable knight. The artwork is placeholder geometry in Virelden's muted dark fantasy style.
 
-## Play without installing anything
-
-Enable the included GitHub Pages workflow once:
-
-1. Open this repository's **Settings → Pages**.
-2. Set **Build and deployment → Source** to **GitHub Actions**. Do not create a second workflow.
-3. Open **Actions → Verify and publish → Run workflow**, on `main`.
-4. After the publish step succeeds, open **https://edmundwhittaker-tech.github.io/Virelden/**.
-
-That is the expected address, **not a claim the site is already live**. The workflow skips publication when Pages is unconfigured and explains why in its summary. A green verification job alone does not mean publication happened.
-
-This repository and any Pages build are public. Never add private GM lore, credentials or passwords.
+**Controls:** WASD or arrow keys to walk. **Reset position** returns to the centre.
+The courtyard edges and four pillars are solid. Keyboard and desktop browser first.
 
 ## Develop entirely in your browser
 
-Open **Code → Codespaces → Create codespace on main**. The configuration installs the dependencies in the cloud. In that browser-based terminal run:
+You do not need to install anything on your computer or open a separate Phaser application.
 
-```sh
-npm run dev
-```
+1. Open [this repository](https://github.com/edmundwhittaker-tech/Virelden).
+2. Click **Code → Codespaces → Create codespace on main**.
+3. Wait for setup to finish. It installs the project dependencies automatically.
+4. In the terminal at the bottom, type:
 
-Open forwarded port **5173**. Stop the Codespace when finished; compute/storage allowances and billing are controlled by your GitHub account. Playing a deployed Pages build does not require a running Codespace.
+   ```sh
+   npm run dev
+   ```
 
-Phaser is a library inside this project, not a separate application or account. GitHub stores the source and history; Codespaces is an optional cloud editor; Actions tests and builds; Pages serves the game.
+5. Click **Open in Browser** when prompted. If there is no prompt, open the **Ports** panel and click the browser icon beside **5173**.
+6. Keep that game tab open. Changes to the source update the preview automatically.
+7. When finished, commit and push changes from **Source Control**, then stop the Codespace at [github.com/codespaces](https://github.com/codespaces).
 
-## What the starter includes
+Codespaces has a monthly included allowance; usage beyond it can cost money if billing is enabled. A stopped Codespace no longer uses compute, but stored Codespaces still use storage. This project does not create or start one automatically.
 
-One small ruined courtyard, a fixed angled 2D view, screen-relative movement, solid pillar footprints, depth sorting, a mouse-directed sword attack, stamina and rolling, two telegraphing sentries, a checkpoint and one persistent sword-strengthening relic.
+## What each part does
 
-The room fits on screen. Camera-follow, connected rooms, final art/animation, audio, multiplayer and mobile controls are not implemented. The procedural silhouettes and geometry are **placeholders, not final Virelden art or new lore canon**.
-
-| Control | Action |
+| Part | Purpose |
 | --- | --- |
-| WASD / arrows | Move relative to the screen |
-| Mouse + left click | Aim / sword attack |
-| Space / Shift | Roll; costs stamina, early frames avoid damage |
-| E | Claim nearby relic / rest at checkpoint |
-| R | Restart encounter; retain discovery |
-| Escape | Pause / controls |
-| F2 | Collision footprints |
+| GitHub repository | Saves the game's files and change history |
+| Codespaces | Optional editor and development server running in the cloud |
+| Phaser | The library that draws the scene and runs the game |
+| TypeScript | The language used for the game code |
+| Vite | Runs the live preview and builds the finished game |
+| GitHub Actions | Automatically tests and builds code |
+| GitHub Pages | Can host the built game at a permanent browser link |
 
-Discovery is stored in this browser, not in an account. Clearing browser data removes it. Blocked storage is handled without preventing play.
+You can use VS Code on your home computer later with the same repository. It is optional; you do not need a powerful gaming computer for this prototype.
 
-## Development commands
+## Play a published build
 
-Use Node **22.12+ within the 22.x line**. Top-level dependencies are deliberately pinned.
+Expected Pages address: https://edmundwhittaker-tech.github.io/Virelden/
+
+If Pages is not configured, open **Settings → Pages → Build and deployment → Source → GitHub Actions**.
+Then open **Actions → Verify and publish → Run workflow** on main.
+A green verification job alone does not mean Pages publication happened; check the publish job and its deployment URL.
+Playing a published build does not need a running Codespace.
+
+## Commands
+
+Node 22.12+ in the 22.x line is configured in Codespaces and CI.
 
 ```sh
-npm install             # Initial bootstrap only when no lock exists
-npm ci                  # Use once package-lock.json is committed
-npm run dev
-npm test                # 15 engine-independent rules tests
-npm run typecheck
-npm run build           # Type-check + production build into dist/
+npm ci
+npm run dev             # Live preview on port 5173
+npm test                # Movement and collision checks
+npm run build           # TypeScript check + production build into dist/
 npx playwright install chromium
-npm run test:browser     # Real browser input tests against the built game
+npm run test:browser    # Real keyboard input and screenshot checks
+npm run preview         # Test the production build on port 4173
 ```
 
-The workflow runs rules tests, a strict build and Chromium smoke tests before publication. Its `virelden-build` artifact retains the production build, generated dependency lock and screenshot evidence. Commit the generated lock after the initial dependency bootstrap; subsequent installs use `npm ci`.
+For a fresh local setup, install Node 22 and VS Code, clone this repository, then run the same commands.
 
-## Project map
+## Files to know
 
-- `src/core/game.ts`: deterministic rules, collision, projection, save decoding.
-- `src/game/CourtyardScene.ts`: input, fixed-step update loop, HTML interface.
-- `src/game/WorldView.ts`: replaceable procedural visuals.
-- `tests/` and `browser-tests/`: gameplay and browser checks.
-- `.devcontainer/`: browser-based Codespaces setup.
-- `.github/workflows/`: verification and optional Pages publication.
-- `AGENTS.md`: working instructions for coding agents.
-- `docs/`: project brief, implementation status and work-chat handoff.
+- src/core/game.ts — movement, solid boundaries and isometric projection
+- src/game/WorldView.ts — courtyard and character drawing
+- src/game/CourtyardScene.ts — keyboard controls and game loop
+- src/style.css and index.html — surrounding page and controls
+- .devcontainer/devcontainer.json — browser development setup
+- .github/workflows/verify-and-publish.yml — checks and optional Pages deployment
 
-Read [the brief](docs/PROJECT_BRIEF.md), [status](docs/STATUS.md) and [work-chat handoff](docs/WORK_CHAT.md) before extending the game.
+The larger combat prototype has been superseded by this deliberately basic starting point. Its version remains in Git history.
+There is no combat, AI, inventory, saving, audio, multiplayer or touch control in this starter.
+The code and any Pages build are public: keep private GM content and credentials out of them.
 
-## References
-
-- Phaser: https://docs.phaser.io/
-- Official TypeScript/Vite template: https://github.com/phaserjs/template-vite-ts
-- Pages workflows: https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages
-
-Phaser is an MIT-licensed dependency. No rights to Virelden's original content are granted merely by this repository being public.

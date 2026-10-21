@@ -19,8 +19,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install pinned dependencies
-        run: |
-          if test -f package-lock.json; then npm ci; else npm install; fi
+        run: npm ci
       - name: Test gameplay rules
         run: npm test
       - name: Type-check and build the game
@@ -80,3 +79,4 @@ jobs:
         if: steps.pages.outputs.enabled == 'true'
         id: deployment
         uses: actions/deploy-pages@v4
+

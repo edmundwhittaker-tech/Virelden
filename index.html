@@ -3,30 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Virelden — an isometric dark-fantasy action RPG prototype." />
-  <meta name="theme-color" content="#0d151c" />
+  <meta name="theme-color" content="#10171c" />
   <link rel="icon" type="image/svg+xml" href="./sigil.svg" />
-  <title>Virelden · The Ruined Courtyard</title>
+  <title>Virelden — The Courtyard</title>
 </head>
 <body>
-  <header>
-    <div class="brand"><span class="sigil" aria-hidden="true">V</span><div><h1>VIRELDEN</h1><div class="subtitle">Beneath the weight of a fallen world</div></div></div>
-    <div class="header-right"><div class="build-label">Foundation 0.1<br>Playable prototype</div><button id="help">Controls / Pause</button><button id="restart" title="Restart the encounter without losing your relic">Restart</button></div>
-  </header>
-  <main aria-label="Isometric game courtyard">
-    <div id="game" role="application" aria-label="Virelden. Move with WASD, aim with the mouse, attack with left click, roll with Space, interact with E." tabindex="0"></div>
-    <div id="loading" role="status">Entering the courtyard…</div>
-    <noscript>This game needs JavaScript enabled.</noscript>
-    <section class="hud" aria-label="Character status"><div class="eyebrow">The wanderer</div>
-      <div class="resource-label"><label for="hp">Vitality</label><span id="hp-value">100 / 100</span></div><meter id="hp" min="0" max="100" value="100">100</meter>
-      <div class="resource-label"><label for="stamina">Stamina</label><span id="stamina-value">100 / 100</span></div><meter id="stamina" min="0" max="100" value="100">100</meter>
+  <main>
+    <header>
+      <div><p class="eyebrow">VIRELDEN</p><h1>The Courtyard</h1></div>
+      <span class="prototype">Movement prototype · 01</span>
+    </header>
+    <section class="stage" aria-label="Game">
+      <div id="game"></div><p id="loading" role="status">Opening the courtyard…</p>
     </section>
-    <section class="objective" aria-label="Objectives"><div class="eyebrow">Explore · Endure · Discover</div><p id="enemy-count">0 / 2 sentries defeated</p><p id="relic-status">Find the gilded relic</p><small id="save-state">Progress saved in this browser</small></section>
-    <div class="bottom-hud"><div id="prompt" role="status" aria-live="polite"></div><div class="controls"><b>WASD</b> Move &nbsp; <b>MOUSE</b> Aim &nbsp; <b>CLICK</b> Strike &nbsp; <b>SPACE</b> Roll &nbsp; <b>E</b> Interact &nbsp; <b>R</b> Restart &nbsp; <b>ESC</b> Pause</div></div>
-    <section id="pause-overlay" class="overlay" hidden aria-label="Game paused"><div class="panel"><div class="eyebrow">The courtyard is paused</div><h2>Learn the rhythm.</h2><div class="key-table"><kbd>WASD / Arrows</kbd><span>Move relative to the screen.</span><kbd>Mouse + left click</kbd><span>Aim and swing your sword.</span><kbd>Space / Shift</kbd><span>Roll. Costs stamina; early frames avoid damage.</span><kbd>E</kbd><span>Rest or claim a nearby relic.</span><kbd>R</kbd><span>Restart the encounter. Keep discoveries.</span><kbd>Esc / F2</kbd><span>Pause / show collision footprints.</span></div><p>Red rings warn of an enemy attack. Avoid the strike, then use its recovery to attack. The gold relic permanently strengthens your sword in this browser.</p><button id="resume">Return to the courtyard</button></div></section>
-    <section id="death-overlay" class="overlay" hidden aria-label="Player defeated"><div class="panel"><div class="eyebrow">The ruins remain</div><h2>You have fallen.</h2><p>Return to the checkpoint. A discovered relic is retained; the sentries return.</p><button id="death-restart">Return to checkpoint · R</button></div></section>
+    <footer>
+      <p><span class="keys">W A S D</span> or <span class="keys">↑ ← ↓ →</span><span class="hint"> Walk the courtyard</span></p>
+      <button id="reset" type="button">Reset position <span aria-hidden="true">↺</span></button>
+    </footer>
+    <p class="note">One quiet corner of Virelden. Placeholder artwork; keyboard controls.</p>
   </main>
-  <footer><span>2D isometric · <span class="mobile-note">Keyboard + mouse required · </span>Prototype geometry, not final artwork</span><span class="footer-right">One courtyard. A dependable foundation.</span></footer>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
+
