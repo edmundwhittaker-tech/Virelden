@@ -1,38 +1,36 @@
-# Status — full-plate knight, 22 October 2026
+# Status — isometric knight directions, 22 October 2026
 
 ## Implemented
 
-The courtyard now uses generated raster character art instead of the geometric placeholder.
-One closed-helmet knight wears complete articulated metal plate with no cloth.
-Standing pose plus a six-frame rightward walk; leftward movement mirrors the same design.
-Feet remain attached to the ground position, with a separate ground shadow and existing pillar depth sorting.
-Render frames between fixed simulation steps preserve the current walk state, preventing idle flashes on displays faster than the 60 Hz simulation.
-Reset returns the knight to the centre, standing and facing right.
-
-The source artwork was generated with the built-in image tool, then resized/encoded for delivery.
-The transparent atlas is 95 KB. Vite imports it with a content-hashed URL so the new art is included in production builds.
-See CHARACTER_ART.md for the asset path, atlas layout, limitations and exact generation prompt.
+Added northeast, northwest, southeast and southwest walking/idle artwork to the full-plate knight.
+Separate rear and front sheets share the original armour reference; west variants mirror the east source.
+The original east/west artwork remains available for horizontal movement.
+Diagonal key pairs select the matching facing. Pure north/south movement selects rear/front while keeping the most recent horizontal side.
+Idle retains the last facing and reset returns to east.
+Changing sheets retains the walk phase.
+Per-cell render registration aligns visible height, head and ground anchors across the new generated frames.
+Movement speed, collision, fixed simulation and courtyard geometry remain unchanged.
+See CHARACTER_ART.md for asset paths, controls, limitations and exact generation/edit prompts.
 
 ## Local verification
 
-Node 22.22.0 with the repository's pinned dependencies.
-- npm test: five movement/collision tests passed.
-- npm run build: strict TypeScript check and production build passed.
-- npm run test:browser: six Chromium tests passed.
-- The added test confirms the real texture loads, frames advance while walking, left/right orientation changes, and stopping returns to idle.
-- Existing movement, bounds, focus cleanup, reset and viewport checks pass.
-- Desktop, left-facing and right-facing screenshots were visually inspected.
-- Vite reports the existing large Phaser chunk warning; the build succeeds.
+Node 22.22.0 with pinned repository dependencies.
+- npm test: nine tests passed, including all diagonal facings, vertical fallback and idle orientation.
+- npm run build: strict TypeScript and production build passed.
+- npm run test:browser: eleven Chromium tests cover existing controls/collision, all four diagonal textures and mirrors, advancing frames, idle direction, and front/rear transitions without releasing movement.
+- Directional screenshots were rendered and inspected.
+- The three transparent sheets total 335,664 bytes and are imported through Vite with content-hashed URLs.
+- The existing large Phaser chunk warning remains informational.
 
 ## Publication
 
-GitHub Pages is enabled for Actions. The preceding courtyard build was verified live at https://edmundwhittaker-tech.github.io/Virelden/.
-The verification workflow tests this art change before merging; main then runs verification and publication.
-See the PR and final delivery for this change's actual CI/deployment result.
+Pages is enabled and the prior full-plate knight was verified live.
+This change's PR runs verification before merging; main then verifies and publishes.
+The final delivery reports actual CI/deployment status.
 No Codespace or additional paid compute was started.
 
 ## Limits
 
-Two horizontal sprite facings only; vertical movement keeps the most recent horizontal facing.
-Small frame-to-frame art variations remain in this first animation proof.
+Six facings: east/west plus the four diagonals. Exact north/south sprites are not independently authored.
+West-facing lighting is mirrored. Minor generated armour and pose variations remain.
 The environment remains procedural placeholder geometry. Gameplay is still courtyard movement only.

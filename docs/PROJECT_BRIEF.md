@@ -4,7 +4,7 @@ Start with a basic Phaser + TypeScript environment for a top-down isometric game
 
 ## This milestone
 
-One simple stone courtyard. One full-plate knight that walks with WASD or arrows, using generated left/right character art.
+One simple stone courtyard. One full-plate knight that walks with WASD or arrows, using generated east/west and four diagonal character views.
 The character stays within the floor and cannot pass through the four pillars. No other gameplay.
 A fixed 2D ground projection creates the isometric appearance; this is not a 3D engine.
 
@@ -17,6 +17,6 @@ Provide beginner-friendly browser development instructions and report actual pub
 
 ## Later
 
-Have Edmund try the movement and the first left/right character animation before deciding what to build next. The environment remains a placeholder; further character directions and game systems need a new request.
+Have Edmund try the movement and the directional character animations before deciding what to build next. The environment remains a placeholder; further character work and game systems need a new request.
 Placeholder art and the unnamed courtyard do not establish Virelden lore canon.
 

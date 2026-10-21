@@ -59,7 +59,7 @@ test('fits a small viewport and debug data is opt-in',async({page})=>{
 
 test('full-plate art walks in both directions and returns to idle',async({page})=>{
   await open(page);
-  expect((await state(page)).character).toEqual({texture:'plate-knight-v1',frame:0,walking:false,flipped:false});
+  expect((await state(page)).character).toEqual({texture:'plate-knight-v1',frame:0,walking:false,flipped:false,direction:'east'});
   for(const [key,flipped,direction] of [['KeyD',false,'right'],['KeyA',true,'left']] as const){
     await page.getByRole('button',{name:'Reset position'}).click();
     await page.keyboard.down(key);
@@ -74,5 +74,43 @@ test('full-plate art walks in both directions and returns to idle',async({page})
     await expect.poll(async()=>(await state(page)).character.walking).toBe(false);
     expect((await state(page)).character.frame).toBe(0);
   }
+});
+
+for(const [keys,direction,texture,flipped] of [
+  [['KeyW','KeyD'],'north-east','plate-knight-ne-v1',false],
+  [['KeyW','KeyA'],'north-west','plate-knight-ne-v1',true],
+  [['KeyS','KeyD'],'south-east','plate-knight-se-v1',false],
+  [['KeyS','KeyA'],'south-west','plate-knight-se-v1',true],
+] as const){
+  test('diagonal art walks and idles facing '+direction,async({page})=>{
+    await open(page);
+    const before=(await state(page)).screen;
+    for(const key of keys)await page.keyboard.down(key);
+    await expect.poll(async()=>(await state(page)).character.direction).toBe(direction);
+    await expect.poll(async()=>(await state(page)).character.walking).toBe(true);
+    const first=(await state(page)).character.frame;
+    await expect.poll(async()=>(await state(page)).character.frame).not.toBe(first);
+    const actor=(await state(page)).character, after=(await state(page)).screen;
+    expect(actor.texture).toBe(texture);expect(actor.flipped).toBe(flipped);
+    expect(Math.sign(after.x-before.x)).toBe(flipped?-1:1);
+    expect(Math.sign(after.y-before.y)).toBe(direction.startsWith('north')?-1:1);
+    await page.screenshot({path:'test-results/knight-'+direction+'.png',fullPage:true});
+    for(const key of [...keys].reverse())await page.keyboard.up(key);
+    await expect.poll(async()=>(await state(page)).character.walking).toBe(false);
+    expect((await state(page)).character).toMatchObject({direction,texture,frame:0,flipped});
+  });
+}
+
+test('turning between front and rear views works without releasing movement',async({page})=>{
+  await open(page);
+  await page.keyboard.down('KeyD');await page.keyboard.down('KeyW');
+  await expect.poll(async()=>(await state(page)).character.direction).toBe('north-east');
+  await page.keyboard.up('KeyW');await page.keyboard.down('KeyS');
+  await expect.poll(async()=>(await state(page)).character.direction).toBe('south-east');
+  await expect.poll(async()=>(await state(page)).character.walking).toBe(true);
+  await page.keyboard.up('KeyD');
+  await expect.poll(async()=>(await state(page)).character.direction).toBe('south-east');
+  await page.keyboard.up('KeyS');
+  await expect.poll(async()=>(await state(page)).character.walking).toBe(false);
 });
 
