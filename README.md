@@ -1,6 +1,6 @@
 # Virelden — The Courtyard
 
-A small **Phaser + TypeScript + Vite** starter: one isometric stone courtyard and one movable knight. The artwork is placeholder geometry in Virelden's muted dark fantasy style.
+A small **Phaser + TypeScript + Vite** starter: one isometric stone courtyard and one movable knight. The character now has generated full-plate artwork, a standing pose and a six-frame walk cycle for left/right movement. The environment remains placeholder geometry in Virelden's muted dark fantasy style.
 
 **Controls:** WASD or arrow keys to walk. **Reset position** returns to the centre.
 The courtyard edges and four pillars are solid. Keyboard and desktop browser first.
@@ -67,6 +67,8 @@ For a fresh local setup, install Node 22 and VS Code, clone this repository, the
 
 - src/core/game.ts — movement, solid boundaries and isometric projection
 - src/game/WorldView.ts — courtyard and character drawing
+- src/game/KnightSprite.ts — generated full-plate sprite and animation
+- docs/CHARACTER_ART.md — artwork layout, direction limits and generation prompt
 - src/game/CourtyardScene.ts — keyboard controls and game loop
 - src/style.css and index.html — surrounding page and controls
 - .devcontainer/devcontainer.json — browser development setup

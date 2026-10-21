@@ -57,3 +57,22 @@ test('fits a small viewport and debug data is opt-in',async({page})=>{
   await page.screenshot({path:'test-results/courtyard-small.png',fullPage:true});
 });
 
+test('full-plate art walks in both directions and returns to idle',async({page})=>{
+  await open(page);
+  expect((await state(page)).character).toEqual({texture:'plate-knight-v1',frame:0,walking:false,flipped:false});
+  for(const [key,flipped,direction] of [['KeyD',false,'right'],['KeyA',true,'left']] as const){
+    await page.getByRole('button',{name:'Reset position'}).click();
+    await page.keyboard.down(key);
+    await expect.poll(async()=>(await state(page)).character.walking).toBe(true);
+    const first=(await state(page)).character.frame;
+    await expect.poll(async()=>(await state(page)).character.frame).not.toBe(first);
+    const actor=(await state(page)).character;
+    expect(actor.flipped).toBe(flipped);
+    expect(actor.frame).toBeGreaterThanOrEqual(1);expect(actor.frame).toBeLessThanOrEqual(6);
+    await page.screenshot({path:'test-results/knight-'+direction+'.png',fullPage:true});
+    await page.keyboard.up(key);
+    await expect.poll(async()=>(await state(page)).character.walking).toBe(false);
+    expect((await state(page)).character.frame).toBe(0);
+  }
+});
+
