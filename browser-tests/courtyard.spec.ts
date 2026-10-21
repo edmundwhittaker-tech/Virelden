@@ -42,7 +42,8 @@ test('opposite inputs cancel and switching focus releases held keys',async({page
 });
 test('courtyard edges remain solid in the browser',async({page})=>{
   await open(page);await page.keyboard.down('KeyD');await page.keyboard.down('KeyS');
-  await expect.poll(async()=>(await state(page)).position.x,{timeout:15000}).toBeGreaterThan(625);
+  // Collision substeps stop within four ground units of the legal edge (628).
+  await expect.poll(async()=>(await state(page)).position.x,{timeout:15000}).toBeGreaterThan(624);
   await page.waitForTimeout(150);await page.keyboard.up('KeyD');await page.keyboard.up('KeyS');
   const p=(await state(page)).position;
   expect(p.x).toBeGreaterThanOrEqual(12);expect(p.x).toBeLessThanOrEqual(628);
