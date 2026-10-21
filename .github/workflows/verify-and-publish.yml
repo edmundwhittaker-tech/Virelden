@@ -1,0 +1,82 @@
+name: Verify and publish
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: virelden-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned dependencies
+        run: |
+          if test -f package-lock.json; then npm ci; else npm install; fi
+      - name: Test gameplay rules
+        run: npm test
+      - name: Type-check and build the game
+        run: npm run build
+      - name: Install browser for real input tests
+        run: npx playwright install --with-deps chromium
+      - name: Browser smoke tests and screenshot
+        run: npm run test:browser
+      - name: Keep build, dependency lock and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: virelden-build
+          path: |
+            dist/
+            src/
+            package-lock.json
+            test-results/
+          retention-days: 14
+  publish:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check whether Pages has been enabled
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if MODE=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type 2>/dev/null) && [ "$MODE" = workflow ]; then
+            echo 'enabled=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'enabled=false' >> "$GITHUB_OUTPUT"
+            echo '## Build verified; Pages is not configured for Actions yet.' >> "$GITHUB_STEP_SUMMARY"
+            echo 'Open Settings → Pages → Source: GitHub Actions, then run Verify and publish again. No hosting token is required.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/download-artifact@v4
+        if: steps.pages.outputs.enabled == 'true'
+        with:
+          name: virelden-build
+          path: artifact
+      - uses: actions/configure-pages@v5
+        if: steps.pages.outputs.enabled == 'true'
+      - uses: actions/upload-pages-artifact@v4
+        if: steps.pages.outputs.enabled == 'true'
+        with:
+          path: artifact/dist
+      - name: Publish playable site
+        if: steps.pages.outputs.enabled == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4
