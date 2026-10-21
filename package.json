@@ -1,8 +1,5 @@
 {
-  "name": "virelden",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
+  "name": "virelden", "version": "0.1.0", "private": true, "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "typecheck": "tsc --noEmit",
@@ -14,10 +11,8 @@
   },
   "dependencies": { "phaser": "3.90.0" },
   "devDependencies": {
-    "@playwright/test": "1.56.1",
-    "@types/node": "22.18.6",
-    "typescript": "5.9.3",
-    "vite": "7.1.12"
+    "@playwright/test": "1.56.1", "@types/node": "22.18.6",
+    "typescript": "5.9.3", "vite": "7.3.7"
   },
   "engines": { "node": ">=22.12.0 <23" }
 }

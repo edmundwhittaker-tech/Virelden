@@ -26,12 +26,28 @@ export class CourtyardScene extends Phaser.Scene {
     this.keys=this.input.keyboard.addKeys('W,A,S,D,UP,LEFT,DOWN,RIGHT,SPACE,SHIFT,E,R,ESC,F2') as Record<string,Phaser.Input.Keyboard.Key>;
     this.input.mouse?.disableContextMenu();
     this.input.on('pointerdown',(pointer: Phaser.Input.Pointer)=>{ if(pointer.leftButtonDown()&&!this.paused)this.attack=true; });
+    // Buffer actions from events, not JustDown polling: a down/up pair can arrive
+    // between frames. Movement remains held-state based; repeats do not retrigger actions.
+    const actionKey=(event: KeyboardEvent)=>{
+      if(event.repeat)return;
+      switch(event.code){
+        case 'Escape': this.setPaused(!this.paused); break;
+        case 'KeyR': this.restart(); break;
+        case 'F2': this.debug=!this.debug; break;
+        case 'Space': case 'ShiftLeft': case 'ShiftRight':
+          if(!this.paused)this.roll=true;
+          break;
+        case 'KeyE': if(!this.paused)this.interact=true; break;
+      }
+    };
+    this.input.keyboard.on('keydown',actionKey);
     const restart=()=>this.restart(),help=()=>this.setPaused(!this.paused),resume=()=>this.setPaused(false),blur=()=>this.setPaused(true);
     el('restart').addEventListener('click',restart);el('help').addEventListener('click',help);el('resume').addEventListener('click',resume);
     el('death-restart').addEventListener('click',restart);this.game.events.on(Phaser.Core.Events.BLUR,blur);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>{
       el('restart').removeEventListener('click',restart);el('help').removeEventListener('click',help);el('resume').removeEventListener('click',resume);
-      el('death-restart').removeEventListener('click',restart);this.game.events.off(Phaser.Core.Events.BLUR,blur);delete window.__VIRELDEN__;
+      el('death-restart').removeEventListener('click',restart);this.game.events.off(Phaser.Core.Events.BLUR,blur);
+      this.input.keyboard?.off('keydown',actionKey);delete window.__VIRELDEN__;
     });
     if(new URLSearchParams(location.search).has('debug'))window.__VIRELDEN__={snapshot:()=>structuredClone(this.state),project,paused:()=>this.paused};
     this.view.draw(this.state,false);this.updateHud();document.body.dataset.ready='true';el('loading').hidden=true;
@@ -42,13 +58,7 @@ export class CourtyardScene extends Phaser.Scene {
   }
   private restart(){this.state=createState(this.state.relic);this.setPaused(false);this.view.draw(this.state,this.debug);this.updateHud();}
   update(_time: number, delta: number){
-    if(!this.state)return;
-    const just=(name:string)=>Phaser.Input.Keyboard.JustDown(this.keys[name]);
-    if(just('ESC'))this.setPaused(!this.paused);
-    if(just('R'))this.restart();
-    if(just('F2'))this.debug=!this.debug;
-    if(this.paused)return;
-    this.roll=this.roll||just('SPACE')||just('SHIFT');this.interact=this.interact||just('E');
+    if(!this.state||this.paused)return;
     const down=(...names:string[])=>names.some(n=>this.keys[n].isDown)?1:0;
     const dir=screenDirection(down('D','RIGHT')-down('A','LEFT'),down('S','DOWN')-down('W','UP'));
     const pointer=this.input.activePointer,aim=unproject({x:pointer.x,y:pointer.y+24});
