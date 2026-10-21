@@ -3,7 +3,8 @@
   "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
   "forwardPorts": [5173],
   "portsAttributes": {"5173": {"label": "Virelden live preview", "onAutoForward": "openBrowser"}},
-  "postCreateCommand": "if test -f package-lock.json; then npm ci; else npm install; fi",
+  "postCreateCommand": "npm ci",
   "remoteUser": "node",
   "customizations": {"vscode": {"settings": {"files.eol": "\n", "editor.tabSize": 2, "typescript.tsdk": "node_modules/typescript/lib"}}}
 }
+

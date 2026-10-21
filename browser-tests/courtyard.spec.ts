@@ -1,36 +1,58 @@
-import { test, expect, type Page } from '@playwright/test';
-const state=(page:Page)=>page.evaluate(()=>window.__VIRELDEN__!.snapshot());
-async function boot(page:Page){
+import {test,expect,type Page} from '@playwright/test';
+const state=(page:Page)=>page.evaluate(()=>window.vireldenDebug!());
+async function open(page:Page){
   await page.goto('/?debug=1');
-  await expect(page.locator('body')).toHaveAttribute('data-ready','true');
   await expect(page.locator('canvas')).toBeVisible();
+  await page.waitForFunction(()=>typeof window.vireldenDebug==='function');
 }
-test('boots without runtime errors and responds to real movement, sword, roll and restart input',async({page})=>{
-  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await boot(page);
-  const start=await state(page);
-  await page.keyboard.down('d');await expect.poll(async()=>(await state(page)).player.x).toBeGreaterThan(start.player.x+12);await page.keyboard.up('d');
-  await page.locator('canvas').click({position:{x:600,y:350}});
-  await expect.poll(async()=>(await state(page)).stats.attacks).toBe(1);
-  await expect.poll(async()=>(await state(page)).player.attack).toBe(0);
-  await page.keyboard.press('Space');await expect.poll(async()=>(await state(page)).stats.rolls).toBe(1);
-  expect((await state(page)).player.stamina).toBeLessThan(100);
-  await page.keyboard.press('r');await expect.poll(async()=>(await state(page)).stats.rolls).toBe(0);
-  expect((await state(page)).player.x).toBe(start.player.x);expect(errors).toEqual([]);
+test('boots with one courtyard and no runtime errors',async({page})=>{
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  await open(page);
+  await expect(page.getByRole('heading',{name:'The Courtyard'})).toBeVisible();
+  await expect(page.locator('#loading')).toBeHidden();
+  await page.screenshot({path:'test-results/courtyard-desktop.png',fullPage:true});
+  expect(errors).toEqual([]);
 });
-test('pause freezes movement and resume returns control',async({page})=>{
-  await boot(page);await page.keyboard.press('Escape');await expect(page.locator('#pause-overlay')).toBeVisible();
-  const before=await state(page);await page.keyboard.down('d');await page.waitForTimeout(200);await page.keyboard.up('d');
-  expect((await state(page)).player.x).toBe(before.player.x);
-  await page.getByRole('button',{name:'Return to the courtyard',exact:true}).click();await expect(page.locator('#pause-overlay')).toBeHidden();
+test('WASD and arrows move in the screen directions and reset works',async({page})=>{
+  await open(page);
+  for(const [key,axis,sign] of [['KeyD','x',1],['ArrowLeft','x',-1],['KeyW','y',-1],['ArrowDown','y',1]] as const){
+    await page.getByRole('button',{name:'Reset position'}).click();
+    const a=await state(page);
+    await page.keyboard.down(key);
+    await expect.poll(async()=>((await state(page)).screen[axis]-a.screen[axis])*sign).toBeGreaterThan(25);
+    await page.keyboard.up(key);
+    const b=await state(page);
+    expect((b.screen[axis]-a.screen[axis])*sign).toBeGreaterThan(15);
+  }
+  await page.getByRole('button',{name:'Reset position'}).click();
+  expect((await state(page)).position).toEqual({x:320,y:320});
 });
-test('saved discovery survives reload and encounter restart',async({page})=>{
-  await boot(page);await page.evaluate(()=>localStorage.setItem('virelden:prototype:v1',JSON.stringify({version:1,relic:true})));
-  await page.reload();await expect(page.locator('body')).toHaveAttribute('data-ready','true');expect((await state(page)).relic).toBe(true);
-  await page.keyboard.press('r');expect((await state(page)).relic).toBe(true);
-  await page.reload();await expect(page.locator('body')).toHaveAttribute('data-ready','true');expect((await state(page)).relic).toBe(true);
+test('opposite inputs cancel and switching focus releases held keys',async({page})=>{
+  await open(page);
+  await page.keyboard.down('KeyA');await page.keyboard.down('KeyD');
+  await page.waitForTimeout(60);const a=await state(page);
+  await page.waitForTimeout(120);
+  expect((await state(page)).position).toEqual(a.position);
+  await page.keyboard.up('KeyA');await page.keyboard.up('KeyD');
+  await page.keyboard.down('KeyD');await page.waitForTimeout(120);
+  await page.evaluate(()=>window.dispatchEvent(new Event('blur')));
+  await page.waitForTimeout(60);const b=await state(page);
+  await page.waitForTimeout(160);expect((await state(page)).position).toEqual(b.position);
+  await page.keyboard.up('KeyD');
 });
-test('bad saved data does not prevent boot; capture the actual rendered courtyard',async({page})=>{
-  await page.addInitScript(()=>localStorage.setItem('virelden:prototype:v1','broken-json'));
-  await boot(page);expect((await state(page)).relic).toBe(false);
-  await page.screenshot({path:'test-results/courtyard.png',fullPage:true});
+test('courtyard edges remain solid in the browser',async({page})=>{
+  await open(page);await page.keyboard.down('KeyD');await page.keyboard.down('KeyS');
+  await expect.poll(async()=>(await state(page)).position.x,{timeout:15000}).toBeGreaterThan(625);
+  await page.waitForTimeout(150);await page.keyboard.up('KeyD');await page.keyboard.up('KeyS');
+  const p=(await state(page)).position;
+  expect(p.x).toBeGreaterThanOrEqual(12);expect(p.x).toBeLessThanOrEqual(628);
+  expect(p.y).toBeGreaterThanOrEqual(12);expect(p.y).toBeLessThanOrEqual(628);
 });
+test('fits a small viewport and debug data is opt-in',async({page})=>{
+  await page.setViewportSize({width:390,height:844});await page.goto('/');
+  await expect(page.locator('canvas')).toBeVisible();await expect(page.locator('#loading')).toBeHidden();
+  expect(await page.evaluate(()=>window.vireldenDebug)).toBeUndefined();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+  await page.screenshot({path:'test-results/courtyard-small.png',fullPage:true});
+});
+
