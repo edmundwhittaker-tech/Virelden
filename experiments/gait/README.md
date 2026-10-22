@@ -19,3 +19,5 @@ The browser test records actual Phaser image matrices, converts rendered ankles/
 Known visual review concerns: the rear knee IK branch differs from the frozen idle helper, NE uses a shorter/faster step pattern, and abrupt view changes need human inspection. Swing lift is 1.8 px and preferred crouch 2.5 px. Gameplay remains on its existing helper until the browser evidence is accepted.
 
 Local Chromium is blocked by the environment; no local browser retry/bypass is attempted. Focused Actions uses its supported Chromium environment. Parent has statically accepted the candidate only for this controlled comparison.
+
+Phaser uses Float32 screen matrices: their subpixel rounding is amplified when divided by frame time. CPU support drift must remain exactly zero; actual rendered support is bounded by 0.0005 world px per sampled frame and 0.02 px/s, with raw measurements retained before assertions. This is a numerical precision allowance, not a visual sliding allowance.

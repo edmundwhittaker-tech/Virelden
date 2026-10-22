@@ -25,13 +25,13 @@ class GaitComparison extends Phaser.Scene{
   return this.actors.map((actor,i)=>{const row=Math.floor(i/2),scale=row?3:1,anchor={x:(i%2)*600+250,y:row?770:260},raw=actor.renderGeometry();const world=(p:{x:number;y:number})=>({x:(p.x-anchor.x)/scale+camera.x,y:(p.y-anchor.y)/scale+camera.y});return{parts:Object.fromEntries(Object.entries(raw.parts).map(([id,p])=>[id,world(p)])),crown:world(raw.crown)};});
  }
  recordingReport(){
-  let maxAnkleError=0,maxSupportDrift=0,maxCrownFrameDelta=0,maxJointFrameDelta=0;const jumps:any[]=[];
+  let maxAnkleError=0,maxSupportFrameDelta=0,maxSupportDrift=0,maxCrownFrameDelta=0,maxJointFrameDelta=0;const jumps:any[]=[];
   for(let i=0;i<this.recorded.length;i++){const f=this.recorded[i];maxAnkleError=Math.max(maxAnkleError,f.ankleError);if(!i)continue;const a=this.recorded[i-1],dt=f.time-a.time;if(dt<=0)continue;
-   if(a.supportId===f.supportId&&a.steps===f.steps){const side=f.nearId===f.supportId?'near':'far',oldSide=a.nearId===a.supportId?'near':'far',p=a.parts['foot_'+oldSide],q=f.parts['foot_'+side];maxSupportDrift=Math.max(maxSupportDrift,Math.hypot(p.x-q.x,p.y-q.y)/dt);}
+   if(a.supportId===f.supportId&&a.steps===f.steps){const side=f.nearId===f.supportId?'near':'far',oldSide=a.nearId===a.supportId?'near':'far',p=a.parts['foot_'+oldSide],q=f.parts['foot_'+side];const distance=Math.hypot(p.x-q.x,p.y-q.y);maxSupportFrameDelta=Math.max(maxSupportFrameDelta,distance);maxSupportDrift=Math.max(maxSupportDrift,distance/dt);}
    maxCrownFrameDelta=Math.max(maxCrownFrameDelta,Math.abs(f.crown.y-f.position.y-a.crown.y+a.position.y));
    for(const[id,p]of Object.entries(f.parts)as[string,{x:number;y:number}][]){const q=a.parts[id],delta=Math.hypot(p.x-q.x,p.y-q.y);if(delta>maxJointFrameDelta){maxJointFrameDelta=delta;jumps.push({time:f.time,id,delta,viewChanged:f.view!==a.view||f.flipped!==a.flipped});}}
   }
-  return{metrics:{samples:this.recorded.length,maxRenderedAnkleError:maxAnkleError,maxRenderedSupportDriftPxPerSecond:maxSupportDrift,maxRenderedCrownFrameDelta:maxCrownFrameDelta,maxRenderedJointFrameDelta:maxJointFrameDelta,largestJointJumps:jumps.slice(-5),gameplayDefaultChanged:false},samples:this.recorded};
+  return{metrics:{samples:this.recorded.length,maxRenderedAnkleError:maxAnkleError,maxRenderedSupportDriftPxPerSecond:maxSupportDrift,maxRenderedSupportFrameDelta:maxSupportFrameDelta,maxRenderedCrownFrameDelta:maxCrownFrameDelta,maxRenderedJointFrameDelta:maxJointFrameDelta,largestJointJumps:jumps.slice(-5),gameplayDefaultChanged:false},samples:this.recorded};
  }
  snapshot(){return{rendered:this.captureRendered(),route:route.value,time:this.current.time,worldPosition:{...this.current.position},metrics:traceMetrics(traces[route.value as Route]),gait:{supportId:this.current.gait.supportId,bodyOffset:{...this.current.gait.bodyOffset},feet:this.current.gait.feet},actors:this.actors.map(a=>a.snapshot())};}
  drawFrame(){

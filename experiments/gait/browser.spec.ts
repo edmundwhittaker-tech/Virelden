@@ -7,5 +7,12 @@ for(const route of['east','northeast','southeast','turns'])test(`controlled Phas
   for(const actor of snapshot.actors){expect(actor.layers).toHaveLength(15);expect(actor.layers.every((p:any)=>p.visible)).toBe(true);expect(actor.rig.texture).toBe('ordinary-weapon-sword');expect(actor.rig.visible).toBe(true);}
   if([.48,1.2,2.7].includes(time)){const file=testInfo.outputPath(`${route}-${time.toFixed(2)}.png`);await page.screenshot({path:file,fullPage:true});await testInfo.attach(`${route}-${time}`,{path:file,contentType:'image/png'});}
  }
- await page.evaluate(({route})=>{(window as any).gaitHarness.render({route,time:0});(window as any).gaitHarness.startRecording();(window as any).gaitHarness.play();},{route});await page.waitForTimeout(4100);await page.evaluate(()=>(window as any).gaitHarness.pause());const recording=await page.evaluate(()=>(window as any).gaitHarness.stopRecording());expect(recording.metrics.samples).toBeGreaterThan(30);expect(recording.metrics.maxRenderedAnkleError).toBeLessThan(1e-4);expect(recording.metrics.maxRenderedSupportDriftPxPerSecond).toBeLessThan(1e-4);const metricsFile=testInfo.outputPath(`${route}-render-metrics.json`);await writeFile(metricsFile,JSON.stringify(recording,null,2));await testInfo.attach(`${route}-render-metrics`,{path:metricsFile,contentType:'application/json'});expect(errors).toEqual([]);
+ await page.evaluate(({route})=>{(window as any).gaitHarness.render({route,time:0});(window as any).gaitHarness.startRecording();(window as any).gaitHarness.play();},{route});await page.waitForTimeout(4100);await page.evaluate(()=>(window as any).gaitHarness.pause());const recording=await page.evaluate(()=>(window as any).gaitHarness.stopRecording());
+ const metricsFile=testInfo.outputPath(`${route}-render-metrics.json`);await writeFile(metricsFile,JSON.stringify(recording,null,2));await testInfo.attach(`${route}-render-metrics`,{path:metricsFile,contentType:'application/json'});
+ expect(recording.metrics.samples).toBeGreaterThan(30);expect(recording.metrics.maxRenderedAnkleError).toBeLessThan(1e-4);
+ // Phaser matrices use Float32 screen coordinates (~1e-4px ULP here). The
+ // normalized per-second difference amplifies subpixel rounding at60fps.
+ expect(recording.metrics.maxRenderedSupportFrameDelta).toBeLessThan(.0005);
+ expect(recording.metrics.maxRenderedSupportDriftPxPerSecond).toBeLessThan(.02);
+ expect(errors).toEqual([]);
 });

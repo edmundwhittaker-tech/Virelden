@@ -32,3 +32,4 @@ jobs:
           name: virelden-gait-browser-evidence
           path: .gait-browser-results/
           retention-days: 7
+          include-hidden-files: true
