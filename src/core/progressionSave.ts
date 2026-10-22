@@ -96,7 +96,7 @@ export function selectProgressionSave<World>(candidates: readonly SaveCandidate[
  return rejected ? {status: 'corrupt', notice: 'Saved progress could not be read. It has not been erased. Confirm a reset to start over.'} : {status: 'empty', notice: null};
 }
 
-/** Existing weapon fields remain in the legacy world until its integrator adopts the six-item armory. */
+/** Legacy-only coherence helper; active v3 stores the complete armory in its extension. */
 export function legacyWeaponStateAgrees(extension: ProgressionExtension, legacy: Pick<ValidatedLegacyProgress, 'owned' | 'equipped' | 'levels'>): boolean {
  const ids: readonly WeaponId[] = ['sword', 'spear', 'hammer'];
  return extension.armory.equipped === legacy.equipped && ids.every(id => extension.armory.owned.includes(id) === legacy.owned.includes(id as LegacyWeaponId) && extension.armory.levels[id] === legacy.levels[id as LegacyWeaponId]);

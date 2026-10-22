@@ -1,3 +1,4 @@
+import {movementKeys,spearSpacing,retreatBlocked} from './native-steering';
 import {captureAttack} from './attack-capture';
 import {test,expect,type Page} from '@playwright/test';
 const state=(page:Page)=>page.evaluate(()=>window.vireldenDebug!());
@@ -98,7 +99,7 @@ async function walkTo(page:Page,target:{x:number;y:number}){
   const s=await state(page);expect(s.hp,'alive while traversing route').toBeGreaterThan(0);
   const dx=(p.x-s.position.x-p.y+s.position.y)*.8,dy=(p.x-s.position.x+p.y-s.position.y)*.4;
   if(Math.hypot(dx,dy)<7){reached=true;break;}
-  const keys:string[]=[];if(Math.abs(dx)>Math.abs(dy)*.42)keys.push(dx>0?'KeyD':'KeyA');if(Math.abs(dy)>Math.abs(dx)*.42)keys.push(dy>0?'KeyS':'KeyW');
+  const keys=movementKeys(dx,dy);
   await hold(page,keys,Math.max(20,Math.min(70,Math.hypot(dx,dy)/150*1000)));
  }expect(reached,'movement reaches route corner').toBe(true);}
 }
@@ -165,23 +166,24 @@ test('very short movement taps are consumed once and do not stick',async({page})
 });
 
 test('spear spacing defeats lower captain and persists victory without premature completion',async({page})=>{
- test.setTimeout(90_000);await open(page,'Wayfarer');await walkTo(page,{x:480,y:340});
+ test.setTimeout(90_000);await open(page,'Wayfarer');await walkTo(page,{x:480,y:340});let stuckRetreat=false,attackInputs=0;
  for(let turn=0;turn<500;turn++){
   const s=await state(page),captain=s.enemies.find(e=>e.id==='captain')!;if(captain.hp<=0)break;
   expect(s.hp,'survive by keeping spear distance').toBeGreaterThan(0);
   if(s.attack.phase!=='idle'){await page.waitForTimeout(70);continue;}
   const x=640+(captain.position.x-captain.position.y)*.8-s.camera.x,y=180+(captain.position.x+captain.position.y)*.4-s.camera.y;
   const dx=x-s.screen.x,dy=y-s.screen.y,distance=Math.hypot(dx,dy);
-  if(distance<92||distance>108){
-   const away=distance<92?-1:1,keys:string[]=[];
-   if(Math.abs(dx)>Math.abs(dy)*.42)keys.push(dx*away>0?'KeyD':'KeyA');
-   if(Math.abs(dy)>Math.abs(dx)*.42)keys.push(dy*away>0?'KeyS':'KeyW');
-   await hold(page,keys,70);
+  const spacing=spearSpacing(distance,stuckRetreat);
+  if(spacing){
+   const before={...s.position},keys=movementKeys(dx,dy,spacing);
+   await hold(page,keys,70);const after=(await state(page)).position;stuckRetreat=retreatBlocked(distance,before,after);
   }else if(s.stamina>=20){
+   attackInputs++;
    const canvas=await page.locator('canvas').boundingBox();expect(canvas).not.toBeNull();
    await page.mouse.click(canvas!.x+x/1280*canvas!.width,canvas!.y+y/800*canvas!.height);await page.waitForTimeout(70);
   }else await page.waitForTimeout(70);
  }
+ const duel=await state(page);console.log('CAPTAIN_DUEL '+JSON.stringify({position:duel.position,hp:duel.hp,stamina:duel.stamina,captain:duel.enemies.find(e=>e.id==='captain'),attackInputs,time:duel.time}));
  expect((await state(page)).enemies.find(e=>e.id==='captain')!.hp).toBe(0);expect((await state(page)).completed).toBe(false);expect((await state(page)).currency).toBeGreaterThanOrEqual(80);
  await expect(page.locator('#objective-text')).not.toContainText('Expedition complete');await page.screenshot({path:'test-results/expedition-captain-victory.png',fullPage:true});
  await page.keyboard.press('KeyI');await expect(page.getByRole('dialog')).toBeVisible();await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).completed).toBe(false);expect((await state(page)).enemies.find(e=>e.id==='captain')!.hp).toBe(0);

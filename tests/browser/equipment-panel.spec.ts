@@ -72,5 +72,10 @@ for(const viewport of [{width:1440,height:1000},{width:900,height:700}]) {
   expect(bounds!.y+bounds!.height).toBeLessThanOrEqual(viewport.height);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.screenshot({path:`test-results/equipment-panel-${viewport.width}.png`});
+  if(viewport.width===900){
+   await page.getByRole('button',{name:'Delver plate helmet Owned',exact:true}).click();const action=page.getByRole('button',{name:'Equip this piece',exact:true});await action.focus();await expect(action).toBeFocused();
+   expect(await action.evaluate(el=>{const r=el.getBoundingClientRect(),body=document.querySelector('.equipment-body')!.getBoundingClientRect(),footer=document.querySelector('.equipment-footer')!.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return r.top>=body.top&&r.bottom<=footer.top&&(hit===el||el.contains(hit));})).toBe(true);
+   await page.screenshot({path:'test-results/equipment-panel-900-scrolled-control.png'});await page.keyboard.press('Enter');expect(await page.evaluate(()=>(window as any).fixtureRecord.armor)).toEqual([['helmet','delver-helmet']]);
+  }
  });
 }

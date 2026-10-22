@@ -1,3 +1,4 @@
+import {movementKeys,spearSpacing,retreatBlocked} from './native-steering';
 import {test,expect,type Page} from '@playwright/test';
 import {mkdir,writeFile} from 'node:fs/promises';
 const state=(page:Page)=>page.evaluate(()=>window.vireldenDebug!());
@@ -39,7 +40,7 @@ async function walkTo(page:Page,target:{x:number;y:number},combat=false){
  expect(atTarget(end),'native route has connected collision-safe approach').toBe(true);const route:{x:number;y:number}[]=[];let k:string|null=key(end);while(k){const [x,y]=k.split(',').map(Number);route.unshift({x,y});k=parents.get(k)??null;}
  const corners=route; // Retain grid waypoints: diagonal keys must not cut long obstacle corners.
 
- for(const p of corners){let reached=false;for(let step=0;step<150;step++){if(combat){const before=(await state(page)).position;await clearThreats(page);const after=(await state(page)).position;if(Math.hypot(after.x-before.x,after.y-before.y)>10)return walkTo(page,target,combat);}const s=await state(page);expect(s.hp,'alive traversing native route').toBeGreaterThan(0);const dx=(p.x-s.position.x-p.y+s.position.y)*.8,dy=(p.x-s.position.x+p.y-s.position.y)*.4;if(Math.hypot(dx,dy)<7){reached=true;break;}const keys:string[]=[];if(Math.abs(dx)>Math.abs(dy)*.42)keys.push(dx>0?'KeyD':'KeyA');if(Math.abs(dy)>Math.abs(dx)*.42)keys.push(dy>0?'KeyS':'KeyW');await hold(page,keys,Math.max(20,Math.min(70,Math.hypot(dx,dy)/150*1000)));}expect(reached,'native movement reaches route corner').toBe(true);}
+ for(const p of corners){let reached=false;for(let step=0;step<150;step++){if(combat){const before=(await state(page)).position;await clearThreats(page);const after=(await state(page)).position;if(Math.hypot(after.x-before.x,after.y-before.y)>10)return walkTo(page,target,combat);}const s=await state(page);expect(s.hp,'alive traversing native route').toBeGreaterThan(0);const dx=(p.x-s.position.x-p.y+s.position.y)*.8,dy=(p.x-s.position.x+p.y-s.position.y)*.4;if(Math.hypot(dx,dy)<7){reached=true;break;}const keys=movementKeys(dx,dy);await hold(page,keys,Math.max(20,Math.min(70,Math.hypot(dx,dy)/150*1000)));}expect(reached,'native movement reaches route corner').toBe(true);}
 }
 
 test('monumental gate blocks native movement, animates once, pauses and reloads safely',async({page})=>{
@@ -67,24 +68,28 @@ test('monumental gate blocks native movement, animates once, pauses and reloads 
  await page.keyboard.press('Escape');await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).gatePhase).toBe('open');
 });
 
+const combatMetrics=new WeakMap<Page,{attackInputs:number;damagingSamples:number;observedDamage:number;hp:Map<string,number>}>();
 async function clearThreats(page:Page){
  const {adventureCanStand}=await import('../src/core/adventure');let stuckRetreat=false;
  for(let turn=0;turn<650;turn++){
   const s=await state(page);expect(s.hp,'survive native spear combat').toBeGreaterThan(0);
+  let metrics=combatMetrics.get(page);if(!metrics){metrics={attackInputs:0,damagingSamples:0,observedDamage:0,hp:new Map()};combatMetrics.set(page,metrics);}for(const e of s.enemies){const prior=metrics.hp.get(e.id);if(prior!==undefined&&e.hp<prior){metrics.damagingSamples++;metrics.observedDamage+=prior-e.hp;}metrics.hp.set(e.id,e.hp);}
   const visible=s.enemies.filter(e=>e.hp>0).map(e=>({e,dx:(e.position.x-s.position.x-e.position.y+s.position.y)*.8,dy:(e.position.x-s.position.x+e.position.y-s.position.y)*.4})).filter(t=>Math.hypot(t.dx,t.dy)<220&&Array.from({length:19},(_,i)=>{const f=(i+1)/20;return adventureCanStand(s,{x:s.position.x+(t.e.position.x-s.position.x)*f,y:s.position.y+(t.e.position.y-s.position.y)*f});}).every(Boolean)).sort((a,b)=>Math.hypot(a.dx,a.dy)-Math.hypot(b.dx,b.dy));
   if(!visible.length)return;const t=visible[0],distance=Math.hypot(t.dx,t.dy);
   if(s.attack.phase!=='idle'){await page.waitForTimeout(65);continue;}
-  const imminent=t.e.phase==='windup'&&t.e.timer<.3&&distance<(t.e.kind==='watcher'?210:t.e.kind==='captain'?88:68);
+  // Close through a fired arrow with the real roll iframe; far-away circling never reaches spear range.
+  const imminent=t.e.kind!=='watcher'&&t.e.phase==='windup'&&t.e.timer<.3&&distance<(t.e.kind==='captain'?88:68);
   const incoming=s.projectiles.some(p=>Math.hypot((p.position.x-s.position.x-p.position.y+s.position.y)*.8,(p.position.x-s.position.x+p.position.y-s.position.y)*.4)<55);
-  if((imminent||incoming)&&s.stamina>=28&&s.rollCooldown===0&&s.rollTimer===0){const keys=Math.abs(t.dx)>Math.abs(t.dy)?[t.dy>=0?'KeyW':'KeyS']:[t.dx>=0?'KeyA':'KeyD'];for(const k of keys)await page.keyboard.down(k);await page.keyboard.press('Space');await page.waitForTimeout(100);for(const k of keys)await page.keyboard.up(k);continue;}
-  if((distance<88&&!stuckRetreat)||distance>108){const before={...s.position};const sign=distance<88?-1:1,keys:string[]=[];if(Math.abs(t.dx)>Math.abs(t.dy)*.42)keys.push(t.dx*sign>0?'KeyD':'KeyA');if(Math.abs(t.dy)>Math.abs(t.dx)*.42)keys.push(t.dy*sign>0?'KeyS':'KeyW');await hold(page,keys,65);const after=(await state(page)).position;stuckRetreat=distance<88&&Math.hypot(after.x-before.x,after.y-before.y)<2;}
-  else if(s.stamina>=20){const box=await page.locator('canvas').boundingBox();expect(box).not.toBeNull();await page.mouse.click(box!.x+(s.screen.x+t.dx)/1280*box!.width,box!.y+(s.screen.y+t.dy)/800*box!.height);await page.waitForTimeout(65);}else await page.waitForTimeout(65);
+  if((imminent||incoming)&&s.stamina>=28&&s.rollCooldown===0&&s.rollTimer===0){const keys=t.e.kind==='watcher'?movementKeys(t.dx,t.dy):[Math.abs(t.dx)>Math.abs(t.dy)?(t.dy>=0?'KeyW':'KeyS'):(t.dx>=0?'KeyA':'KeyD')];for(const k of keys)await page.keyboard.down(k);await page.keyboard.press('Space');await page.waitForTimeout(100);for(const k of keys)await page.keyboard.up(k);continue;}
+  const spacing=spearSpacing(distance,stuckRetreat);
+  if(spacing){const before={...s.position},keys=movementKeys(t.dx,t.dy,spacing);await hold(page,keys,65);const after=(await state(page)).position;stuckRetreat=retreatBlocked(distance,before,after);}
+  else if(s.stamina>=20){metrics.attackInputs++;const box=await page.locator('canvas').boundingBox();expect(box).not.toBeNull();await page.mouse.click(box!.x+(s.screen.x+t.dx)/1280*box!.width,box!.y+(s.screen.y+t.dy)/800*box!.height);await page.waitForTimeout(65);}else await page.waitForTimeout(65);
  }
  throw new Error('Native combat failed to clear visible threats within bounded encounter window');
 }
 
 test('native expedition traverses four populated sections, rests and earns upper-watch completion',async({page})=>{
- test.setTimeout(420_000);await open(page);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ test.setTimeout(900_000);await open(page);const wallStarted=Date.now();let priorSimulationSeconds=0;const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  const {CHECKPOINTS,FINISH}=await import('../src/core/level');
  // Acquire marks and temper the actual starting spear before the extended route.
  await walkTo(page,{x:150,y:420});await page.keyboard.press('KeyE');await walkTo(page,{x:260,y:330});await page.keyboard.press('KeyE');await page.locator('[data-action="upgrade"]').click();await page.keyboard.press('Escape');
@@ -97,22 +102,22 @@ test('native expedition traverses four populated sections, rests and earns upper
    if((await state(page)).checkpoint.y>=0){
     // Backtracking is real movement; surviving enemies may pursue, so retain defensive combat.
     await walkTo(page,{x:320,y:320},true);await page.keyboard.press('KeyE');await walkTo(page,{x:485,y:-110},true);
-    for(const [label,target]of [['ascent',{x:485,y:-400}],['transfer',{x:130,y:-770}],['checkpoint',CHECKPOINTS[1]]] as const){await walkTo(page,target,true);await page.screenshot({path:`test-results/extended-route-${label}.png`,fullPage:true});console.log('ROUTE_SECTION '+JSON.stringify({label,hp:(await state(page)).hp,deaths}));}
-    await page.keyboard.press('KeyE');expect((await state(page)).checkpoint).toEqual(CHECKPOINTS[1]);expect((await state(page)).hp).toBe(100);
-    await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).position).toEqual(CHECKPOINTS[1]);expect((await state(page)).gatePhase).toBe('open');
+    for(const [label,target]of [['ascent',{x:485,y:-400}],['transfer',{x:130,y:-770}],['transfer-bow-turn',{x:470,y:-850}],['checkpoint',CHECKPOINTS[1]]] as const){await walkTo(page,target,true);await page.screenshot({path:`test-results/extended-route-${label}.png`,fullPage:true});console.log('ROUTE_SECTION '+JSON.stringify({label,hp:(await state(page)).hp,deaths,wallSeconds:(Date.now()-wallStarted)/1000,simulationSeconds:priorSimulationSeconds+(await state(page)).time,attackInputs:combatMetrics.get(page)?.attackInputs}));}
+    await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).checkpoint).toEqual(CHECKPOINTS[1]);expect((await state(page)).hp).toBe(100);
+    priorSimulationSeconds+=(await state(page)).time;await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).position).toEqual(CHECKPOINTS[1]);expect((await state(page)).gatePhase).toBe('open');
    }
    for(const target of [{x:500,y:-1380},{x:125,y:-1670},FINISH])await walkTo(page,target,true);
-   await page.keyboard.press('KeyE');expect((await state(page)).completed).toBe(true);expect((await state(page)).enemies.find(e=>e.id==='upper-captain')!.hp).toBe(0);
+   await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).completed).toBe(true);expect((await state(page)).enemies.find(e=>e.id==='upper-captain')!.hp).toBe(0);
   }catch(error){
    const fallen=await state(page);if(fallen.hp>0)throw error;
    const cleared=fallen.enemies.filter(e=>e.hp===0).map(e=>e.id);deaths++;
-   console.log('ROUTE_DEATH '+JSON.stringify({deaths,position:fallen.position,cleared,currency:fallen.currency}));
+   console.log('ROUTE_DEATH '+JSON.stringify({deaths,position:fallen.position,cleared,currency:fallen.currency,wallSeconds:(Date.now()-wallStarted)/1000,simulationSeconds:priorSimulationSeconds+fallen.time,attackInputs:combatMetrics.get(page)?.attackInputs}));
    expect(deaths,'bounded real expedition retries').toBeLessThanOrEqual(4);expect(cleared.length,'each death must still advance durable encounter progress').toBeGreaterThan(lastDeathCleared);lastDeathCleared=cleared.length;
    await page.getByRole('button',{name:'Rise at checkpoint',exact:true}).click();const risen=await state(page);
    expect(risen.hp).toBe(risen.maxHp);expect(risen.position).toEqual(fallen.checkpoint);expect(risen.currency).toBe(fallen.currency);expect(risen.owned).toEqual(fallen.owned);expect(risen.levels).toEqual(fallen.levels);expect(risen.equipped).toBe(fallen.equipped);expect(risen.enemies.filter(e=>e.hp===0).map(e=>e.id)).toEqual(cleared);
   }
  }
- console.log('ROUTE_COMPLETE '+JSON.stringify({deaths,time:(await state(page)).time,cleared:(await state(page)).enemies.filter(e=>e.hp===0).length}));
+ console.log('ROUTE_COMPLETE '+JSON.stringify({deaths,wallSeconds:(Date.now()-wallStarted)/1000,simulationSeconds:priorSimulationSeconds+(await state(page)).time,cleared:(await state(page)).enemies.filter(e=>e.hp===0).length,attackInputs:combatMetrics.get(page)?.attackInputs,damagingSamples:combatMetrics.get(page)?.damagingSamples,observedDamage:combatMetrics.get(page)?.observedDamage}));
  expect((await state(page)).enemies.filter(e=>e.hp===0).length).toBeGreaterThanOrEqual(8);await page.screenshot({path:'test-results/extended-route-complete.png',fullPage:true});
  await page.keyboard.press('Escape');await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).completed).toBe(true);expect(errors).toEqual([]);
 });

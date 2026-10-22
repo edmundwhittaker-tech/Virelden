@@ -11,6 +11,14 @@ async function openMigrated(page:Page){
  await page.goto('/?debug=1&qa=1');await page.waitForFunction(()=>typeof window.vireldenDebug==='function');await expect.poll(async()=>(await state(page)).character.texture).toBe('modular-plate');await expect.poll(async()=>(await state(page)).paused).toBe(false);
  expect((await state(page)).progression.xp).toBe(740);expect((await state(page)).owned).toContain('axe');
 }
+// Install faults in the incoming document: an outgoing page legitimately saves on blur.
+// One-use tokens prevent old init scripts from corrupting subsequent reloads.
+let faultSequence=0;
+async function reloadWithEntries(page:Page,entries:Record<string,string>){
+ const token=`equipment-storage-fault-${++faultSequence}`;
+ await page.addInitScript(({token,entries})=>{if(sessionStorage.getItem('equipment-storage-fault')!==token)return;sessionStorage.removeItem('equipment-storage-fault');for(const [key,value]of Object.entries(entries))localStorage.setItem(key,value);},{token,entries});
+ await page.evaluate(token=>sessionStorage.setItem('equipment-storage-fault',token),token);await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');
+}
 async function menu(page:Page){if(!(await state(page)).paused)await page.keyboard.press('KeyI');await expect(page.locator('.equipment-panel')).toBeVisible();}
 async function close(page:Page){await page.keyboard.press('Escape');await expect.poll(async()=>(await state(page)).paused).toBe(false);}
 async function armor(page:Page,slot:string,set:string){await page.getByRole('button',{name:'Armor',exact:true}).click();await page.locator(`[data-focus="slot-${slot}"]`).click();await page.locator(`[data-focus="armor-${set}-${slot}"]`).click();await page.getByRole('button',{name:'Equip this piece',exact:true}).click();}
@@ -19,6 +27,8 @@ async function evidence(page:Page,name:string){await mkdir('test-results/equipme
 
 test('legacy earned gear migrates, all four real plate slots swap independently, mixed sets and reload persist',async({page})=>{
  await openMigrated(page);await evidence(page,'ward-runtime');await menu(page);
+ await expect.poll(()=>page.locator('.equipment-thumbnail img').evaluateAll(images=>images.length>=6&&images.every(img=>img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0))).toBe(true);await evidence(page,'actual-armor-panel');
+ await page.getByRole('button',{name:'Weapons',exact:true}).click();await expect.poll(()=>page.locator('.equipment-thumbnail img').evaluateAll(images=>images.length>=4&&images.every(img=>img instanceof HTMLImageElement&&img.complete&&img.naturalWidth>0))).toBe(true);await evidence(page,'actual-weapons-panel');
  for(const slot of ['helmet','chest','gauntlets','legs']){const before=await state(page);await armor(page,slot,'delver');const after=await state(page);expect(after.equipment.equipped[slot as keyof typeof after.equipment.equipped]).toBe(`delver-${slot}`);for(const other of ['helmet','chest','gauntlets','legs'].filter(s=>s!==slot))expect(after.equipment.equipped[other as keyof typeof after.equipment.equipped]).toBe(before.equipment.equipped[other as keyof typeof before.equipment.equipped]);expect(after.hp).toBeLessThanOrEqual(before.hp);}
  await close(page);expect((await state(page)).character.equipment).toEqual({helmet:'delver',chest:'delver',gauntlets:'delver',legs:'delver'});await evidence(page,'delver-runtime');
  await menu(page);const hp=(await state(page)).hp;await armor(page,'chest','ward');await armor(page,'legs','ward');expect((await state(page)).hp).toBe(hp);await close(page);await evidence(page,'mixed-helmet-gauntlets-runtime');
@@ -40,8 +50,8 @@ test('attack and roll interruption cannot change armor, weapon or training; clos
 });
 
 test('validated fallback is visible, fully corrupt QA saves stay protected until confirmed reset',async({page})=>{
- await openMigrated(page);await menu(page);await close(page);await page.evaluate(({current,good})=>{localStorage.setItem(good,localStorage.getItem(current)!);localStorage.setItem(current,'{');},{current:CURRENT,good:GOOD});await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');await expect(page.locator('#save-status')).toContainText('Earlier valid progress');expect((await state(page)).progression.xp).toBe(740);
- await page.evaluate(keys=>{for(const key of keys)localStorage.setItem(key,'{');},[CURRENT,GOOD,LEGACY]);await page.reload();await expect(page.getByRole('heading',{name:'Saved expedition unavailable',exact:true})).toBeVisible();await page.keyboard.press('Escape');await page.keyboard.press('KeyI');await expect(page.getByRole('heading',{name:'Saved expedition unavailable',exact:true})).toBeVisible();expect(await page.evaluate(key=>localStorage.getItem(key),CURRENT)).toBe('{');await evidence(page,'corrupt-save-protected');
+ await openMigrated(page);await menu(page);await close(page);const previous=await page.evaluate(key=>localStorage.getItem(key)!,CURRENT);await reloadWithEntries(page,{[CURRENT]:'{',[GOOD]:previous});await expect(page.locator('#save-status')).toContainText('Earlier valid progress');expect((await state(page)).progression.xp).toBe(740);await page.waitForTimeout(2200);await menu(page);await expect(page.locator('#save-status')).toContainText('Earlier valid progress');await close(page);
+ await reloadWithEntries(page,{[CURRENT]:'{',[GOOD]:'{',[LEGACY]:'{'});await expect(page.getByRole('heading',{name:'Saved expedition unavailable',exact:true})).toBeVisible();await page.keyboard.press('Escape');await page.keyboard.press('KeyI');await expect(page.getByRole('heading',{name:'Saved expedition unavailable',exact:true})).toBeVisible();expect(await page.evaluate(key=>localStorage.getItem(key),CURRENT)).toBe('{');await evidence(page,'corrupt-save-protected');
  await page.getByRole('button',{name:'Review reset options',exact:true}).click();await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(page.getByRole('heading',{name:'Saved expedition unavailable',exact:true})).toBeVisible();await page.getByRole('button',{name:'Review reset options',exact:true}).click();await page.getByRole('button',{name:'Erase progress and choose again',exact:true}).click();await page.reload();await expect(page.getByRole('button',{name:'Choose Vanguard',exact:true})).toBeVisible();expect(await page.evaluate(key=>localStorage.getItem(key),NORMAL)).toBe('normal-expedition-untouched');for(const key of [CURRENT,GOOD,LEGACY])expect(await page.evaluate(k=>localStorage.getItem(k),key)).toBeNull();
 });
 
@@ -50,6 +60,6 @@ test('quota failure keeps playable changed gear and honest feedback without repl
 });
 
 for(const id of ['hammer','axe'])test(`${id} uses its textured hand-attached weapon through four real attack directions`,async({page})=>{
- test.setTimeout(90_000);await openMigrated(page);await menu(page);await weapon(page,id);await close(page);
+ test.setTimeout(90_000);await openMigrated(page);await page.keyboard.down('KeyD');await page.waitForTimeout(700);await page.keyboard.up('KeyD');await evidence(page,`modular-${id}-clear-floor`);await menu(page);await weapon(page,id);await close(page);
  for(const [name,x,y]of [['east',1,0],['west',-1,0],['north',0,-1],['south',0,1]] as const){await expect.poll(async()=>(await state(page)).stamina).toBe((await state(page)).maxStamina);const s=await state(page),box=await page.locator('canvas').boundingBox();await page.mouse.move(box!.x+(s.screen.x+x*140)/1280*box!.width,box!.y+(s.screen.y+y*140)/800*box!.height);const frames=await captureAttack(page,`modular-${id}-${name}`,true);expect(frames.active.state.character.texture).toBe('modular-plate');expect(frames.active.state.attack.weapon).toBe(id);expect(frames.active.state.character.rig.visible).toBe(true);expect(frames.active.state.character.rig.texture).toBe(`ordinary-weapon-${id}`);}
 });

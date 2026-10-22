@@ -1,11 +1,9 @@
-# Work chat handoff
+# Contributor guide
 
-Repository: https://github.com/edmundwhittaker-tech/Virelden
-Stack: Phaser 3 + TypeScript + Vite.
-Current scope: a simple isometric courtyard and one movable character.
-Read README.md, AGENTS.md and docs/STATUS.md before changing anything.
+Phaser3 + TypeScript + Vite, with deterministic simulation in `src/core`, rendering in `src/game`, and controlled DOM equipment UI in `src/ui`.
 
-Edmund is new to development. Explain the result plainly, make changes in the repository, verify them, and provide a playable preview when available.
-Prefer the browser workflow. Do not ask him to install Unity, Phaser Editor or local tools.
-Use the current project brief, not the superseded combat prototype.
+Read `README.md`, `AGENTS.md`, `docs/PROJECT_BRIEF.md` and `docs/STATUS.md` before changes. Prefer the documented browser-based development workflow; the game does not require Unity, Phaser Editor, a user-installed toolchain or a running Codespace for public play.
 
+Keep the project bounded, preserve ordinary closed full plate with no cloth, and do not add private GM material or claim prototype adaptations as campaign canon. Maintain screen-relative input, fixed simulation steps, collision, focus cleanup, read-only opt-in debug snapshots and safe browser-local progress migration.
+
+Use small feature branches/draft PRs, preserve normal Git history, and distinguish local checks, exact-commit CI, browser screenshot inspection and actual deployment. See the equipment/progression/art contracts for current implementation boundaries.

@@ -9,11 +9,9 @@ export interface WeaponProfile {
  readonly cost: number; readonly stagger: number; readonly shape: ContactShape;
  readonly hands: 1 | 2; readonly silhouette: string;
  readonly motion: Readonly<{kind: 'cut' | 'thrust' | 'overhead' | 'hook'; startAngle: number; endAngle: number}>;
- /** Existing hammer includes rear targets. Do not silently replace its geometry during integration. */
- readonly legacyRearReach?: true;
 }
 const profile = (p: WeaponProfile): WeaponProfile => Object.freeze({...p, shape: Object.freeze(p.shape), motion: Object.freeze(p.motion)});
-/** The original three damage/range/half-angle/timing/cost values are retained exactly. */
+/** Original damage/timing/cost are retained; hammer contact is deliberately forward-only. */
 export const WEAPON_CATALOG: Readonly<Record<WeaponId, WeaponProfile>> = Object.freeze({
  sword: profile({kind: 'weapon', id: 'sword', name: 'Arming sword', damage: 30, range: 75, windup: .2, active: .12, recovery: .34, cost: 22, stagger: .22,
   shape: {kind: 'sector', halfAngle: 1.05}, hands: 1, silhouette: 'straight-double-edge', motion: {kind: 'cut', startAngle: -1.05, endAngle: 1.05}, description: 'Broad, quick sweep. Reliable against close groups.'}),

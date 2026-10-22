@@ -13,12 +13,12 @@ const QA=new URLSearchParams(location.search).get('qa')==='1';
 const SAVE_KEYS=saveKeys(QA);
 declare global{interface Window{vireldenDebug?:()=>Adventure & {screen:Point;camera:Point;keyboardAim:Point;gate:ReturnType<WorldView['gateSnapshot']>;archers:ReturnType<WorldView['archerSnapshot']>;moving:boolean;character:ReturnType<WorldView['characterSnapshot']>;scenery:ReturnType<WorldView['scenerySnapshot']>;paused:boolean;timing:{frames:number;rawDelta:number;fps:number;renderMs:number;updateMs:number}}}}
 export class CourtyardScene extends Phaser.Scene{
-  private equipmentPanel!:EquipmentPanel; private saveBlocked=false; private protectedProgress=false; private assetFailure=false; private saveWarning=''; private state=createAdventure('vanguard'); private keyboardAim:Point={x:1,y:0}; private held=new Set<string>(); private pendingKeys=new Set<string>(); private actions:string[]=[]; private accumulator=0; private view!:WorldView; private moving=false; private facing:Facing='east'; private menu=''; private saveTimer=0;private renderCost=0;private updateCost=0; private lastHud='';
+  private equipmentPanel!:EquipmentPanel; private saveBlocked=false; private protectedProgress=false; private assetFailure=false; private saveWarning=''; private loadNotice=''; private state=createAdventure('vanguard'); private keyboardAim:Point={x:1,y:0}; private held=new Set<string>(); private pendingKeys=new Set<string>(); private actions:string[]=[]; private accumulator=0; private view!:WorldView; private moving=false; private facing:Facing='east'; private menu=''; private saveTimer=0;private renderCost=0;private updateCost=0; private lastHud='';
   preload(){KnightSprite.preload(this);WorldView.preload(this);}
   create(){
     this.saveNotice('Local progress');
     let loaded=false,corrupt=false;
-    try{const result=loadCampaign(localStorage,SAVE_KEYS);if(result.status==='loaded'){this.state=result.state;loaded=true;this.saveWarning=result.notice??'';}else if(result.status==='corrupt'||result.status==='unavailable'){this.saveBlocked=true;corrupt=result.status==='corrupt';this.protectedProgress=corrupt;this.saveWarning=result.notice??'Saving unavailable.';}}
+    try{const result=loadCampaign(localStorage,SAVE_KEYS);if(result.status==='loaded'){this.state=result.state;loaded=true;this.loadNotice=result.notice??'';}else if(result.status==='corrupt'||result.status==='unavailable'){this.saveBlocked=true;corrupt=result.status==='corrupt';this.protectedProgress=corrupt;this.saveWarning=result.notice??'Saving unavailable.';}}
     catch{this.saveBlocked=true;this.saveWarning='Saving unavailable in this browser. Existing progress has not been erased.';}
     this.view=new WorldView(this);
     if(!this.view.commitEquipment(this.state.equipment)||!this.view.weaponReady(WEAPONS[this.state.equipped])){this.saveBlocked=true;this.saveWarning='Required armor artwork did not load. Progress was not changed. Please reload.';corrupt=true;this.protectedProgress=true;this.assetFailure=true;}
@@ -58,9 +58,9 @@ export class CourtyardScene extends Phaser.Scene{
     this.saveNotice(this.saveWarning||'Local progress');this.showMenu(corrupt?'corrupt':loaded?'':'start');this.render();
   }
   private aimAt(event:MouseEvent){const rect=this.game.canvas.getBoundingClientRect(),p=project(this.state.position);const x=(event.clientX-rect.left)*1280/rect.width+this.cameras.main.scrollX-p.x,y=(event.clientY-rect.top)*800/rect.height+this.cameras.main.scrollY-p.y;const length=Math.hypot(x,y);if(length>10)this.state.aim={x:x/length,y:y/length};}
-  private saveNotice(text:string){document.getElementById('save-status')!.textContent=(QA?'QA save · ':'')+text;}
+  private saveNotice(text:string){document.getElementById('save-status')!.textContent=(QA?'QA save · ':'')+[...new Set([this.loadNotice,text].filter(Boolean))].join(' · ');}
   private clearInput(){this.held.clear();this.pendingKeys.clear();this.actions=[];this.accumulator=0;}
-  private equipmentSnapshot():EquipmentPanelState{const s=this.state;return {equipment:s.equipment,armory:armory(s),progression:s.progression,base:BASE_POOLS[s.archetype],context:equipmentContext(s),atCheckpoint:atCheckpoint(s),atForge:atForge(s),currency:s.currency,message:[s.message,this.saveWarning].filter(Boolean).join(' ')};}
+  private equipmentSnapshot():EquipmentPanelState{const s=this.state;return {equipment:s.equipment,armory:armory(s),progression:s.progression,base:BASE_POOLS[s.archetype],context:equipmentContext(s),atCheckpoint:atCheckpoint(s),atForge:atForge(s),currency:s.currency,message:[s.message,this.loadNotice,this.saveWarning].filter(Boolean).join(' ')};}
   private afterEquipmentAction(){this.save();this.equipmentPanel.update(this.equipmentSnapshot());this.render();}
   private save(){
     if(this.saveBlocked){this.saveNotice(this.saveWarning||'Saved progress is protected. Confirm Reset to start over.');return false;}
@@ -71,7 +71,7 @@ export class CourtyardScene extends Phaser.Scene{
     if(action.startsWith('start:')){this.state=createAdventure(action.slice(6) as Archetype);this.view.commitEquipment(this.state.equipment);this.facing='east';this.keyboardAim={x:1,y:0};this.cameras.main.setScroll(0,0);this.save();this.menu='';this.showMenu('');}
     else if(action==='retry'){retry(this.state);this.save();this.showMenu('');}
     else if(action==='reset')this.showMenu('reset');
-    else if(action==='confirm-reset'){try{if(!resetCampaign(localStorage,SAVE_KEYS))throw Error('Reset unavailable');this.saveBlocked=false;this.protectedProgress=false;this.saveWarning='';this.saveNotice('No expedition saved');this.showMenu('start');}catch{this.saveNotice('Could not erase save · check browser storage permissions');}}
+    else if(action==='confirm-reset'){try{if(!resetCampaign(localStorage,SAVE_KEYS))throw Error('Reset unavailable');this.saveBlocked=false;this.protectedProgress=false;this.saveWarning='';this.loadNotice='';this.saveNotice('No expedition saved');this.showMenu('start');}catch{this.saveNotice('Could not erase save · check browser storage permissions');}}
     else if(action==='resume')this.showMenu('');
     else if(action==='pause')this.showMenu('pause');
   }
