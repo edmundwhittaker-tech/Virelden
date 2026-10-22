@@ -36,15 +36,16 @@ export function evaluateRig(input:RigInput):RigPose {
  const interacting=input.motion==='interact';
  const requested=interacting&&input.handTarget?{x:finite(input.handTarget.x)*(input.flipped?-1:1),y:finite(input.handTarget.y)}:undefined;
  if(requested){
-  // Rigid torso rotates about pelvis; search the smallest lean that can reach.
+  // Rigid fitted torso rotates about the unchanged pelvis. Operating stances
+  // put the actual mechanism inside this25px hand-chain reach, not vice versa.
   let bestError=Infinity;
-  for(let candidate=0;candidate<=22;candidate+=.25){
-   const angle=Math.asin(candidate/31),c=Math.cos(angle),s=Math.sin(angle);
+  for(let candidate=0;candidate<=Math.PI/3;candidate+=Math.PI/720){
+   const c=Math.cos(candidate),s=Math.sin(candidate);
    const rotate=(v:RigPoint):RigPoint=>({x:v.x*c-v.y*s,y:v.x*s+v.y*c});
-   const p={x:candidate*.15,y:-40},n=plus(p,rotate({x:0,y:-31}));
-   const near=plus(n,rotate({x:rear?11:-11,y:8})),far=plus(n,rotate({x:rear?-9:8,y:4}));
-   const distance=Math.hypot(requested.x-near.x,requested.y-near.y),error=Math.max(0,distance-28.99,5.01-distance);
-   if(error<bestError){bestError=error;pelvis=p;neck=n;shoulderNear=near;shoulderFar=far;headOffset=rotate({x:0,y:-17});}
+   const p={x:0,y:-48},n=plus(p,rotate({x:0,y:-24}));
+   const near=plus(n,rotate({x:rear?10:-10,y:8})),far=plus(n,rotate({x:rear?-8:8,y:6}));
+   const distance=Math.hypot(requested.x-near.x,requested.y-near.y),error=Math.max(0,distance-24.999,4.00001-distance);
+   if(error<bestError){bestError=error;pelvis=p;neck=n;shoulderNear=near;shoulderFar=far;headOffset=rotate({x:0,y:-15});}
    if(error===0)break;
   }
  }
