@@ -15,6 +15,8 @@ export interface EnemyContactInterval {readonly kind:'active-entry'|'active-step
 export interface EnemyContractContactEvent {readonly tick:number;readonly attack:number;readonly pose:EnemyPose;readonly toi:number;readonly interval:EnemyContactInterval;readonly contactTick:number}
 export interface EnemyContactInput {
  readonly tick:number;readonly attack:number;
+ /** Matched features move linearly; split authored cuts, swaps and teleports. */
+ readonly motion?:'linear'|'discontinuous';
  /** Entry is an instantaneous active endpoint, never an interpolated windup sweep. */
  readonly interval:EnemyContactInterval;
  readonly previousWeaponPolygons:readonly EnemyPolygon[];readonly weaponPolygons:readonly EnemyPolygon[];
@@ -33,7 +35,8 @@ export interface EnemyContractWorld extends EnemyNavigationWorld {
  /** Continuous clearance between complete equipment placements; reject if uncertain. */
  equipmentSweep:(from:EnemyPose,to:EnemyPose,fromPolygons:readonly EnemyPolygon[],toPolygons:readonly EnemyPolygon[])=>boolean;
  /** Shared swept first-contact resolver: earliest physical contact, shield wins ties.
-  * Required for incoming PLAYER weapons too; this interface is not its implementation. */
+  * Required for incoming PLAYER weapons too. enemyContact implements matched linear
+  * geometry; safe host adapters/discrete transitions remain an activation gate. */
  resolveTargetContact:(input:EnemyContactInput)=>EnemyContactResult;
  onBlock?:(event:EnemyContractContactEvent)=>void;
  /** Contact request only: host applies ordinary roll/hurt immunity at contactTick.
