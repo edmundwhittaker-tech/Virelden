@@ -19,6 +19,13 @@ jobs:
           node-version: '22'
       - run: npm ci
       - run: npm run check
+      - name: Type-check QA harness (compiled JavaScript core imports permit implicit any)
+        run: >-
+          ./node_modules/.bin/tsc --noEmit --target ES2022 --module ESNext
+          --moduleResolution Bundler --strict --noImplicitAny false --skipLibCheck --types node
+          tests/browser/audio-observer.ts tests/browser/audio-lifecycle.spec.ts
+          tests/browser/audio-native-visibility.spec.ts tests/browser/audio-preview.spec.ts
+          tests/browser/native-campaign.spec.ts playwright.audio.config.ts playwright.audio-preview.config.ts
       - name: Record exact source identity
         run: |
           mkdir -p test-results/sound-source

@@ -1,8 +1,7 @@
 import type {Page} from '@playwright/test';
 
 /** Test-only observation of real WebAudio. Never changes gameplay or bypasses autoplay. */
-export async function installAudioObserver(page:Page):Promise<void>{
- await page.addInitScript(()=>{
+export function audioObserverInit():void{
   const Native=window.AudioContext,contexts:any[]=[],sources:any[]=[],events:any[]=[],pending:{resolve:()=>void;reject:(error:unknown)=>void}[]=[];
   let defer=false,nextSource=0,overflowed=false;
   const emit=(kind:string,detail:any={})=>{if(events.length<256)events.push({kind,at:performance.now(),...detail});};
@@ -28,8 +27,8 @@ export async function installAudioObserver(page:Page):Promise<void>{
   window.AudioContext=new Proxy(Native,{construct(target,args){return observe(Reflect.construct(target,args,target));}});
   document.addEventListener('keydown',event=>{if((event.target as HTMLElement)?.id==='sound-volume'&&event.code.startsWith('Arrow'))queueMicrotask(()=>emit('range-key',{code:event.code,prevented:event.defaultPrevented}));});
   (window as any).__audioProbe={snapshot,setDeferred:(value:boolean)=>{defer=value;},release:(reverse=false)=>{const batch=pending.splice(0);if(reverse)batch.reverse();for(const item of batch)item.resolve();}};
- });
 }
+export async function installAudioObserver(page:Page):Promise<void>{await page.addInitScript(audioObserverInit);}
 export const audioSnapshot=(page:Page):Promise<any>=>page.evaluate(()=>(window as any).__audioProbe.snapshot());
 export const setAudioResumeDeferral=(page:Page,value:boolean)=>page.evaluate(value=>(window as any).__audioProbe.setDeferred(value),value);
 export const releaseAudioResumes=(page:Page,reverse=false)=>page.evaluate(reverse=>(window as any).__audioProbe.release(reverse),reverse);

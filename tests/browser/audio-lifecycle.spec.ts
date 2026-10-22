@@ -31,12 +31,10 @@ for(const key of ['Enter','Space'])test(`production trusted ${key} activates sou
  await start(page);await controls(page);const before=await state(page),button=page.getByRole('button',{name:'Enable sound',exact:true});await button.focus();await page.keyboard.press(key);await expect(page.getByRole('button',{name:'Mute sound',exact:true})).toBeVisible();await expect.poll(async()=>(await audioSnapshot(page)).contexts[0]?.state).toBe('suspended');const snapshot=await audioSnapshot(page);expect(snapshot.contextCount).toBe(1);expect(snapshot.contexts[0].constructorActivation).toBe(true);expect(snapshot.events.find((e:any)=>e.kind==='resume').activation).toBe(true);expect(snapshot.totalStarts).toBe(0);const after=await state(page);expect(after.position).toEqual(before.position);expect(after.stamina).toBe(before.stamina);expect(after.attack.phase).toBe('idle');expect(after.rollTimer).toBe(0);await sentinel(page);
 });
 
-test('production pause, equipment and real background visibility stop cues without replay',async({page,context})=>{
+test('production pause and equipment stop cues without replay',async({page})=>{
  await start(page);await enable(page);await step(page);await pressAction(page,'Escape');await silent(page);await noReplay(page);await page.getByRole('button',{name:'Continue expedition',exact:true}).click();await expect.poll(async()=>(await audioSnapshot(page)).contexts[0].state).toBe('running');await noReplay(page);
  await pressAction(page,'KeyI');await expect(page.locator('.equipment-panel')).toBeVisible();await silent(page);await noReplay(page);await pressAction(page,'Escape');await expect.poll(async()=>(await audioSnapshot(page)).contexts[0].state).toBe('running');await noReplay(page);
- // Playwright forces focus emulation on every page. Disable that test override so real tab visibility can change.
- const visibilitySession=await context.newCDPSession(page);await visibilitySession.send('Emulation.setFocusEmulationEnabled',{enabled:false});
- const other=await context.newPage();await other.goto('about:blank');const otherSession=await context.newCDPSession(other);await otherSession.send('Emulation.setFocusEmulationEnabled',{enabled:false});await other.bringToFront();await expect.poll(()=>page.evaluate(()=>document.hidden)).toBe(true);await silent(page);await other.close();await page.bringToFront();await expect(page.getByRole('heading',{name:'A moment beneath the stone',exact:true})).toBeVisible();await silent(page);await noReplay(page);await sentinel(page);
+ await sentinel(page);
 });
 
 test('production pending native resume cancellation is safe (completion-delay fault injection)',async({page})=>{
