@@ -25,9 +25,12 @@ for(const [keys,direction,texture,flipped] of [
  [['KeyS','KeyD'],'south-east','plate-knight-se-v1',false],
  [['KeyS','KeyA'],'south-west','plate-knight-se-v1',true],
 ] as const){test(`full-plate walking and idle ${direction}`,async({page})=>{
- await open(page);for(const k of keys)await page.keyboard.down(k);
- await expect.poll(async()=>(await state(page)).character.direction).toBe(direction);
- await expect.poll(async()=>(await state(page)).character.walking).toBe(true);
+ await open(page);
+ // Observe the first matching rendered movement frame, before a nearby solid prop
+ // correctly stops the knight. Sequential coarse polls could miss this short window.
+ const walking=page.waitForFunction(direction=>{const c=window.vireldenDebug!().character;return c.direction===direction&&c.walking;},direction,{polling:'raf'});
+ for(const k of keys)await page.keyboard.down(k);
+ await walking;
  expect((await state(page)).character).toMatchObject({texture,flipped});
  for(const k of [...keys].reverse())await page.keyboard.up(k);
  await expect.poll(async()=>(await state(page)).character.walking).toBe(false);
