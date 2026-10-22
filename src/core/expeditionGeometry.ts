@@ -7,7 +7,7 @@ export const contains=(p:Point,r:{x:number;y:number;width:number;height:number},
 export function expeditionCanStand(area:ExpeditionDefinition,p:Point,flags:readonly string[]=[],radius=12):boolean{
  if(!Number.isFinite(p.x)||!Number.isFinite(p.y)||!activeFloors(area,flags).some(f=>contains(p,f,radius)))return false;
  if(activeWalls(area,flags).some(w=>contains(p,w,-radius)))return false;
- return area.props.every(o=>Math.hypot(p.x-o.x,p.y-o.y)>=o.radius+radius);
+ return area.props.every(o=>o.footprint?!contains(p,{x:o.x-o.footprint.width/2,y:o.y-o.footprint.height/2,...o.footprint},-radius):Math.hypot(p.x-o.x,p.y-o.y)>=o.radius+radius);
 }
 /** Segment samples include both endpoints; used for bodies and projectile fairness. */
 export function expeditionClearSegment(area:ExpeditionDefinition,a:Point,b:Point,flags:readonly string[]=[],radius=12):boolean{

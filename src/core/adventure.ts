@@ -25,6 +25,10 @@ const unit=(p:Point):Point=>{const n=Math.hypot(p.x,p.y);return n?{x:p.x/n,y:p.y
 const vector=(a:Point,b:Point):Point=>{const p=project(a),q=project(b);return {x:q.x-p.x,y:q.y-p.y};};
 const distance=(a:Point,b:Point)=>Math.hypot(...Object.values(vector(a,b)));
 const near=(s:Adventure,p:Point)=>distance(s.position,p)<38;
+/** The existing durable purse/forge limit also bounds every once-only mark award. */
+export const MAX_IRON_MARKS=100000;
+const markText=(credited:number,offered:number)=>`${credited} iron marks${credited<offered?' (purse full)':''}`;
+const grantMarks=(s:Adventure,amount:number)=>{const credited=Math.max(0,Math.min(amount,MAX_IRON_MARKS-s.currency));s.currency+=credited;return credited;};
 function enemies():Enemy[]{return [
  {id:'raider',kind:'raider',position:{x:220,y:160},maxHp:75,reward:25},
  {id:'watcher',kind:'watcher',position:{x:440,y:230},maxHp:60,reward:25},
@@ -65,7 +69,7 @@ function hitEnemies(s:Adventure,from:number,to:number){
   const contact=frames.find(frame=>weaponTouchesBody(frame,d));if(!contact)continue;
   s.attack.contacts[e.id]=contact.progress;
   const before=e.hp;e.hp=Math.max(0,e.hp-weaponDamage(s,s.attack.weapon));s.attack.hit.push(e.id);
-  if(!e.hp){const xpBefore=s.progression.xp;s.progression=awardDefeat(s.progression,`${s.areaId}:${e.id}`,before,e.hp,CAMPAIGN_REWARDS);s.currency+=e.reward;s.message=`${e.kind==='captain'?(e.id==='upper-captain'?'Upper watch captain defeated. Secure the station exit.':'Captain defeated. The lower ward is secured.'):'Enemy defeated.'} +${e.reward} iron marks · +${s.progression.xp-xpBefore} XP. Level ${level(s.progression)} · ${availablePoints(s.progression)} training points.`;}
+  if(!e.hp){const xpBefore=s.progression.xp;s.progression=awardDefeat(s.progression,`${s.areaId}:${e.id}`,before,e.hp,CAMPAIGN_REWARDS);const marks=grantMarks(s,e.reward);s.message=`${e.kind==='captain'?(e.id==='upper-captain'?'Upper watch captain defeated. Secure the station exit.':(s.areaId==='station'?'Captain defeated. The lower ward is secured.':'Prototype captain defeated. Secure the area marker when ready.')):'Enemy defeated.'} +${markText(marks,e.reward)} · +${s.progression.xp-xpBefore} XP. Level ${level(s.progression)} · ${availablePoints(s.progression)} training points.`;}
   else{e.phase='stagger';e.timer=w.stagger;}
  }
 }
@@ -106,7 +110,7 @@ export function interact(s:Adventure):boolean{
  if(near(s,STATION_GATE.lever)){if(s.gatePhase!=='closed'||!adventureCanStand(s,STATION_GATE.stance))return false;s.position={...STATION_GATE.stance};s.gatePhase='pulling';s.interactionTimer=STATION_GATE.pullSeconds;s.aim=unit(vector(s.position,STATION_GATE.lever));s.message='Pulling the heavy station lever…';return true;}
  if(near(s,FINISH)){if(s.enemies.some(e=>e.id==='upper-captain'&&e.hp>0)){s.message='The upper watch captain still holds this station exit.';return false;}s.completed=true;s.progression=awardReward(s.progression,'station:secure-exit',CAMPAIGN_REWARDS);s.message='Upper watch secured. Expedition complete. Explore remaining caches or return down the station route.';return true;}
  if(near(s,CHECKPOINTS[1])){s.hp=s.maxHp;s.stamina=s.maxStamina;s.checkpoint={...CHECKPOINTS[1]};s.projectiles=[];s.message='Transfer checkpoint secured. Reload and retry now return here.';return true;}
- const loot=LOOT.find(l=>!s.looted.includes(l.id)&&near(s,l.position));if(loot){s.looted.push(loot.id);grantStationCache(s,loot.id);if(loot.id==='transfer-cache')s.progression=awardReward(s.progression,'station:transfer-cache',CAMPAIGN_REWARDS);if(!s.owned.includes(loot.weapon))s.owned.push(loot.weapon);s.currency+=loot.currency;s.message=`Found ${WEAPONS[loot.weapon].name} · ${ARMOR[STATION_CACHE_ARMOR[loot.id]].name}${loot.id==='transfer-cache'?' · Ward axe':''} and ${loot.currency} iron marks. Open Equipment to compare.`;return true;}
+ const loot=LOOT.find(l=>!s.looted.includes(l.id)&&near(s,l.position));if(loot){s.looted.push(loot.id);grantStationCache(s,loot.id);if(loot.id==='transfer-cache')s.progression=awardReward(s.progression,'station:transfer-cache',CAMPAIGN_REWARDS);if(!s.owned.includes(loot.weapon))s.owned.push(loot.weapon);const marks=grantMarks(s,loot.currency);s.message=`Found ${WEAPONS[loot.weapon].name} · ${ARMOR[STATION_CACHE_ARMOR[loot.id]].name}${loot.id==='transfer-cache'?' · Ward axe':''} and ${markText(marks,loot.currency)}. Open Equipment to compare.`;return true;}
  if(near(s,LOCATIONS.lever)){s.shortcut=true;s.progression=awardReward(s.progression,'station:shortcut-open',CAMPAIGN_REWARDS);s.message='Shortcut gate opened. The north passage now leads directly to the far court.';return true;}
  if(near(s,LOCATIONS.smith)){s.message='At the smith: choose a weapon in Equipment, then upgrade it.';return true;}
  if(near(s,LOCATIONS.checkpoint)){s.hp=s.maxHp;s.stamina=s.maxStamina;s.checkpoint={...LOCATIONS.checkpoint};s.projectiles=[];s.message='Rested. Health and stamina replenished. Defeated enemies remain defeated.';return true;}return false;
@@ -195,15 +199,15 @@ function expeditionInteract(s:Adventure):boolean{
  if(s.areaId==='station')return false;const area=EXPEDITIONS[s.areaId];
  const loot=area.loot.find(l=>!s.looted.includes(l.id)&&landmarkNear(s,l.position,l.stance));
  if(loot){if(!guardsCleared(s,loot.reward.requiresDefeated)){s.message='Clear the nearby coffer guard before recovering this equipment.';return false;}
-  s.looted.push(loot.id);for(const armor of loot.reward.armor)s.equipment=grantArmor(s.equipment,armor);if(loot.reward.weapon&&!s.owned.includes(loot.reward.weapon))s.owned.push(loot.reward.weapon);s.currency+=loot.reward.currency;
+  s.looted.push(loot.id);for(const armor of loot.reward.armor)s.equipment=grantArmor(s.equipment,armor);if(loot.reward.weapon&&!s.owned.includes(loot.reward.weapon))s.owned.push(loot.reward.weapon);const marks=grantMarks(s,loot.reward.currency);
   if(loot.reward.xpRewardId)s.progression=awardReward(s.progression,`${s.areaId}:${loot.reward.xpRewardId}`,CAMPAIGN_REWARDS);
-  s.message=`Recovered ${[...(loot.reward.weapon?[WEAPONS[loot.reward.weapon].name]:[]),...loot.reward.armor.map(id=>ARMOR[id].name)].join(' · ')} and ${loot.reward.currency} iron marks. Open Equipment to compare.`;captureArea(s);return true;}
+  s.message=`Recovered ${[...(loot.reward.weapon?[WEAPONS[loot.reward.weapon].name]:[]),...loot.reward.armor.map(id=>ARMOR[id].name)].join(' · ')} and ${markText(marks,loot.reward.currency)}. Open Equipment to compare.`;captureArea(s);return true;}
  const shortcut=area.shortcuts.find(l=>landmarkNear(s,l.lever,l.stance));
  if(shortcut){if(s.shortcut||s.shortcutAnimation)return false;if(!guardsCleared(s,shortcut.requiresDefeated)){s.message='Clear the service lever guard first.';return false;}
   s.position={...shortcut.stance};s.shortcutAnimation={id:shortcut.id,phase:'pulling',progress:0,timer:.8};s.aim=unit(vector(s.position,shortcut.lever));s.message='Pulling the service lever…';return true;}
  const exit=area.exits.find(e=>landmarkNear(s,e.position,e.stance));
  if(exit){if(!guardsCleared(s,exit.requiresDefeated??[])){s.message='The landing captain still holds this stair.';return false;}
-  if(exit.secureObjective&&!s.completed){s.completed=true;s.progression=awardReward(s.progression,`${s.areaId}:${exit.secureObjective.id}`,CAMPAIGN_REWARDS);s.currency+=exit.secureObjective.currency;captureArea(s);s.message=`${area.name} secured. Continue exploring or use the ordinary service stairs to return.`;return true;}
+  if(exit.secureObjective&&!s.completed){s.completed=true;s.progression=awardReward(s.progression,`${s.areaId}:${exit.secureObjective.id}`,CAMPAIGN_REWARDS);const marks=grantMarks(s,exit.secureObjective.currency);captureArea(s);s.message=`${area.name} secured. +${markText(marks,exit.secureObjective.currency)}. Continue exploring or use the ordinary service stairs to return.`;return true;}
   if(exit.target&&exit.targetArrival)return transitionArea(s,exit.target,exit.targetArrival);return false;}
  const checkpoint=area.checkpoints.find(p=>near(s,p.position));if(checkpoint){s.checkpoint={...checkpoint.position};s.hp=s.maxHp;s.stamina=s.maxStamina;s.projectiles=[];s.arrivalGrace=1.5;captureArea(s);s.message='Rested at the entry beacon. Cleared foes and discoveries remain cleared.';return true;}return false;
 }

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import {project,type Point} from '../core/game.js';
-import {EXPEDITIONS,type ExpeditionId,type ExpeditionDefinition,type Region,type AreaWall} from '../core/expeditionCatalog.js';
+import {EXPEDITIONS,SERVICE_STAIR_GROUND,type ExpeditionId,type ExpeditionDefinition,type Region,type AreaWall} from '../core/expeditionCatalog.js';
 import {activeFloors,activeWalls,regionVertices} from '../core/expeditionGeometry.js';
 import {openedShortcuts,type Adventure} from '../core/adventure.js';
 import {groundDepth} from '../core/scenery.js';
@@ -9,7 +9,7 @@ import shelfUrl from '../assets/expedition-v1/record-shelf-v1.webp';
 import leverBaseUrl from '../assets/expedition-v1/lever-base-v1.webp';
 
 type Display=Phaser.GameObjects.Image|Phaser.GameObjects.Graphics|Phaser.GameObjects.Text;
-type PropView={id:string;image:Phaser.GameObjects.Image;position:Point;radius:number|null;decorative:boolean};
+type PropView={id:string;image:Phaser.GameObjects.Image;position:Point;radius:number|null;decorative:boolean;footprint?:{readonly width:number;readonly height:number}};
 type WallView={id:string;image:Phaser.GameObjects.Image;foot:Point;top:number;left:number;right:number;ground:Region;baseY:number;disabledWhen?:string};
 let serial=0;
 const vertices=(r:{x:number;y:number;width:number;height:number}):Point[]=>[{x:r.x,y:r.y},{x:r.x+r.width,y:r.y},{x:r.x+r.width,y:r.y+r.height},{x:r.x,y:r.y+r.height}];
@@ -33,6 +33,23 @@ export class ExpeditionWorldView {
  private visible=true;
  private destroyed=false;
  private lastState:{flags:string[];bridgeProgress:number;lever:{id:string;pull:number;hand:Point;phase:string}[]}|null=null;
+ /** Non-solid, inset masonry treads within the existing walkable landing. The dark
+  * recessed back and shallow risers explain an ordinary descending service stair,
+  * not a portal or an extra collision/hazard region. Ground extent: x±28,y[-29,+18]. */
+ static drawServiceStair(scene:Phaser.Scene,position:Point):Phaser.GameObjects.Graphics{
+  const g=scene.add.graphics().setDepth(-998.6),world=(x:number,y:number)=>project({x:position.x+x,y:position.y+y});
+  const {left,right,back,front}=SERVICE_STAIR_GROUND;
+  polygon(g,[world(left,back),world(right,back),world(right,front),world(left,front)],0x323b3a,0x778075);
+  polygon(g,[world(-23,-25),world(23,-25),world(23,14),world(-23,14)],0x080f13,0x10181b);
+  // Back-to-front strips retain projected ground scale; their carved lips and
+  // increasingly dim stone make the shallow descent legible without a false void.
+  for(let i=0;i<5;i++){
+   const y=-23+i*7.2,shade=[0x182225,0x283133,0x36403f,0x48504a,0x5e6256][i];
+   polygon(g,[world(-21,y),world(21,y),world(21,y+6.6),world(-21,y+6.6)],shade,0x172124);
+   const a=world(-21,y+6.6),b=world(21,y+6.6);g.lineStyle(1.5,0x929381,.55).lineBetween(a.x,a.y,b.x,b.y);
+  }
+  return g;
+ }
  static preload(scene:Phaser.Scene){
   for(const [key,url] of Object.entries({'expedition-water':waterUrl,'expedition-shelf':shelfUrl,'expedition-lever-base':leverBaseUrl}))if(!scene.textures.exists(key))scene.load.image(key,url);
  }
@@ -61,18 +78,10 @@ export class ExpeditionWorldView {
   for(const [i,prop] of this.area.props.entries()){
    const p=project(prop),source=scene.textures.get(prop.art).getSourceImage();
    const image=this.add(scene.add.image(p.x,p.y,prop.art).setOrigin(.5,prop.originY).setDisplaySize(prop.width,prop.width*source.height/source.width).setDepth(groundDepth(p.y,30+i)));
-   this.props.push({id:prop.id,image,position:{x:prop.x,y:prop.y},radius:prop.radius,decorative:false});
+   this.props.push({id:prop.id,image,position:{x:prop.x,y:prop.y},radius:prop.radius,footprint:prop.footprint,decorative:false});
    shadows.fillStyle(0x000205,.48).fillEllipse(p.x,p.y+1,prop.width*.84,Math.min(22,prop.width*.3));
   }
   for(const [index,wall] of this.area.walls.entries())this.buildWall(wall,index);
-  if(areaId==='record-annex'){
-   // Registered shelf footprint is world x≈±23/y≈±10: all feet are INSIDE existing
-   // 24-unit solid partitions. These are wall dressing, not new invisible blockers.
-   for(const [i,position] of [{x:380,y:492},{x:500,y:492},{x:620,y:492},{x:380,y:292},{x:480,y:292}].entries()){
-    const p=project(position),image=this.add(scene.add.image(p.x,p.y,'expedition-shelf').setOrigin(.5,.879905).setDisplaySize(52,123).setDepth(groundDepth(p.y,90+i)));
-    this.props.push({id:`partition-record-shelf-${i}`,image,position,radius:null,decorative:true});
-   }
-  }
   for(const [i,shortcut] of this.area.shortcuts.entries()){
    const p=project(shortcut.lever);
    const base=this.add(scene.add.image(p.x,p.y,'expedition-lever-base').setOrigin(.514981,.804922).setDisplaySize(24.6967,37.0451).setDepth(groundDepth(p.y,120+i)));
@@ -84,10 +93,8 @@ export class ExpeditionWorldView {
   const markers=this.add(scene.add.graphics().setDepth(-998.6));
   for(const exit of this.area.exits){
    const p=project(exit.position);
-   if(exit.target){
-    // Inlaid stair treads stay within the existing floor, without a fictitious door collider.
-    for(const dy of [-8,-2,4]){const a=project({x:exit.position.x-14,y:exit.position.y+dy}),b=project({x:exit.position.x+14,y:exit.position.y+dy});markers.lineStyle(3,0x8b8c7c,.7).lineBetween(a.x,a.y,b.x,b.y);}
-   }else markers.lineStyle(2,0x9e8b61,.8).strokeEllipse(p.x,p.y,33,15);
+   if(exit.target)this.add(ExpeditionWorldView.drawServiceStair(scene,exit.position));
+   else markers.lineStyle(2,0x9e8b61,.8).strokeEllipse(p.x,p.y,33,15);
    const target=exit.target==='station'?'STATION':exit.target==='cistern-viaduct'?'CISTERN':exit.target==='record-annex'?'ANNEX':null;
    this.caption(exit.position,target?`SERVICE STAIR · ${target}`:'SECURE RECORD ANNEX',11);
   }
@@ -194,7 +201,7 @@ export class ExpeditionWorldView {
  }
  snapshot(){
   const flags=this.lastState?.flags??[];
-  return {areaId:this.areaId,visible:this.visible,bounds:{...this.area.camera.projectedWorldBounds},floors:this.area.floors.map(f=>({id:f.id,x:f.x,y:f.y,width:f.width,height:f.height,active:!f.requires||flags.includes(f.requires)})),hazards:this.waterViews.map(w=>({excludeActiveFloorIds:[...w.excludeIds],texture:w.image.texture.key})),walls:this.area.walls.map(w=>({id:w.id,x:w.x,y:w.y,width:w.width,height:w.height,active:!w.disabledWhen||!flags.includes(w.disabledWhen)})),props:this.props.map(p=>({id:p.id,world:{...p.position},foot:project(p.position),radius:p.radius,decorative:p.decorative,width:p.image.displayWidth,height:p.image.displayHeight,originX:p.image.originX,originY:p.image.originY,depth:p.image.depth,alpha:p.image.alpha})),lever:this.levers.map(view=>({...this.lastState?.lever.find(l=>l.id===view.id),id:view.id,ground:{...view.ground},base:{originX:view.base.originX,originY:view.base.originY,width:view.base.displayWidth,height:view.base.displayHeight,depth:view.base.depth,socketOffset:{x:0,y:-20}}})),blackOffboard:true,bridgeProgress:this.lastState?.bridgeProgress??0};
+  return {areaId:this.areaId,visible:this.visible,bounds:{...this.area.camera.projectedWorldBounds},floors:this.area.floors.map(f=>({id:f.id,x:f.x,y:f.y,width:f.width,height:f.height,active:!f.requires||flags.includes(f.requires)})),hazards:this.waterViews.map(w=>({excludeActiveFloorIds:[...w.excludeIds],texture:w.image.texture.key})),walls:this.area.walls.map(w=>({id:w.id,x:w.x,y:w.y,width:w.width,height:w.height,active:!w.disabledWhen||!flags.includes(w.disabledWhen)})),props:this.props.map(p=>({id:p.id,world:{...p.position},foot:project(p.position),radius:p.radius,footprint:p.footprint?{...p.footprint}:null,decorative:p.decorative,width:p.image.displayWidth,height:p.image.displayHeight,originX:p.image.originX,originY:p.image.originY,depth:p.image.depth,alpha:p.image.alpha})),lever:this.levers.map(view=>({...this.lastState?.lever.find(l=>l.id===view.id),id:view.id,ground:{...view.ground},base:{originX:view.base.originX,originY:view.base.originY,width:view.base.displayWidth,height:view.base.displayHeight,depth:view.base.depth,socketOffset:{x:0,y:-20}}})),blackOffboard:true,bridgeProgress:this.lastState?.bridgeProgress??0};
  }
  destroy(){
   if(this.destroyed)return;this.destroyed=true;this.scene.events.off(Phaser.Scenes.Events.SHUTDOWN,this.destroy,this);

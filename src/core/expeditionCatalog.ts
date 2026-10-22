@@ -9,7 +9,7 @@ export type ExpeditionId=Exclude<AreaId,'station'>;
 export interface Region {readonly id:string;readonly x:number;readonly y:number;readonly width:number;readonly height:number}
 export interface FloorRegion extends Region {readonly polygon:readonly Point[];readonly requires?:string}
 export interface AreaWall extends Region {readonly disabledWhen?:string}
-export interface AreaProp extends Point {readonly id:string;readonly radius:number;readonly art:string;readonly width:number;readonly originY:number}
+export interface AreaProp extends Point {readonly id:string;readonly radius:number;readonly art:string;readonly width:number;readonly originY:number;readonly footprint?:{readonly width:number;readonly height:number}}
 export interface AreaEnemy {readonly id:string;readonly kind:'raider'|'watcher'|'captain';readonly position:Point;readonly home:Point;readonly maxHp:number;readonly reward:number;readonly activationRange:number;readonly leashRange:number;readonly maxAttackRange:number;readonly minimumWindupSeconds:number}
 export interface AreaLoot {readonly id:string;readonly position:Point;readonly stance:Point;readonly interactionRadiusProjected:number;readonly reward:{readonly weapon?:WeaponId;readonly armor:readonly ArmorId[];readonly currency:number;readonly xp?:number;readonly xpRewardId?:string;readonly requiresDefeated:readonly string[]};readonly rewardOnce:boolean}
 export interface AreaShortcut {readonly id:string;readonly kind:'add-floor'|'disable-wall';readonly floorId?:string;readonly wallId?:string;readonly lever:Point;readonly stance:Point;readonly requiresDefeated:readonly string[];readonly animationSeconds:number}
@@ -848,6 +848,71 @@ const DATA=[
     "art": "ward-lantern",
     "width": 22,
     "originY": 0.92
+   },
+   {
+    "id": "record-shelf-0",
+    "x": 430,
+    "y": 532,
+    "radius": 0,
+    "footprint": {
+     "width": 46,
+     "height": 20
+    },
+    "art": "expedition-shelf",
+    "width": 52,
+    "originY": 0.879905
+   },
+   {
+    "id": "record-shelf-1",
+    "x": 550,
+    "y": 532,
+    "radius": 0,
+    "footprint": {
+     "width": 46,
+     "height": 20
+    },
+    "art": "expedition-shelf",
+    "width": 52,
+    "originY": 0.879905
+   },
+   {
+    "id": "record-shelf-2",
+    "x": 670,
+    "y": 532,
+    "radius": 0,
+    "footprint": {
+     "width": 46,
+     "height": 20
+    },
+    "art": "expedition-shelf",
+    "width": 52,
+    "originY": 0.879905
+   },
+   {
+    "id": "record-shelf-3",
+    "x": 350,
+    "y": 332,
+    "radius": 0,
+    "footprint": {
+     "width": 46,
+     "height": 20
+    },
+    "art": "expedition-shelf",
+    "width": 52,
+    "originY": 0.879905
+   },
+   {
+    "id": "record-shelf-4",
+    "x": 430,
+    "y": 332,
+    "radius": 0,
+    "footprint": {
+     "width": 46,
+     "height": 20
+    },
+    "art": "expedition-shelf",
+    "width": 52,
+    "originY": 0.879905
    }
   ],
   "enemies": [
@@ -1157,6 +1222,7 @@ const DATA=[
  }
 ] as const;
 export const EXPEDITIONS:Readonly<Record<ExpeditionId,ExpeditionDefinition>>=Object.freeze(Object.fromEntries(DATA.map(area=>[area.id,area]))) as unknown as Readonly<Record<ExpeditionId,ExpeditionDefinition>>;
+export const SERVICE_STAIR_GROUND={left:-28,right:28,back:-29,front:18} as const;
 export const AREA_IDS:readonly AreaId[]=['station','cistern-viaduct','record-annex'];
 export const STATION_EXPEDITION_PORT={id:'upper-watch-stair',position:{x:380,y:-1840},stance:{x:380,y:-1800},target:'cistern-viaduct' as const,targetArrival:{x:120,y:800},requiresDefeated:['upper-captain']};
 export const AREA_NAMES:Readonly<Record<AreaId,string>>={station:'Station Underworks','cistern-viaduct':'Cistern Viaduct','record-annex':'Record Annex'};

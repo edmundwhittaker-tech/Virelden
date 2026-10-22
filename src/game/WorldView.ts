@@ -142,6 +142,7 @@ export class WorldView{
         }
       }
     }
+    ExpeditionWorldView.drawServiceStair(scene,STATION_EXPEDITION_PORT.position);
     const caption=(p:Point,text:string)=>{const q=project(p);return scene.add.text(q.x,q.y+18,text,{fontFamily:'Georgia',fontSize:'12px',color:'#c5b58e',align:'center'}).setOrigin(.5,0).setDepth(1500).setAlpha(.8);};
     caption(LOCATIONS.checkpoint,'CHECKPOINT');caption(LOCATIONS.smith,'FORGE');caption(LOCATIONS.lever,'SHORTCUT LEVER');caption(CHECKPOINTS[1],'TRANSFER CHECKPOINT');caption(FINISH,'UPPER WATCH · SECURE');caption(STATION_EXPEDITION_PORT.position,'SERVICE STAIR · CISTERN');
     const mist=scene.textures.createCanvas('ward-mist',1280,800)!;const ctx=mist.context;

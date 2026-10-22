@@ -13,7 +13,7 @@ Public setting references: [History](https://virelden-campaign.edmund-whittaker.
 - Follow winding record galleries. The main-route coffer at ground600,400 is guarded by the earlier stair guard and holds the poleaxe and Marcher chest **before** the keeper. Its interaction stance is outside the keeper's activation range. The optional record store holds the Marcher helmet, marks and optional XP.
 - Open the return shutter, secure the annex, explore further or walk annex→cistern→station to use the forge. Original long routes remain available after either shortcut opens.
 
-Each new area has six foes and exactly440XP: five50XP encounters, one120XP finale,40XP secure objective and30XP optional cache. Together with the740XP station, the authored total is1,620XP, the level10 threshold. Reward IDs and values are durable save contracts, not farmable encounter resets.
+Each new area has six foes and exactly440XP: five50XP encounters, one120XP finale,40XP secure objective and30XP optional cache. Together with the740XP station, the authored total is1,620XP, the level10 threshold. Reward IDs and values are durable save contracts, not farmable encounter resets. Mark awards saturate at the existing100,000-mark purse limit, so a full valid older purse remains saveable and forge-usable; the message reports actual credited marks and a full-purse notice.
 
 ## Runtime contracts
 
