@@ -39,7 +39,7 @@ export class WorldView{
   private enemyObjects:Phaser.GameObjects.GameObject[][]=[];
   private archerObjects=new Map<number,Phaser.GameObjects.GameObject[]>();
   private actorFacing:Facing='east';
-  readonly supportHandVerified=false;
+  readonly supportHandVerified=true;
   private thumbnails=new Map<string,string>();
   private stationGate:StationGateView;
   private archers=new Map<number,ArcherView>();

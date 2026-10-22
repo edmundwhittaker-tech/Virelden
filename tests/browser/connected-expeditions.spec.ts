@@ -22,15 +22,15 @@ const core=async()=>{
  ]);
  return {...adventure,...catalog,...geometry,...progression,...rewards,...saves};
 };
-async function seed(options:{area:ExpeditionId;living?:boolean;opened?:boolean;loot?:boolean}){
+async function seed(options:{area:ExpeditionId;living?:boolean;opened?:boolean;loot?:boolean;bossAlive?:boolean}){
  const c=await core(),s:Adventure=c.createAdventure('wayfarer');
  const defeat=(id:string)=>{const e=s.enemies.find(e=>e.id===id)!;e.hp=0;s.progression=c.awardReward(s.progression,`${s.areaId}:${id}`,c.CAMPAIGN_REWARDS);s.currency+=e.reward;};
  for(const enemy of s.enemies)defeat(enemy.id);
  s.gatePhase='open';s.gateProgress=1;s.progression=c.awardReward(s.progression,'station:gate-open',c.CAMPAIGN_REWARDS);
  s.checkpoint={x:480,y:-1000};c.captureArea(s);c.activateArea(s,'cistern-viaduct');
- const clearCurrent=()=>{for(const enemy of s.enemies)if(enemy.hp>0)defeat(enemy.id);};
+ const clearCurrent=(keepFinale=false)=>{for(const enemy of s.enemies)if(enemy.hp>0&&!(keepFinale&&enemy.kind==='captain'))defeat(enemy.id);};
  if(options.area==='record-annex'){clearCurrent();c.captureArea(s);c.activateArea(s,'record-annex');}
- if(!options.living)clearCurrent();
+ if(!options.living)clearCurrent(options.bossAlive);
  if(options.loot){for(const loot of c.EXPEDITIONS[s.areaId].loot){s.position={...loot.stance};expect(c.interact(s),'seed uses real guarded loot transaction').toBe(true);}}
  if(options.opened){const lever=c.EXPEDITIONS[s.areaId].shortcuts[0];s.position={...lever.stance};expect(c.interact(s),'seed uses real lever transaction').toBe(true);for(let i=0;i<Math.ceil((lever.animationSeconds+.9)*60);i++)c.tick(s,{x:0,y:0},1/60);expect(s.shortcut).toBe(true);}
  c.captureArea(s);c.activateArea(s,options.area);const raw=c.prepareCampaignSave(s);expect(raw,'complete seeded v4 validates').not.toBeNull();
@@ -65,8 +65,9 @@ async function walkTo(page:Page,target:Point){
  }
  expect(end,`native route to ${JSON.stringify(target)} in ${initial.areaId}`).not.toBeNull();
  const path:Point[]=[end!];while(parents.get(key(path[0])))path.unshift(parents.get(key(path[0]))!);path.push(target);
- // Simplify only collision-visible straight segments. Obstacles can never be corner-cut by a planned segment.
- const route:Point[]=[];for(let i=0;i<path.length;){route.push(path[i]);let j=i+1;while(j+1<path.length&&clear(path[i],path[j+1]))j++;i=j;}
+ // Retain the collision-safe grid corners. Quantized keyboard directions need not follow
+ // a long mathematical sight line exactly and can otherwise graze circular rubble.
+ const route=path;
  for(const waypoint of route){let reached=false;for(let n=0;n<200;n++){
   const s=await state(page);expect(s.hp,'seeded geometry fixture remains alive').toBeGreaterThan(0);expect(s.areaId).toBe(initial.areaId);
   const p=projection(s.position),q=projection(waypoint),dx=q.x-p.x,dy=q.y-p.y,distance=Math.hypot(dx,dy);if(distance<5){reached=true;break;}
@@ -77,7 +78,7 @@ async function walkTo(page:Page,target:Point){
 async function evidence(page:Page,name:string){
  const s=await state(page);await mkdir('test-results/connected-expeditions',{recursive:true});
  await page.screenshot({path:`test-results/connected-expeditions/${name}.png`,fullPage:true});
- const compact={fixture:'seeded valid-v4 isolated feature test; not an earned full walkthrough',areaId:s.areaId,position:s.position,checkpoint:s.checkpoint,hp:s.hp,arrivalGrace:s.arrivalGrace,paused:s.paused,camera:s.camera,screen:s.screen,shortcut:s.shortcut,shortcutAnimation:s.shortcutAnimation,completed:s.completed,owned:s.owned,levels:s.levels,currency:s.currency,progression:s.progression,areas:s.areas,expedition:s.expedition,enemyViews:s.enemyViews,character:{texture:s.character.texture,foot:s.character.foot,hand:s.character.hand,interaction:s.character.interaction,parts:s.character.parts?.length},enemies:s.enemies.map((e:any)=>({id:e.id,hp:e.hp,phase:e.phase,position:e.position})),projectiles:s.projectiles.length,timing:s.timing};
+ const compact={fixture:'seeded valid-v4 isolated feature test; not an earned full walkthrough',areaId:s.areaId,position:s.position,checkpoint:s.checkpoint,hp:s.hp,arrivalGrace:s.arrivalGrace,paused:s.paused,camera:s.camera,screen:s.screen,shortcut:s.shortcut,shortcutAnimation:s.shortcutAnimation,completed:s.completed,owned:s.owned,levels:s.levels,currency:s.currency,progression:s.progression,areas:s.areas,expedition:s.expedition,enemyViews:s.enemyViews,character:{texture:s.character.texture,foot:s.character.foot,hand:s.character.hand,supportHand:s.character.supportHand,registration:s.character.registration,interaction:s.character.interaction,parts:s.character.parts?.length},enemies:s.enemies.map((e:any)=>({id:e.id,hp:e.hp,phase:e.phase,position:e.position})),projectiles:s.projectiles.length,timing:s.timing};
  await writeFile(`test-results/connected-expeditions/${name}.json`,JSON.stringify(compact,null,2));
 }
 async function normalKeys(page:Page){return page.evaluate(()=>Object.keys(localStorage).filter(k=>k.startsWith('virelden-underworks-')&&!k.startsWith('virelden-underworks-qa-')).map(k=>[k,localStorage.getItem(k)]).sort());}
@@ -162,7 +163,10 @@ for(const area of ['cistern-viaduct','record-annex'] as const)test(`seeded v4 ${
  await page.keyboard.press('Escape');const pausedGrace=(await state(page)).arrivalGrace;await page.waitForTimeout(200);expect((await state(page)).arrivalGrace).toBe(pausedGrace);await evidence(page,`${area}-safe-arrival-grace`);
 });
 
-test('seeded v4 discovered poleaxe remains honestly gated until two-hand browser acceptance',async({page})=>{
- await openSeeded(page,{area:'record-annex',loot:true});const original=await state(page);expect(original.owned).toContain('poleaxe');expect(original.equipment.owned).toContain('marcher-chest');
- await page.keyboard.press('KeyI');await page.getByRole('button',{name:'Weapons',exact:true}).click();await page.locator('[data-focus="weapon-poleaxe"]').click();await expect(page.getByRole('button',{name:'Equip weapon',exact:true})).toBeDisabled();await expect(page.locator('.equipment-reason').filter({hasText:'Two-handed grip is not ready'}).first()).toBeVisible();expect((await state(page)).equipped).toBe(original.equipped);await evidence(page,'poleaxe-capability-gate-honest');
+test('seeded v4 guarded pre-finale poleaxe can be discovered, equipped, attacked and restored after verified two-hand acceptance',async({page})=>{
+ const fixture=await openSeeded(page,{area:'record-annex',bossAlive:true}),loot=fixture.catalog.loot.find((l:any)=>l.reward.weapon==='poleaxe');
+ expect((await state(page)).owned).not.toContain('poleaxe');await walkTo(page,loot.stance);expect((await state(page)).enemies.find((e:any)=>e.id==='annex-keeper').hp).toBeGreaterThan(0);await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).owned).toContain('poleaxe');expect((await state(page)).equipment.owned).toContain('marcher-chest');
+ await page.keyboard.press('KeyI');await page.getByRole('button',{name:'Weapons',exact:true}).click({timeout:5_000});await page.locator('[data-focus="weapon-poleaxe"]').click({timeout:5_000});await expect(page.getByRole('button',{name:'Equip weapon',exact:true})).toBeEnabled();await page.getByRole('button',{name:'Equip weapon',exact:true}).click({timeout:5_000});expect((await state(page)).equipped).toBe('poleaxe');await page.keyboard.press('Escape');
+ await page.keyboard.press('KeyF');await expect.poll(async()=>(await state(page)).attack.phase).toBe('active');const attacking=await state(page);expect(attacking.attack.weapon).toBe('poleaxe');expect(attacking.character.rig.texture).toBe('ordinary-weapon-poleaxe');for(const [hand,grip] of [['primaryHand','primaryGrip'],['supportHand','supportGrip']]){const a=attacking.character.registration[hand],b=attacking.character.registration[grip];expect(Math.hypot(a.x-b.x,a.y-b.y)).toBeLessThan(.05);}expect(attacking.enemies.find((e:any)=>e.id==='annex-keeper').hp).toBeGreaterThan(0);await evidence(page,'poleaxe-discovered-equipped-active-before-finale');await expect.poll(async()=>(await state(page)).attack.phase).toBe('idle');
+ await page.keyboard.press('Escape');await page.reload();await page.waitForFunction(()=>typeof (window as any).vireldenDebug==='function');const restored=await state(page);expect(restored.equipped).toBe('poleaxe');expect(restored.looted).toContain(loot.id);expect(restored.position).toEqual(restored.checkpoint);expect(restored.enemies.find((e:any)=>e.id==='annex-keeper').hp).toBeGreaterThan(0);await evidence(page,'poleaxe-pre-finale-validated-save-restored');
 });
