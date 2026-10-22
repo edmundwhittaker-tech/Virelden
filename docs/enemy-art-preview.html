@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Virelden — enemy art v1</title>
+<style>
+  :root{color-scheme:dark;font:15px system-ui;background:#101617;color:#d2d7d3}body{max-width:1040px;margin:32px auto;padding:0 20px}h1{font:28px Georgia;color:#c8b485}p{line-height:1.5;color:#a9b4b2}label{margin-right:20px}select,button{padding:8px 12px;background:#273031;color:#e1e4dc;border:1px solid #52605d;border-radius:4px}canvas{display:block;width:1000px;height:420px;margin:24px 0;background:#202829;max-width:none}.viewport{overflow:auto}a{color:#c8b485}small{color:#a3b0ad}.error{color:#ffaaa0}
+</style>
+<h1>Virelden · three enemy art rigs</h1>
+<p>Art review at game scale. Existing knight: 88 px. Maw skeleton: 88 px. Headless skeleton: 79 px with human limb proportions. Iron giant mini-boss: 176 px. Separate bodies, weapons and shield; the game and main branch are unchanged.</p>
+<label>Direction <select id="direction"><option>south-east</option><option>east</option><option>north-east</option><option>south-west</option><option>west</option><option>north-west</option></select></label>
+<label>Animation <select id="animation"><option>walk</option><option>idle</option><option>attack</option></select></label>
+<button id="pause">Pause</button> <label><input type="checkbox" id="sockets"> Show attachment points</label>
+<div class="viewport"><canvas width="1000" height="420" id="stage"></canvas></div>
+<p id="status">Loading transparent assets…</p>
+<small>One canvas pixel equals one game screen pixel at 100% browser zoom. Two step extremes plus idle passing poses; three discrete attack body poses. No hurt/death cycle. Mirrored facings also mirror lighting. These are art/attachment previews, not evidence of gameplay integration.</small>
+<script type="module">
+import {sample,drawFrame} from '../tools/art/enemy-rig.mjs';
+const base='../src/assets/enemies-v1/';
+const manifest=await fetch(base+'manifest.json').then(r=>r.json());
+const images={};
+const paths=new Set(Object.values(manifest.enemies).flatMap(e=>[e.body,e.handsOverlay]));
+for(const e of Object.values(manifest.equipment))paths.add(e.image);
+await Promise.all([...paths].map(async path=>{const im=new Image();im.src=base+path;await im.decode();images[path]=im;}));
+const knight=new Image();knight.src='../src/assets/plate-knight-se-v1.webp';await knight.decode();
+const stage=document.querySelector('#stage'),ctx=stage.getContext('2d');
+const direction=document.querySelector('#direction'),animation=document.querySelector('#animation');
+const ids=['maw_skeleton','headless_skeleton','iron_giant'];
+let paused=false,clock=0,previous=performance.now();
+function render({time=clock,facing=direction.value,state=animation.value,sockets=document.querySelector('#sockets').checked}={}) {
+ ctx.fillStyle='#202829';ctx.fillRect(0,0,1000,420);
+ ctx.strokeStyle='#2c3535';ctx.lineWidth=1;
+ for(let x=-400;x<1300;x+=80){ctx.beginPath();ctx.moveTo(x,420);ctx.lineTo(x+460,190);ctx.stroke();ctx.beginPath();ctx.moveTo(x,190);ctx.lineTo(x+460,420);ctx.stroke();}
+ ctx.fillStyle='#c1c9c2';ctx.font='13px system-ui';ctx.fillText('Art kit · '+facing+' · '+state+' · actual game pixels',24,26);
+ const footY=350;
+ ctx.strokeStyle='#63716b';ctx.beginPath();ctx.moveTo(24,footY+.5);ctx.lineTo(976,footY+.5);ctx.stroke();
+ // Existing unarmed knight, directly from the unchanged current runtime sheet.
+ const ks=88/(253-9);ctx.drawImage(knight,0,0,192,256,120-110*ks,footY-253*ks,192*ks,256*ks);
+ ctx.fillStyle='#a8b3ab';ctx.fillText('Existing human · 88 px',54,380);
+ const summaries=[];
+ ids.forEach((id,i)=>{
+   const enemy=manifest.enemies[id],total=enemy.animations[state].reduce((sum,s)=>sum+s.durationMs,0);
+   const view=sample(manifest,id,facing,state,state==='attack'?time%(total+400):time);
+   const foot={x:[320,500,680][i],y:footY};
+   drawFrame(ctx,images,view.enemy,view.frame,view.flipped,foot);
+   if(sockets){for(const [name,p]of Object.entries(view.frame.hands)){ctx.beginPath();ctx.strokeStyle=name==='right'?'#ff776a':'#6cdeff';ctx.arc(foot.x+(p.x-128)*enemy.runtimeScale*(view.flipped?-1:1),foot.y+(p.y-300)*enemy.runtimeScale,2.5,0,7);ctx.stroke();}}
+   ctx.fillStyle='#bfc9c1';ctx.fillText(id.replaceAll('_',' ')+' · '+enemy.idleBodyHeightScreen+' px',foot.x-85,380);
+   summaries.push({id,frame:view.frame.index,pose:view.frame.pose,flipped:view.flipped});
+ });
+ return summaries;
+}
+window.enemyArt={manifest,render,ready:true};
+document.querySelector('#status').textContent='All 12 transparent PNG assets loaded. Body and equipment transforms come from manifest.json.';
+document.querySelector('#pause').onclick=()=>{paused=!paused;document.querySelector('#pause').textContent=paused?'Play':'Pause';};
+direction.onchange=animation.onchange=()=>render();document.querySelector('#sockets').onchange=()=>render();
+function tick(now){if(!paused){clock+=now-previous;render();}previous=now;requestAnimationFrame(tick);}requestAnimationFrame(tick);
+</script>
+</html>
