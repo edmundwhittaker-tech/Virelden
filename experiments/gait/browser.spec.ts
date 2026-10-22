@@ -98,6 +98,9 @@ for (const route of ['east', 'northeast', 'southeast', 'turns']) {
     expect(recording.samples.every((frame: any, index: number) =>
       !index || frame.time >= recording.samples[index - 1].time)).toBe(true);
     expect(recording.metrics.maxRenderedAnkleError).toBeLessThan(1e-4);
+    expect(recording.metrics.minRenderedThighDrop).toBeGreaterThanOrEqual(9.9999);
+    expect(recording.metrics.minRenderedShinDrop).toBeGreaterThanOrEqual(10.9999);
+    expect(recording.metrics.minRenderedAnkleDrop).toBeGreaterThanOrEqual(27.9999);
     // Float32 screen-coordinate rounding is amplified when divided by frame dt.
     expect(recording.metrics.maxRenderedSupportFrameDelta).toBeLessThan(.0005);
     expect(recording.metrics.maxRenderedSupportDriftPxPerSecond).toBeLessThan(.02);

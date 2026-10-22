@@ -8,7 +8,7 @@
     "test": "tsc -p tsconfig.tests.json && node --test tests/*.test.mjs",
     "test:browser": "playwright test",
     "check": "npm run test && npm run build",
-    "test:gait": "tsc --target ES2022 --module NodeNext --moduleResolution NodeNext --strict --skipLibCheck --outDir .gait-build experiments/gait/worldGait.ts experiments/gait/experimentalPose.ts experiments/gait/routes.ts && node --test experiments/gait/test.mjs",
+    "test:gait": "tsc --target ES2022 --module NodeNext --moduleResolution NodeNext --strict --skipLibCheck --outDir .gait-build experiments/gait/worldGait.ts experiments/gait/experimentalPose.ts experiments/gait/routes.ts && node --test experiments/gait/test.mjs experiments/gait/posture.test.mjs",
     "test:gait:browser": "playwright test --config experiments/gait/playwright.config.ts"
   },
   "dependencies": { "phaser": "3.90.0" },
