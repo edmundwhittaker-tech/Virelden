@@ -20,8 +20,8 @@ const feet=()=>({hero:project(state.position),foe:project(state.enemies[0].posit
 const snapshot=()=>{const p=feet();return structuredClone({ready,done,result,control:'Fixture F submits stored/pointer-derived aim; Scene keyboard-facing is not under test',initial,position:state.position,foePosition:state.enemies[0].position,foeAim:state.enemies[0].aim,heroFoot:p.hero,enemyFoot:p.foe,distance:Math.hypot(p.foe.x-p.hero.x,p.foe.y-p.hero.y),aim:state.aim,attack:state.attack,damage:1000-state.enemies[0].hp,foeHp:state.enemies[0].hp,character:actor.snapshot(),enemy:foe.snapshot(),camera:{x:scene.cameras.main.scrollX,y:scene.cameras.main.scrollY},movementFrames,walkable,pointerEvent,time:state.time,frame:scene.game.loop.frame,captureNames:Object.keys(captures)});};
 function capture(name){
  const data=snapshot(),source=scene.game.canvas,h=data.heroFoot,e=data.enemyFoot,c=data.camera;
- const x=Math.max(0,Math.floor(Math.min(h.x,e.x)-c.x-100)),y=Math.max(0,Math.floor(Math.min(h.y,e.y)-c.y-115));
- const bounds={x,y,width:Math.min(source.width-x,Math.ceil(Math.abs(h.x-e.x)+200)),height:Math.min(source.height-y,Math.ceil(Math.abs(h.y-e.y)+150))};
+ const x=Math.max(0,Math.floor(Math.min(h.x,e.x)-c.x-100)),y=Math.max(0,Math.floor(Math.min(h.y,e.y)-c.y-170));
+ const bounds={x,y,width:Math.min(source.width-x,Math.ceil(Math.abs(h.x-e.x)+200)),height:Math.min(source.height-y,Math.ceil(Math.abs(h.y-e.y)+210))};
  const crop=document.createElement('canvas');crop.width=bounds.width;crop.height=bounds.height;crop.getContext('2d').drawImage(source,bounds.x,bounds.y,bounds.width,bounds.height,0,0,bounds.width,bounds.height);
  captures[name]={state:data,bounds,png:crop.toDataURL('image/png')};
 }
