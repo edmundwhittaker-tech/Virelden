@@ -5,7 +5,7 @@
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "tsc -p tsconfig.tests.json && node --test tests/*.test.mjs",
+    "test": "tsc -p tsconfig.tests.json && tsc -p tsconfig.audio-tests.json && node --test tests/*.test.mjs",
     "test:browser": "playwright test",
     "check": "npm run test && npm run build"
   },

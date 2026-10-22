@@ -61,6 +61,6 @@ Expected Pages URL: https://edmundwhittaker-tech.github.io/Virelden/
 
 Pull requests run verification only. Main pushes verify and can publish through GitHub Actions when Pages is configured. Do not confuse a local build or draft PR with deployment. The prior courtyard remains in Git history at `94c9f7f`.
 
-Desktop keyboard/mouse first; no audio, multiplayer or touch controls. Enemy bodies reuse the knight art with distinct labels and ground markers, not bespoke enemy sprites. Attacks use a small authored three-pose body rig with separate hand-attached weapon profiles; rolling transforms and floor telegraphs remain procedural. See `docs/CHARACTER_ART.md` for original artwork details.
+Desktop keyboard/mouse first; no multiplayer or touch controls. This isolated QA candidate has an optional, muted-by-default sound-texture experiment in Controls; see docs/SOUND_EXPERIMENT.md for scope and unrun acceptance gates. Enemy bodies reuse the knight art with distinct labels and ground markers, not bespoke enemy sprites. Attacks use a small authored three-pose body rig with separate hand-attached weapon profiles; rolling transforms and floor telegraphs remain procedural. See `docs/CHARACTER_ART.md` for original artwork details.
 
 Live QA may use `?qa=1&debug=1` for a clearly labelled separate local save. It has identical gameplay and cannot read or erase the normal expedition.

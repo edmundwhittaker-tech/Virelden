@@ -1,0 +1,129 @@
+name: Optional sound candidate QA only
+on:
+  push:
+    branches: [qa/optional-sound-textures]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: optional-sound-qa-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  rules-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run check
+      - name: Record exact source identity
+        run: |
+          mkdir -p test-results/sound-source
+          git rev-parse HEAD HEAD^{tree} > test-results/sound-source/source.txt
+          node --version >> test-results/sound-source/source.txt
+          sha256sum package-lock.json >> test-results/sound-source/source.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: optional-sound-source
+          path: test-results/sound-source/
+          retention-days: 7
+  native-audio-and-listening-exports:
+    needs: rules-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run check
+        id: build
+      - run: npx playwright install --with-deps chromium
+        id: browser
+      - name: Native trusted-gesture and interruption assertions
+        run: xvfb-run -a npx playwright test --config playwright.audio.config.ts
+      - name: Genuine OfflineAudioContext WAV exports, not acoustic acceptance
+        if: always() && steps.build.outcome == 'success' && steps.browser.outcome == 'success'
+        run: npx playwright test --config playwright.audio-preview.config.ts
+      - name: Preserve bounded lifecycle and listening evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: optional-sound-native-and-listening
+          path: |
+            test-results/audio-lifecycle/
+            test-results/audio-listening/
+            test-results/audio-native-failures/**/*.png
+          retention-days: 7
+  standard-regressions:
+    needs: native-audio-and-listening-exports
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run check
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
+      - run: npx playwright test --config playwright.equipment.config.ts --output test-results/equipment-dom
+      - run: npx playwright test --config playwright.contact.config.ts --output test-results/contact-browser
+      - run: npx playwright test --config playwright.raider-spacing.config.ts --output test-results/raider-spacing-browser
+      - run: npx playwright test --config playwright.expeditions.config.ts --output test-results/expedition-browser
+      - run: npx playwright test --config playwright.poleaxe.config.ts --output test-results/poleaxe-browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: optional-sound-standard-regressions
+          path: |
+            test-results/**/*.png
+            test-results/**/*.json
+            test-results/**/*.md
+          retention-days: 7
+  default-muted-earned-campaign:
+    needs: standard-regressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run check
+      - run: npx playwright install --with-deps chromium
+      - name: Original default-muted unseeded native campaign
+        run: npx playwright test --config playwright.campaign.config.ts --grep 'fresh QA native campaign' --grep-invert 'sound-enabled'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: optional-sound-default-muted-campaign
+          path: test-results/native-campaign/
+          retention-days: 7
+  sound-enabled-earned-campaign:
+    needs: standard-regressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run check
+      - run: npx playwright install --with-deps chromium
+      - name: Separately labelled Controls-enabled unseeded native campaign
+        run: npx playwright test --config playwright.campaign.config.ts --grep 'sound-enabled fresh QA native campaign'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: optional-sound-enabled-campaign
+          path: test-results/native-campaign-sound-enabled/
+          retention-days: 7

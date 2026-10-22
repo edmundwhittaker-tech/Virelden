@@ -1,5 +1,9 @@
 # Project status — 22 October 2026
 
+## Isolated opt-in sound QA candidate
+
+A separate local candidate based on public main `a932dc5` adds muted-by-default event-only sound textures, with enable/mute/low-volume controls confined to Controls. No audio preferences or gameplay/save formats are persisted. All 207 local tests, strict typecheck and production build pass using the available Node 24.19.0 and existing pinned dependency tree (the project declares Node 22; supported-runtime recheck remains due). Native browser lifecycle, real OfflineAudioContext rendering and actual listening remain unrun gates. Local Chromium launch was denied and was not retried. The reviewed local checkpoint is `ca78c207`; an isolated text-only QA branch/workflow was subsequently authorized. Its native/browser/WAV and separately labelled muted/sound-enabled full campaigns are pending, not passed. No main/Pages change or release PR is authorized. See [sound experiment scope and QA gates](SOUND_EXPERIMENT.md).
+
 ## Playable content
 
 The released reference is main `f080674`: one continuous four-section station level with twelve encounters, four caches, two checkpoints, a shortcut and a monumental operated gate. Ordinary Git history retains this working version for rollback.

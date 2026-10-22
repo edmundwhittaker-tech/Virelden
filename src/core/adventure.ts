@@ -1,3 +1,4 @@
+import {SoundCue,WEAPON_CONTACT_CUES,type SoundEventRecorder} from './soundEvents.js';
 import {EXPEDITIONS,STATION_EXPEDITION_PORT,AREA_NAMES,type AreaId} from './expeditionCatalog.js';
 import {expeditionCanStand} from './expeditionGeometry.js';
 import {freshAreaRecords,copyAreaProgress,type AreaRecords,type AreaProgress} from './expeditionState.js';
@@ -60,7 +61,7 @@ export function roll(s:Adventure,input:Point=s.aim):boolean{
 export const invulnerable=(s:Adventure)=>s.rollTimer>.08&&s.rollTimer<.36;
 function damage(s:Adventure,amount:number){if(s.hp<=0||s.hurtTimer>0||invulnerable(s)||safeFromEnemies(s))return;s.hp=Math.max(0,s.hp-amount*derivedStats(s).damageMultiplier);s.hurtTimer=.45;if(!s.hp){s.message='You fell. Retry at the beacon; equipment and earned currency are retained.';s.attack.phase='idle';s.rollTimer=0;}}
 function clearLine(s:Adventure,a:Point,b:Point):boolean{const count=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/6));for(let i=0;i<=count;i++)if(!adventureCanStand(s,{x:a.x+(b.x-a.x)*i/count,y:a.y+(b.y-a.y)*i/count}))return false;return true;}
-function hitEnemies(s:Adventure,from:number,to:number){
+function hitEnemies(s:Adventure,from:number,to:number,sounds?:SoundEventRecorder){
  const w=WEAPONS[s.attack.weapon],aim=s.attack.aim,frames=sampleMeleeSweep({weapon:s.attack.weapon,aim,facing:s.attack.facing,from,to});
  for(const e of s.enemies){
   if(e.hp<=0||s.attack.hit.includes(e.id))continue;
@@ -68,29 +69,29 @@ function hitEnemies(s:Adventure,from:number,to:number){
   if(!clearLine(s,s.position,e.position)||!weaponShapeContains(s.attack.weapon,local))continue;
   const contact=frames.find(frame=>weaponTouchesBody(frame,d));if(!contact)continue;
   s.attack.contacts[e.id]=contact.progress;
-  const before=e.hp;e.hp=Math.max(0,e.hp-weaponDamage(s,s.attack.weapon));s.attack.hit.push(e.id);
+  const before=e.hp;e.hp=Math.max(0,e.hp-weaponDamage(s,s.attack.weapon));s.attack.hit.push(e.id);if(e.hp<before)sounds?.record(WEAPON_CONTACT_CUES[s.attack.weapon]);
   if(!e.hp){const xpBefore=s.progression.xp;s.progression=awardDefeat(s.progression,`${s.areaId}:${e.id}`,before,e.hp,CAMPAIGN_REWARDS);const marks=grantMarks(s,e.reward);s.message=`${e.kind==='captain'?(e.id==='upper-captain'?'Upper watch captain defeated. Secure the station exit.':(s.areaId==='station'?'Captain defeated. The lower ward is secured.':'Prototype captain defeated. Secure the area marker when ready.')):'Enemy defeated.'} +${markText(marks,e.reward)} · +${s.progression.xp-xpBefore} XP. Level ${level(s.progression)} · ${availablePoints(s.progression)} training points.`;}
   else{e.phase='stagger';e.timer=w.stagger;}
  }
 }
 export function adventureCanStand(s:Adventure,p:Point):boolean{if(s.areaId!=='station')return expeditionCanStand(EXPEDITIONS[s.areaId],p,openedShortcuts(s));return canStand(p)&&(s.gatePhase==='open'||p.y< -28||p.y>28||p.x<STATION_GATE.left||p.x>STATION_GATE.right)&&WALLS.every(w=>(w.gate&&s.shortcut)||p.x<w.x-12||p.x>w.x+w.width+12||p.y<w.y-12||p.y>w.y+w.height+12);}
 function travel(s:Adventure,p:Point,input:Point,dt:number):Point{let result={...p};const count=Math.max(1,Math.ceil(dt/.008));for(let i=0;i<count;i++){const next=move(result,input,dt/count,p=>adventureCanStand(s,p));const x={x:next.x,y:result.y};if(adventureCanStand(s,x))result=x;const y={x:result.x,y:next.y};if(adventureCanStand(s,y))result=y;}return result;}
-function step(s:Adventure,input:Point,dt:number){
- if(s.hp<=0)return;s.time+=dt;s.arrivalGrace=Math.max(0,s.arrivalGrace-dt);advanceShortcut(s,dt);
- if(s.areaId==='station'&&s.gatePhase==='pulling'){s.interactionTimer=Math.max(0,s.interactionTimer-dt);if(!s.interactionTimer){s.gatePhase='opening';s.message='The station gate is opening. Stand clear until the leaves are fully withdrawn.';}}
- else if(s.areaId==='station'&&s.gatePhase==='opening'){s.gateProgress=Math.min(1,s.gateProgress+dt/STATION_GATE.openSeconds);if(s.gateProgress>=1){s.gatePhase='open';s.progression=awardReward(s.progression,'station:gate-open',CAMPAIGN_REWARDS);s.message='Station gate open. Follow the lamps through the arch into the ascent.';}}
+function step(s:Adventure,input:Point,dt:number,sounds?:SoundEventRecorder){
+ if(s.hp<=0)return;s.time+=dt;s.arrivalGrace=Math.max(0,s.arrivalGrace-dt);advanceShortcut(s,dt,sounds);
+ if(s.areaId==='station'&&s.gatePhase==='pulling'){s.interactionTimer=Math.max(0,s.interactionTimer-dt);if(!s.interactionTimer){s.gatePhase='opening';sounds?.record(SoundCue.GateOpening);s.message='The station gate is opening. Stand clear until the leaves are fully withdrawn.';}}
+ else if(s.areaId==='station'&&s.gatePhase==='opening'){s.gateProgress=Math.min(1,s.gateProgress+dt/STATION_GATE.openSeconds);if(s.gateProgress>=1){s.gatePhase='open';sounds?.record(SoundCue.GateOpen);s.progression=awardReward(s.progression,'station:gate-open',CAMPAIGN_REWARDS);s.message='Station gate open. Follow the lamps through the arch into the ascent.';}}
 s.rollCooldown=Math.max(0,s.rollCooldown-dt);s.hurtTimer=Math.max(0,s.hurtTimer-dt);s.staminaDelay=Math.max(0,s.staminaDelay-dt);
  if(!s.staminaDelay&&s.attack.phase==='idle'&&!s.rollTimer)s.stamina=Math.min(s.maxStamina,s.stamina+derivedStats(s).staminaRegen*dt);
  if(s.rollTimer>0){s.position=travel(s,s.position,s.rollAim,dt*2.4);s.rollTimer=Math.max(0,s.rollTimer-dt);}else if(s.attack.phase==='idle'&&!isInteracting(s)){s.position=travel(s,s.position,input,dt);if(input.x||input.y)s.aim=unit(input);}
  if(s.attack.phase==='idle')s.attack.facing=facingForInput(s.aim,s.attack.facing);
  if(s.attack.phase!=='idle'){
   const w=WEAPONS[s.attack.weapon],before=s.attack.timer;s.attack.timer-=dt;
-  if(s.attack.phase==='active')hitEnemies(s,1-before/w.active,1-s.attack.timer/w.active);
-  if(s.attack.timer<=0){if(s.attack.phase==='windup'){s.attack.phase='active';s.attack.timer=w.active;hitEnemies(s,0,0);}else if(s.attack.phase==='active'){s.attack.phase='recovery';s.attack.timer=w.recovery;}else s.attack.phase='idle';}
+  if(s.attack.phase==='active')hitEnemies(s,1-before/w.active,1-s.attack.timer/w.active,sounds);
+  if(s.attack.timer<=0){if(s.attack.phase==='windup'){s.attack.phase='active';s.attack.timer=w.active;hitEnemies(s,0,0,sounds);}else if(s.attack.phase==='active'){s.attack.phase='recovery';s.attack.timer=w.recovery;}else s.attack.phase='idle';}
  }
  for(const e of s.enemies){if(e.hp<=0)continue;const d=vector(e.position,s.position),range=Math.hypot(d.x,d.y),definition=enemyDefinition(s,e.id),reach=definition?.maxAttackRange??(e.kind==='watcher'?200:e.kind==='captain'?70:52);
  if((s.areaId!=='station'&&safeFromEnemies(s))||s.arrivalGrace>0){e.phase='idle';e.timer=0;continue;}
- if(e.phase!=='idle'){e.timer-=dt;if(e.timer<=0){if(e.phase==='windup'){if(e.kind==='watcher'&&(s.areaId==='station'||(range<=reach&&clearLine(s,e.position,s.position)))){const u=e.aim;s.projectiles.push({position:archerProjectileOrigin(e.position,u),velocity:{x:u.x*160,y:u.y*160},life:2});}else if(e.kind!=='watcher'){const u=unit(d);if(clearLine(s,e.position,s.position)&&range<reach+8&&u.x*e.aim.x+u.y*e.aim.y>.1)damage(s,e.kind==='captain'?34:20);}e.phase='recovery';e.timer=e.kind==='captain'?.95:.85;}else e.phase='idle';}continue;}
+ if(e.phase!=='idle'){e.timer-=dt;if(e.timer<=0){if(e.phase==='windup'){if(e.kind==='watcher'&&(s.areaId==='station'||(range<=reach&&clearLine(s,e.position,s.position)))){const u=e.aim;s.projectiles.push({position:archerProjectileOrigin(e.position,u),velocity:{x:u.x*160,y:u.y*160},life:2});sounds?.record(SoundCue.BowRelease);}else if(e.kind!=='watcher'){const u=unit(d);if(clearLine(s,e.position,s.position)&&range<reach+8&&u.x*e.aim.x+u.y*e.aim.y>.1)damage(s,e.kind==='captain'?34:20);}e.phase='recovery';e.timer=e.kind==='captain'?.95:.85;}else e.phase='idle';}continue;}
  // The beacon's immediate radius is a sanctuary. Enemies disengage there.
  if(safeFromEnemies(s)||range>(definition?.activationRange??250)||(definition&&distance(e.position,e.home)>definition.leashRange)){if(distance(e.position,e.home)>4)e.position=travel(s,e.position,vector(e.position,e.home),dt*.4);continue;}
  if(range<reach&&clearLine(s,e.position,s.position)){e.phase='windup';e.timer=definition?.minimumWindupSeconds??(e.kind==='watcher'?.9:e.kind==='captain'?.8:.65);e.aim=unit(d);}else e.position=travel(s,e.position,d,dt*(e.kind==='captain'?.38:.48));
@@ -99,19 +100,19 @@ s.rollCooldown=Math.max(0,s.rollCooldown-dt);s.hurtTimer=Math.max(0,s.hurtTimer-
  s.projectiles=s.projectiles.filter(p=>p.life>0);
 }
 /** Fixed substeps also make external callers safe after a delayed frame. */
-export function tick(s:Adventure,input:Point,dt:number){let remaining=Math.max(0,Math.min(.1,dt));while(remaining>1e-8){const delta=Math.min(STEP,remaining);step(s,input,delta);remaining-=delta;}}
+export function tick(s:Adventure,input:Point,dt:number,sounds?:SoundEventRecorder){let remaining=Math.max(0,Math.min(.1,dt));while(remaining>1e-8){const delta=Math.min(STEP,remaining);step(s,input,delta,sounds);remaining-=delta;}}
 export function interactionHint(s:Adventure):string{
  if(s.hp<=0)return 'Retry at the beacon';if(s.areaId!=='station')return expeditionHint(s);if(near(s,STATION_EXPEDITION_PORT.position))return s.enemies.some(e=>e.id==='upper-captain'&&e.hp>0)?'Defeat the upper watch captain':'E · Descend to Cistern Viaduct';if(near(s,STATION_GATE.lever))return s.gatePhase==='closed'?'E · Pull station gate lever':s.gatePhase==='open'?'Station gate open':'Opening station gate…';if(near(s,FINISH))return s.enemies.some(e=>e.id==='upper-captain'&&e.hp>0)?'Defeat the upper watch captain':'E · Secure the upper watch · Finish expedition';if(near(s,CHECKPOINTS[1]))return 'E · Rest at transfer checkpoint';if(LOOT.some(l=>!s.looted.includes(l.id)&&near(s,l.position)))return 'E · Open equipment cache';if(near(s,LOCATIONS.lever))return s.shortcut?'Shortcut is open':'E · Open shortcut';if(near(s,LOCATIONS.smith))return 'E · Smith: open equipment to upgrade';if(near(s,LOCATIONS.checkpoint))return 'E · Rest and replenish';return '';
 }
-export function interact(s:Adventure):boolean{
+export function interact(s:Adventure,sounds?:SoundEventRecorder):boolean{
  if(s.hp<=0||isInteracting(s)||s.attack.phase!=='idle'||s.rollTimer)return false;
- if(s.areaId!=='station')return expeditionInteract(s);
+ if(s.areaId!=='station')return expeditionInteract(s,sounds);
  if(near(s,STATION_EXPEDITION_PORT.position))return transitionArea(s,'cistern-viaduct',STATION_EXPEDITION_PORT.targetArrival);
- if(near(s,STATION_GATE.lever)){if(s.gatePhase!=='closed'||!adventureCanStand(s,STATION_GATE.stance))return false;s.position={...STATION_GATE.stance};s.gatePhase='pulling';s.interactionTimer=STATION_GATE.pullSeconds;s.aim=unit(vector(s.position,STATION_GATE.lever));s.message='Pulling the heavy station lever…';return true;}
+ if(near(s,STATION_GATE.lever)){if(s.gatePhase!=='closed'||!adventureCanStand(s,STATION_GATE.stance))return false;s.position={...STATION_GATE.stance};s.gatePhase='pulling';sounds?.record(SoundCue.Lever);s.interactionTimer=STATION_GATE.pullSeconds;s.aim=unit(vector(s.position,STATION_GATE.lever));s.message='Pulling the heavy station lever…';return true;}
  if(near(s,FINISH)){if(s.enemies.some(e=>e.id==='upper-captain'&&e.hp>0)){s.message='The upper watch captain still holds this station exit.';return false;}s.completed=true;s.progression=awardReward(s.progression,'station:secure-exit',CAMPAIGN_REWARDS);s.message='Upper watch secured. Expedition complete. Explore remaining caches or return down the station route.';return true;}
  if(near(s,CHECKPOINTS[1])){s.hp=s.maxHp;s.stamina=s.maxStamina;s.checkpoint={...CHECKPOINTS[1]};s.projectiles=[];s.message='Transfer checkpoint secured. Reload and retry now return here.';return true;}
  const loot=LOOT.find(l=>!s.looted.includes(l.id)&&near(s,l.position));if(loot){s.looted.push(loot.id);grantStationCache(s,loot.id);if(loot.id==='transfer-cache')s.progression=awardReward(s.progression,'station:transfer-cache',CAMPAIGN_REWARDS);if(!s.owned.includes(loot.weapon))s.owned.push(loot.weapon);const marks=grantMarks(s,loot.currency);s.message=`Found ${WEAPONS[loot.weapon].name} · ${ARMOR[STATION_CACHE_ARMOR[loot.id]].name}${loot.id==='transfer-cache'?' · Ward axe':''} and ${markText(marks,loot.currency)}. Open Equipment to compare.`;return true;}
- if(near(s,LOCATIONS.lever)){s.shortcut=true;s.progression=awardReward(s.progression,'station:shortcut-open',CAMPAIGN_REWARDS);s.message='Shortcut gate opened. The north passage now leads directly to the far court.';return true;}
+ if(near(s,LOCATIONS.lever)){if(!s.shortcut)sounds?.record(SoundCue.ShortcutOpen);s.shortcut=true;s.progression=awardReward(s.progression,'station:shortcut-open',CAMPAIGN_REWARDS);s.message='Shortcut gate opened. The north passage now leads directly to the far court.';return true;}
  if(near(s,LOCATIONS.smith)){s.message='At the smith: choose a weapon in Equipment, then upgrade it.';return true;}
  if(near(s,LOCATIONS.checkpoint)){s.hp=s.maxHp;s.stamina=s.maxStamina;s.checkpoint={...LOCATIONS.checkpoint};s.projectiles=[];s.message='Rested. Health and stamina replenished. Defeated enemies remain defeated.';return true;}return false;
 }
@@ -195,7 +196,7 @@ function expeditionHint(s:Adventure):string{
  const exit=area.exits.find(e=>landmarkNear(s,e.position,e.stance));if(exit){if(!guardsCleared(s,exit.requiresDefeated??[]))return 'Defeat the landing captain';if(exit.secureObjective&&!s.completed)return 'E · Secure this expedition';return exit.target?`E · Service stair to ${AREA_NAMES[exit.target]}`:'Annex secured · Explore or walk back';}
  if(atCheckpoint(s))return 'E · Rest at entry checkpoint';return '';
 }
-function expeditionInteract(s:Adventure):boolean{
+function expeditionInteract(s:Adventure,sounds?:SoundEventRecorder):boolean{
  if(s.areaId==='station')return false;const area=EXPEDITIONS[s.areaId];
  const loot=area.loot.find(l=>!s.looted.includes(l.id)&&landmarkNear(s,l.position,l.stance));
  if(loot){if(!guardsCleared(s,loot.reward.requiresDefeated)){s.message='Clear the nearby coffer guard before recovering this equipment.';return false;}
@@ -204,17 +205,17 @@ function expeditionInteract(s:Adventure):boolean{
   s.message=`Recovered ${[...(loot.reward.weapon?[WEAPONS[loot.reward.weapon].name]:[]),...loot.reward.armor.map(id=>ARMOR[id].name)].join(' · ')} and ${markText(marks,loot.reward.currency)}. Open Equipment to compare.`;captureArea(s);return true;}
  const shortcut=area.shortcuts.find(l=>landmarkNear(s,l.lever,l.stance));
  if(shortcut){if(s.shortcut||s.shortcutAnimation)return false;if(!guardsCleared(s,shortcut.requiresDefeated)){s.message='Clear the service lever guard first.';return false;}
-  s.position={...shortcut.stance};s.shortcutAnimation={id:shortcut.id,phase:'pulling',progress:0,timer:.8};s.aim=unit(vector(s.position,shortcut.lever));s.message='Pulling the service lever…';return true;}
+  s.position={...shortcut.stance};s.shortcutAnimation={id:shortcut.id,phase:'pulling',progress:0,timer:.8};sounds?.record(SoundCue.Lever);s.aim=unit(vector(s.position,shortcut.lever));s.message='Pulling the service lever…';return true;}
  const exit=area.exits.find(e=>landmarkNear(s,e.position,e.stance));
  if(exit){if(!guardsCleared(s,exit.requiresDefeated??[])){s.message='The landing captain still holds this stair.';return false;}
   if(exit.secureObjective&&!s.completed){s.completed=true;s.progression=awardReward(s.progression,`${s.areaId}:${exit.secureObjective.id}`,CAMPAIGN_REWARDS);const marks=grantMarks(s,exit.secureObjective.currency);captureArea(s);s.message=`${area.name} secured. +${markText(marks,exit.secureObjective.currency)}. Continue exploring or use the ordinary service stairs to return.`;return true;}
   if(exit.target&&exit.targetArrival)return transitionArea(s,exit.target,exit.targetArrival);return false;}
  const checkpoint=area.checkpoints.find(p=>near(s,p.position));if(checkpoint){s.checkpoint={...checkpoint.position};s.hp=s.maxHp;s.stamina=s.maxStamina;s.projectiles=[];s.arrivalGrace=1.5;captureArea(s);s.message='Rested at the entry beacon. Cleared foes and discoveries remain cleared.';return true;}return false;
 }
-function advanceShortcut(s:Adventure,dt:number){
+function advanceShortcut(s:Adventure,dt:number,sounds?:SoundEventRecorder){
  const animation=s.shortcutAnimation;if(!animation||s.areaId==='station')return;const definition=EXPEDITIONS[s.areaId].shortcuts.find(l=>l.id===animation.id)!;
- if(animation.phase==='pulling'){animation.timer=Math.max(0,animation.timer-dt);if(!animation.timer){animation.phase='opening';s.message='The service passage is opening. Wait until the mechanism is fully withdrawn.';}}
- else{animation.progress=Math.min(1,animation.progress+dt/definition.animationSeconds);if(animation.progress>=1){s.shortcut=true;s.shortcutAnimation=null;captureArea(s);s.message='Return passage open. The original route remains available.';}}
+ if(animation.phase==='pulling'){animation.timer=Math.max(0,animation.timer-dt);if(!animation.timer){animation.phase='opening';sounds?.record(SoundCue.GateOpening);s.message='The service passage is opening. Wait until the mechanism is fully withdrawn.';}}
+ else{animation.progress=Math.min(1,animation.progress+dt/definition.animationSeconds);if(animation.progress>=1){s.shortcut=true;s.shortcutAnimation=null;sounds?.record(SoundCue.ShortcutOpen);captureArea(s);s.message='Return passage open. The original route remains available.';}}
 }
 export function leverInteraction(s:Adventure):{lever:Point;pull:number}|null{
  if(s.areaId==='station')return s.gatePhase==='pulling'?{lever:STATION_GATE.lever,pull:Math.max(0,Math.min(1,1-s.interactionTimer/.8))}:null;

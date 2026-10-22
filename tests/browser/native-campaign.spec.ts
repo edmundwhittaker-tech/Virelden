@@ -1,3 +1,4 @@
+import {installAudioObserver,audioSnapshot} from './audio-observer';
 import {pressAction,observeAttackPhase,moveForFrames} from './native-action-frame';
 import {test,expect,type Page} from '@playwright/test';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -14,16 +15,18 @@ const projected=(p:Point)=>({x:640+(p.x-p.y)*.8,y:180+(p.x+p.y)*.4});
 const delta=(a:Point,b:Point)=>{const p=projected(a),q=projected(b);return {x:q.x-p.x,y:q.y-p.y};};
 const distance=(a:Point,b:Point)=>{const d=delta(a,b);return Math.hypot(d.x,d.y);};
 const core=async()=>{const [adventure,catalog,level,progression,rewards]=await Promise.all([import('../../.test-build/core/adventure.js'),import('../../.test-build/core/expeditionCatalog.js'),import('../../.test-build/core/level.js'),import('../../.test-build/core/progression.js'),import('../../.test-build/core/rewardCatalog.js')]);return {...adventure,...catalog,...level,...progression,...rewards};};
+let soundCampaign=false;let evidenceDirectory='test-results/native-campaign';
 const metrics={deaths:0,lastDeathProgress:0,attackInputs:0,damagingSamples:0,observedDamage:0,started:0,stages:[] as any[],enemyHp:new Map<string,number>()};
 const durableScore=(s:any)=>s.progression.earned.length+Object.values(s.areas).reduce((n:number,p:any)=>n+p.looted.length+p.openedShortcuts.length+Number(p.completed),0)+s.looted.length+Number(s.shortcut)+Number(s.completed);
 async function hold(page:Page,keys:string[],ms:number){try{for(const key of keys)await page.keyboard.down(key);await page.waitForTimeout(ms);}finally{for(const key of keys)await page.keyboard.up(key);}}
 async function idle(page:Page){await expect.poll(async()=>{const s=await state(page);if(s.hp<=0)throw Error('Fallen during native route');return s.attack.phase==='idle'&&s.rollTimer===0&&!s.shortcutAnimation&&s.gatePhase!=='pulling';},{timeout:8_000}).toBe(true);}
 function clearSegment(c:any,s:any,a:Point,b:Point,margin=0){const n=Math.max(1,Math.ceil(Math.hypot(a.x-b.x,a.y-b.y)/3));for(let i=0;i<=n;i++){const p={x:a.x+(b.x-a.x)*i/n,y:a.y+(b.y-a.y)*i/n};for(const [dx,dy] of margin?[[0,0],[margin,0],[-margin,0],[0,margin],[0,-margin]]:[[0,0]])if(!c.adventureCanStand(s,{x:p.x+dx,y:p.y+dy}))return false;}return true;}
 async function evidence(page:Page,label:string){
- const s=await state(page);await mkdir('test-results/native-campaign',{recursive:true});
- await page.screenshot({path:`test-results/native-campaign/${label}.png`,fullPage:true});
- const compact={fixture:'UNSEEDED native keyboard/mouse/UI campaign; no progress or health injection',label,wallSeconds:(Date.now()-metrics.started)/1000,areaId:s.areaId,position:s.position,checkpoint:s.checkpoint,hp:s.hp,maxHp:s.maxHp,stamina:s.stamina,maxStamina:s.maxStamina,progression:s.progression,equipment:s.equipment,owned:s.owned,equipped:s.equipped,attack:s.attack,levels:s.levels,currency:s.currency,areas:s.areas,looted:s.looted,shortcut:s.shortcut,completed:s.completed,gatePhase:s.gatePhase,gateProgress:s.gateProgress,arrivalGrace:s.arrivalGrace,paused:s.paused,enemies:s.enemies.map((e:any)=>({id:e.id,kind:e.kind,hp:e.hp,maxHp:e.maxHp,position:e.position,phase:e.phase,timer:e.timer})),projectiles:s.projectiles.length,character:{equipment:s.character.equipment,hand:s.character.hand,supportHand:s.character.supportHand,registration:s.character.registration,rig:s.character.rig,handLayers:s.character.layers?.filter((layer:any)=>layer.id.startsWith('hand_'))},expedition:s.expedition,enemyViews:s.enemyViews,camera:s.camera,screen:s.screen,timing:s.timing,metrics:{deaths:metrics.deaths,attackInputs:metrics.attackInputs,damagingSamples:metrics.damagingSamples,observedDamage:metrics.observedDamage,stages:metrics.stages}};
- await writeFile(`test-results/native-campaign/${label}.json`,JSON.stringify(compact,null,2));
+ const s=await state(page);await mkdir(evidenceDirectory,{recursive:true});
+ await page.screenshot({path:`${evidenceDirectory}/${label}.png`,fullPage:true});
+ const observedAudio=soundCampaign?await audioSnapshot(page):undefined;
+ const compact={audio:observedAudio,fixture:'UNSEEDED native keyboard/mouse/UI campaign; no progress or health injection',soundEnabledRoute:soundCampaign,label,wallSeconds:(Date.now()-metrics.started)/1000,areaId:s.areaId,position:s.position,checkpoint:s.checkpoint,hp:s.hp,maxHp:s.maxHp,stamina:s.stamina,maxStamina:s.maxStamina,progression:s.progression,equipment:s.equipment,owned:s.owned,equipped:s.equipped,attack:s.attack,levels:s.levels,currency:s.currency,areas:s.areas,looted:s.looted,shortcut:s.shortcut,completed:s.completed,gatePhase:s.gatePhase,gateProgress:s.gateProgress,arrivalGrace:s.arrivalGrace,paused:s.paused,enemies:s.enemies.map((e:any)=>({id:e.id,kind:e.kind,hp:e.hp,maxHp:e.maxHp,position:e.position,phase:e.phase,timer:e.timer})),projectiles:s.projectiles.length,character:{equipment:s.character.equipment,hand:s.character.hand,supportHand:s.character.supportHand,registration:s.character.registration,rig:s.character.rig,handLayers:s.character.layers?.filter((layer:any)=>layer.id.startsWith('hand_'))},expedition:s.expedition,enemyViews:s.enemyViews,camera:s.camera,screen:s.screen,timing:s.timing,metrics:{deaths:metrics.deaths,attackInputs:metrics.attackInputs,damagingSamples:metrics.damagingSamples,observedDamage:metrics.observedDamage,stages:metrics.stages}};
+ await writeFile(`${evidenceDirectory}/${label}.json`,JSON.stringify(compact,null,2));
 }
 async function checkpointEvidence(page:Page,label:string){const s=await state(page);metrics.stages.push({label,areaId:s.areaId,xp:s.progression.xp,earned:s.progression.earned.length,hp:s.hp,marks:s.currency,deaths:metrics.deaths,wallSeconds:(Date.now()-metrics.started)/1000,simulationSeconds:s.time});console.log('NATIVE_CAMPAIGN_STAGE '+JSON.stringify(metrics.stages.at(-1)));await evidence(page,label);}
 async function retrying(page:Page,label:string,action:()=>Promise<void>){
@@ -162,20 +165,50 @@ async function completeAnnex(page:Page){
 }
 
 test.use({trace:'off'});
-test('fresh QA native campaign earns all1620XP, finds all gear and physically returns to the station forge',async({page})=>{
+async function runNativeCampaign(page:Page,enableSound=false){
+ soundCampaign=enableSound;evidenceDirectory=enableSound?'test-results/native-campaign-sound-enabled':'test-results/native-campaign';
  metrics.started=Date.now();metrics.deaths=0;metrics.lastDeathProgress=0;metrics.attackInputs=0;metrics.damagingSamples=0;metrics.observedDamage=0;metrics.stages=[];metrics.enemyHp.clear();
  const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
+ let previousAudioStarts=0;
+ const verifyRouteAudio=async(stage:string)=>{await expect.poll(async()=>(await audioSnapshot(page)).contexts[0]?.state,stage+' audio resumed after its menus').toBe('running');const audio=await audioSnapshot(page);expect(audio.contextCount,stage+' retains one opt-in context').toBe(1);expect(audio.contexts[0]?.state,stage+' audio resumed after its menus').toBe('running');expect(audio.totalStarts,stage+' produces real event sources').toBeGreaterThan(previousAudioStarts);expect(audio.bufferCount).toBe(1);expect(audio.maxActiveSources).toBeLessThanOrEqual(6);previousAudioStarts=audio.totalStarts;};
  try{
   // A fresh Playwright context has no local progress. Do not install any saved-progress seed.
-  await page.goto('/?debug=1&qa=1');await page.getByRole('button',{name:'Choose Wayfarer',exact:true}).click();await page.waitForFunction(()=>typeof (window as any).vireldenDebug==='function');await expect(page.locator('#save-status')).toContainText('QA save');const initial=await state(page);expect(initial.progression.xp).toBe(0);expect(initial.owned).toEqual(['spear']);expect(initial.currency).toBe(0);expect(initial.enemies.filter((e:any)=>e.hp>0)).toHaveLength(12);await page.locator('canvas').focus();
+  if(enableSound)await installAudioObserver(page);
+  await page.goto('/?debug=1&qa=1');
+  // Opaque normal-save sentinels are never QA progress and grant no gameplay benefit.
+  const normalSentinels=enableSound?{'virelden-underworks-v4':'normal-v4-preserve-during-sound-campaign','virelden-underworks-v4-good':'normal-good-preserve-during-sound-campaign','unrelated-game-save':'unrelated-preserve-during-sound-campaign'}:null;
+  if(normalSentinels)await page.evaluate(values=>{for(const [key,value] of Object.entries(values))localStorage.setItem(key,value);},normalSentinels);
+  await page.getByRole('button',{name:'Choose Wayfarer',exact:true}).click();await page.waitForFunction(()=>typeof (window as any).vireldenDebug==='function');await expect(page.locator('#save-status')).toContainText('QA save');const initial=await state(page);expect(initial.progression.xp).toBe(0);expect(initial.owned).toEqual(['spear']);expect(initial.currency).toBe(0);expect(initial.enemies.filter((e:any)=>e.hp>0)).toHaveLength(12);await page.locator('canvas').focus();
   const normalBefore=await page.evaluate(()=>Object.keys(localStorage).filter(k=>!k.startsWith('virelden-underworks-qa-')).map(k=>[k,localStorage.getItem(k)]).sort());
-  await retrying(page,'station',()=>completeStation(page));await portTo(page,'cistern-viaduct');
-  await retrying(page,'cistern',()=>completeCistern(page));await portTo(page,'record-annex');
-  await retrying(page,'annex',()=>completeAnnex(page));
+  if(normalSentinels)for(const [key,value] of Object.entries(normalSentinels))expect(normalBefore).toContainEqual([key,value]);
+  if(enableSound){
+   expect((await audioSnapshot(page)).contextCount,'fresh load remains audio-context free').toBe(0);
+   await pressAction(page,'KeyH');await expect(page.getByRole('button',{name:'Enable sound',exact:true})).toBeVisible();
+   await page.getByRole('button',{name:'Enable sound',exact:true}).click();await expect(page.getByRole('button',{name:'Mute sound',exact:true})).toBeVisible();await expect(page.locator('#sound-status')).toContainText('Enabled');
+   await page.getByRole('button',{name:'Return to game',exact:true}).click();await expect.poll(async()=>(await state(page)).paused).toBe(false);
+   await expect.poll(async()=>(await audioSnapshot(page)).contexts[0]?.state).toBe('running');expect((await audioSnapshot(page)).contextCount).toBe(1);expect((await audioSnapshot(page)).contexts[0].constructorActivation,'AudioContext was constructed within the explicit trusted gesture').toBe(true);
+   await checkpointEvidence(page,'sound-enabled-before-earned-route');
+  }
+  await retrying(page,'station',()=>completeStation(page));if(enableSound)await verifyRouteAudio('station');await portTo(page,'cistern-viaduct');
+  await retrying(page,'cistern',()=>completeCistern(page));if(enableSound)await verifyRouteAudio('cistern');await portTo(page,'record-annex');
+  await retrying(page,'annex',()=>completeAnnex(page));if(enableSound)await verifyRouteAudio('annex');
   // Return is ordinary native traversal through both opened mechanisms, not fast travel.
   await portTo(page,'cistern-viaduct');await portTo(page,'station');const c=await core();await restAndTrain(page,c.CHECKPOINTS[0]);await walkTo(page,c.LOCATIONS.smith);await idle(page);const final=await state(page);
   expect(final.areaId).toBe('station');expect(c.atForge(final)).toBe(true);for(const id of ['station','cistern-viaduct','record-annex'])assertAreaComplete(final,id,c);expect(final.progression.xp).toBe(1620);expect(new Set(final.progression.earned).size).toBe(final.progression.earned.length);expect(c.availablePoints(final.progression)).toBe(0);expect(final.equipment.owned).toHaveLength(12);expect([...final.owned].sort()).toEqual(['axe','falchion','hammer','poleaxe','spear','sword']);expect(final.levels.spear).toBe(2);expect(final.equipment.equipped).toEqual({helmet:'marcher-helmet',chest:'marcher-chest',gauntlets:'marcher-gauntlets',legs:'marcher-legs'});expect(metrics.attackInputs).toBeGreaterThan(24);expect(metrics.damagingSamples).toBeGreaterThan(24);await checkpointEvidence(page,'returned-to-station-forge-full-campaign');
+  if(enableSound){const audio=await audioSnapshot(page);expect(audio.contextCount).toBe(1);expect(audio.bufferCount).toBe(1);expect(audio.totalStarts,'earned route generated actual event sources').toBeGreaterThan(0);expect(audio.maxActiveSources).toBeLessThanOrEqual(6);expect(audio.contexts[0]?.state).toBe('running');}
   await pressAction(page,'Escape');await page.reload();await page.waitForFunction(()=>typeof (window as any).vireldenDebug==='function');const restored=await state(page);expect(restored.progression).toEqual(final.progression);expect(restored.owned).toEqual(final.owned);expect(restored.equipment).toEqual(final.equipment);expect(restored.levels).toEqual(final.levels);expect(restored.currency).toBe(final.currency);expect(restored.position).toEqual(restored.checkpoint);expect(restored.areaId).toBe('station');expect(restored.projectiles).toHaveLength(0);for(const id of ['station','cistern-viaduct','record-annex'])assertAreaComplete(restored,id,c);
+  if(enableSound){
+   expect((await audioSnapshot(page)).contextCount,'fresh reload never restores the opt-in').toBe(0);expect((await audioSnapshot(page)).totalStarts).toBe(0);
+   await pressAction(page,'KeyH');await expect(page.getByRole('button',{name:'Enable sound',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Mute sound',exact:true})).toHaveCount(0);await expect(page.locator('#sound-status')).toContainText('Muted');
+   await page.getByRole('button',{name:'Return to game',exact:true}).click();await expect.poll(async()=>(await state(page)).paused).toBe(false);
+  }
   await walkTo(page,c.LOCATIONS.smith);expect(c.atForge(await state(page))).toBe(true);expect(await page.evaluate(()=>Object.keys(localStorage).filter(k=>!k.startsWith('virelden-underworks-qa-')).map(k=>[k,localStorage.getItem(k)]).sort())).toEqual(normalBefore);expect(errors).toEqual([]);await checkpointEvidence(page,'full-campaign-reloaded-and-forge-reached');console.log('NATIVE_CAMPAIGN_COMPLETE '+JSON.stringify({deaths:metrics.deaths,wallSeconds:(Date.now()-metrics.started)/1000,attackInputs:metrics.attackInputs,damagingSamples:metrics.damagingSamples,observedDamage:metrics.observedDamage,xp:(await state(page)).progression.xp}));
  }catch(error){try{await evidence(page,'failure');}catch{/* retain original startup failure */}throw error;}
+}
+
+test('fresh QA native campaign earns all1620XP, finds all gear and physically returns to the station forge',async({page})=>{
+ await runNativeCampaign(page);
+});
+test('sound-enabled fresh QA native campaign earns all1620XP, finds all gear and physically returns to the station forge',async({page})=>{
+ await runNativeCampaign(page,true);
 });
