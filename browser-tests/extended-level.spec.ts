@@ -101,11 +101,11 @@ test('native expedition traverses four populated sections, rests and earns upper
     // Backtracking is real movement; surviving enemies may pursue, so retain defensive combat.
     await walkTo(page,{x:320,y:320},true);await page.keyboard.press('KeyE');await walkTo(page,{x:485,y:-110},true);
     for(const [label,target]of [['ascent',{x:485,y:-400}],['transfer',{x:130,y:-770}],['transfer-bow-turn',{x:470,y:-850}],['checkpoint',CHECKPOINTS[1]]] as const){await walkTo(page,target,true);await page.screenshot({path:`test-results/extended-route-${label}.png`,fullPage:true});console.log('ROUTE_SECTION '+JSON.stringify({label,hp:(await state(page)).hp,deaths,wallSeconds:(Date.now()-wallStarted)/1000,simulationSeconds:priorSimulationSeconds+(await state(page)).time,attackInputs:combatMetrics.get(page)?.attackInputs}));}
-    await page.keyboard.press('KeyE');expect((await state(page)).checkpoint).toEqual(CHECKPOINTS[1]);expect((await state(page)).hp).toBe(100);
+    await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).checkpoint).toEqual(CHECKPOINTS[1]);expect((await state(page)).hp).toBe(100);
     priorSimulationSeconds+=(await state(page)).time;await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).position).toEqual(CHECKPOINTS[1]);expect((await state(page)).gatePhase).toBe('open');
    }
    for(const target of [{x:500,y:-1380},{x:125,y:-1670},FINISH])await walkTo(page,target,true);
-   await page.keyboard.press('KeyE');expect((await state(page)).completed).toBe(true);expect((await state(page)).enemies.find(e=>e.id==='upper-captain')!.hp).toBe(0);
+   await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).completed).toBe(true);expect((await state(page)).enemies.find(e=>e.id==='upper-captain')!.hp).toBe(0);
   }catch(error){
    const fallen=await state(page);if(fallen.hp>0)throw error;
    const cleared=fallen.enemies.filter(e=>e.hp===0).map(e=>e.id);deaths++;
