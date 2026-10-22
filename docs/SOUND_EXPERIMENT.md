@@ -40,3 +40,7 @@ The owner authorized text-only source and a QA-only workflow on `qa/optional-sou
 At preparation, native jobs and actual listening are still pending; only local compilation, test discovery and the 207-rule/mock/UI check have passed. Exact CI commit/tree/run and results must be reported from the resulting workflow, not inferred from this document. No Chromium launch has been retried locally.
 
 No main/Pages write, release PR, publication, held enemy integration, adapted skeleton/giant activation, default gait change, dependency change or repository media upload is part of this authorized QA stage.
+
+### First native observation — not full acceptance
+
+Run `39767940430` on source `59932c960a83d7fc23f514c5ada7619494e3eafe` / tree `1ce61acfa6095f292c41e709ada9ee723b7f0c7a` passed Node 22 rules/build and exported all 14 real WAVs with Chromium 141.0.7390.37. The native lane passed 9/11 cases; neither downstream regression nor campaign job ran. Actual hidden-tab setup was defeated by Playwright's default focus emulation; the corrected fixture disables that override before ordinary tab activation, never fabricates a visibility event. Corrupt-storage injection raced a legitimate autosave; the corrected fixture pauses before injecting corruption and reloading. These are QA-only corrections; production audio/synthesis bytes remain unchanged. Listening quality and the corrected run are still pending.
