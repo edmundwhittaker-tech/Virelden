@@ -63,3 +63,43 @@ test('small viewport fits and debug API is opt-in',async({page})=>{
  expect(await page.evaluate(()=>window.vireldenDebug)).toBeUndefined();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await page.screenshot({path:'test-results/expedition-small.png',fullPage:true});
 });
+
+// Navigation uses real held keys. Snapshots observe positions only; no save/state injection.
+async function walkTo(page:Page,target:{x:number;y:number}){
+ const {adventureCanStand}=await import('../src/core/adventure');
+ const initial=await state(page), grid=16;
+ const safe=(p:{x:number;y:number})=>[[0,0],[3,0],[-3,0],[0,3],[0,-3]].every(([x,y])=>adventureCanStand(initial,{x:p.x+x,y:p.y+y}));
+ const start={x:Math.round(initial.position.x/grid)*grid,y:Math.round(initial.position.y/grid)*grid};
+ const key=(p:{x:number;y:number})=>`${p.x},${p.y}`;
+ const queue=[start],parents=new Map<string,string|null>([[key(start),null]]);let end=start;
+ for(let i=0;i<queue.length;i++){const p=queue[i];if(Math.hypot(p.x-target.x,p.y-target.y)<18){end=p;break;}
+  for(const [dx,dy]of [[grid,0],[-grid,0],[0,grid],[0,-grid]]){const q={x:p.x+dx,y:p.y+dy};if(!parents.has(key(q))&&safe(q)){parents.set(key(q),key(p));queue.push(q)}}
+ }
+ expect(Math.hypot(end.x-target.x,end.y-target.y),'route target reachable').toBeLessThan(18);
+ const route:{x:number;y:number}[]=[];let k:string|null=key(end);while(k){const [x,y]=k.split(',').map(Number);route.unshift({x,y});k=parents.get(k)??null;}
+ const corners=route.filter((p,i)=>i===route.length-1||i===0||((p.x-route[i-1].x)!==(route[i+1].x-p.x))||((p.y-route[i-1].y)!==(route[i+1].y-p.y)));
+ for(const p of corners){let reached=false;for(let step=0;step<120;step++){
+  const s=await state(page);expect(s.hp,'alive while traversing route').toBeGreaterThan(0);
+  const dx=(p.x-s.position.x-p.y+s.position.y)*.8,dy=(p.x-s.position.x+p.y-s.position.y)*.4;
+  if(Math.hypot(dx,dy)<7){reached=true;break;}
+  const keys:string[]=[];if(Math.abs(dx)>Math.abs(dy)*.42)keys.push(dx>0?'KeyD':'KeyA');if(Math.abs(dy)>Math.abs(dx)*.42)keys.push(dy>0?'KeyS':'KeyW');
+  await hold(page,keys,Math.max(20,Math.min(70,Math.hypot(dx,dy)/150*1000)));
+ }expect(reached,'movement reaches route corner').toBe(true);}
+}
+test('real exploration opens cache once, equips hammer, upgrades at forge and saves',async({page})=>{
+ test.setTimeout(90_000);await open(page);await walkTo(page,{x:150,y:420});await page.keyboard.press('KeyE');
+ await expect.poll(async()=>(await state(page)).owned).toContain('hammer');const cash=(await state(page)).currency;
+ await page.keyboard.press('KeyE');expect((await state(page)).currency).toBe(cash);
+ await page.keyboard.press('KeyI');await page.locator('[data-action="equip:hammer"]').click();expect((await state(page)).equipped).toBe('hammer');await page.keyboard.press('Escape');
+ await walkTo(page,{x:260,y:330});await page.keyboard.press('KeyE');await expect(page.getByRole('dialog')).toBeVisible();
+ await page.locator('[data-action="upgrade"]').click();expect((await state(page)).levels.hammer).toBe(1);expect((await state(page)).currency).toBe(cash-30);
+ await page.screenshot({path:'test-results/expedition-earned-upgrade.png',fullPage:true});await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');
+ expect(await state(page)).toMatchObject({equipped:'hammer',levels:{hammer:1},looted:['west-cache']});
+});
+test('real danger leads to death and retry returns healthy without stuck controls',async({page})=>{
+ test.setTimeout(90_000);await open(page);await walkTo(page,{x:480,y:450});
+ await expect(page.getByRole('button',{name:'Rise at checkpoint',exact:true})).toBeVisible({timeout:35_000});expect((await state(page)).hp).toBe(0);
+ await page.screenshot({path:'test-results/expedition-death.png',fullPage:true});await page.getByRole('button',{name:'Rise at checkpoint',exact:true}).click();
+ expect(await state(page)).toMatchObject({hp:140,position:{x:320,y:320},paused:false,rollTimer:0});const p=(await state(page)).screen;
+ await hold(page,['KeyA']);expect((await state(page)).screen.x).toBeLessThan(p.x-10);await page.keyboard.press('KeyI');await expect(page.getByRole('dialog')).toBeVisible();
+});

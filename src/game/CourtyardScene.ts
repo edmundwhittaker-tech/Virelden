@@ -8,7 +8,7 @@ const SAVE='virelden-underworks-v1';
 declare global{interface Window{vireldenDebug?:()=>Adventure & {screen:Point;moving:boolean;character:ReturnType<KnightSprite['snapshot']>;paused:boolean}}}
 export class CourtyardScene extends Phaser.Scene{
   private state=createAdventure('vanguard'); private held=new Set<string>(); private actions:string[]=[]; private accumulator=0; private view!:WorldView; private moving=false; private facing:Facing='east'; private menu=''; private saveTimer=0; private lastHud='';
-  preload(){KnightSprite.preload(this);}
+  preload(){KnightSprite.preload(this);WorldView.preload(this);}
   create(){
     let loaded=false;try{const raw=localStorage.getItem(SAVE);if(raw){const restored=restore(raw);if(restored){this.state=restored;loaded=true;}}}catch{this.saveNotice('Saving unavailable in this browser');}
     this.view=new WorldView(this);
