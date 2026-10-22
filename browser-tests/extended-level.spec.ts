@@ -43,18 +43,36 @@ async function walkTo(page:Page,target:{x:number;y:number},combat=false){
  for(const p of corners){let reached=false;for(let step=0;step<150;step++){if(combat){const before=(await state(page)).position;await clearThreats(page);const after=(await state(page)).position;if(Math.hypot(after.x-before.x,after.y-before.y)>10)return walkTo(page,target,combat);}const s=await state(page);expect(s.hp,'alive traversing native route').toBeGreaterThan(0);const dx=(p.x-s.position.x-p.y+s.position.y)*.8,dy=(p.x-s.position.x+p.y-s.position.y)*.4;if(Math.hypot(dx,dy)<7){reached=true;break;}const keys=movementKeys(dx,dy);await hold(page,keys,Math.max(20,Math.min(70,Math.hypot(dx,dy)/150*1000)));}expect(reached,'native movement reaches route corner').toBe(true);}
 }
 
+/** Reach the legal operating side through actual keys, not the solid lever prop. */
+async function approachGate(page:Page){
+ const {adventureCanStand}=await import('../src/core/adventure');const {STATION_GATE}=await import('../src/core/level');
+ const approach={x:560,y:115},initial=await state(page);
+ expect(adventureCanStand(initial,approach),'operating-side route target is collision-valid').toBe(true);
+ await walkTo(page,approach,true);
+ await expect.poll(async()=>{const s=await state(page);return s.attack.phase==='idle'&&s.rollTimer===0;}).toBe(true);
+ const arrived=await state(page),from=arrived.position,to=STATION_GATE.stance;
+ const points=Array.from({length:65},(_,i)=>({x:from.x+(to.x-from.x)*i/64,y:from.y+(to.y-from.y)*i/64}));
+ expect(points.every(p=>adventureCanStand(arrived,p)),'actual native arrival has a clear visible alignment to the operating stance').toBe(true);
+}
+
 test('monumental gate blocks native movement, animates once, pauses and reloads safely',async({page})=>{
  test.setTimeout(240_000);await open(page);
  await walkTo(page,{x:485,y:55},true);
  // World north is screen north-east: this held combination pushes into the gate.
  await hold(page,['KeyW','KeyD'],450);expect((await state(page)).position.y).toBeGreaterThanOrEqual(28);
  await page.screenshot({path:'test-results/extended-gate-closed.png',fullPage:true});
- await walkTo(page,{x:550,y:70},true);const before=await state(page);
- const pullingFrame=page.evaluate(()=>new Promise<{png:string;state:ReturnType<NonNullable<Window['vireldenDebug']>>}>((resolve,reject)=>{const deadline=performance.now()+4000;const sample=()=>{const state=window.vireldenDebug!();if(state.gatePhase==='pulling'&&state.interactionTimer<.5)return resolve({png:document.querySelector('canvas')!.toDataURL(),state});if(performance.now()>deadline)return reject(new Error('Rendered lever-pulling phase missing'));requestAnimationFrame(sample);};requestAnimationFrame(sample);}));
+ await approachGate(page);const before=await state(page);
+ const approachPNG=await page.locator('canvas').evaluate(canvas=>(canvas as HTMLCanvasElement).toDataURL());
+ await writeFile('test-results/extended-gate-operating-approach.png',Buffer.from(approachPNG.split(',')[1],'base64'));
+ const pullingFrame=page.evaluate(()=>new Promise<{png:string;state:ReturnType<NonNullable<Window['vireldenDebug']>>;samples:{time:number;phase:string;position:{x:number;y:number}}[]}>((resolve,reject)=>{const deadline=performance.now()+4000,samples:{time:number;phase:string;position:{x:number;y:number}}[]=[];const sample=()=>{const state=window.vireldenDebug!();samples.push({time:state.time,phase:state.gatePhase,position:{...state.position}});if(state.gatePhase==='pulling'&&state.interactionTimer<.5)return resolve({png:document.querySelector('canvas')!.toDataURL(),state,samples});if(performance.now()>deadline)return reject(new Error('Rendered lever-pulling phase missing'));requestAnimationFrame(sample);};requestAnimationFrame(sample);}));
  await page.keyboard.press('KeyE');
  await expect.poll(async()=>(await state(page)).gatePhase).toBe('pulling');
  const pull=await state(page);expect(pull.gate.width).toBe(520);expect(pull.gate.architectureScale).toBe(before.gate.architectureScale);await hold(page,['KeyS'],100);expect((await state(page)).position).toEqual(pull.position);
  const pulledFrame=await pullingFrame;await writeFile('test-results/extended-gate-pull-phase.png',Buffer.from(pulledFrame.png.split(',')[1],'base64'));await writeFile('test-results/extended-gate-pull-phase.json',JSON.stringify(pulledFrame.state,null,2));
+ const planted=pulledFrame.samples.filter(s=>s.phase==='pulling');expect(planted.length).toBeGreaterThan(1);
+ for(const s of planted)expect(Math.hypot(s.position.x-planted[0].position.x,s.position.y-planted[0].position.y),'actual pull root remains fixed').toBeLessThan(1e-6);
+ for(let i=1;i<pulledFrame.samples.length;i++){const a=pulledFrame.samples[i-1],b=pulledFrame.samples[i],x=b.position.x-a.position.x,y=b.position.y-a.position.y;expect(Math.hypot((x-y)*.8,(x+y)*.4),'visible approach never teleports beyond normal root speed').toBeLessThanOrEqual(150*(b.time-a.time)+1e-5);}
+ await writeFile('test-results/extended-gate-operating-trajectory.json',JSON.stringify({before:before.position,samples:pulledFrame.samples},null,2));
  await page.screenshot({path:'test-results/extended-gate-pull.png',fullPage:true});
  await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).gatePhase).toBe('opening');
  await page.keyboard.press('Escape');const frozen=await state(page);expect(frozen.gateProgress).toBeLessThan(1);await page.waitForTimeout(250);
@@ -62,7 +80,8 @@ test('monumental gate blocks native movement, animates once, pauses and reloads 
  await page.screenshot({path:'test-results/extended-gate-opening-paused.png',fullPage:true});
  await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');
  expect(await state(page)).toMatchObject({gatePhase:'closed',gateProgress:0,position:{x:320,y:320}});
- await walkTo(page,{x:550,y:70},true);await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).gatePhase).toBe('open');
+ await approachGate(page);await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).gatePhase).toBe('open');
+ const endPNG=await page.locator('canvas').evaluate(canvas=>(canvas as HTMLCanvasElement).toDataURL());await writeFile('test-results/extended-gate-operating-end.png',Buffer.from(endPNG.split(',')[1],'base64'));
  await page.keyboard.press('KeyE');await walkTo(page,{x:485,y:-110},true);expect((await state(page)).position.y).toBeLessThan(-70);
  await page.screenshot({path:'test-results/extended-gate-walkthrough.png',fullPage:true});
  await page.keyboard.press('Escape');await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).gatePhase).toBe('open');
@@ -104,7 +123,7 @@ test('native expedition traverses four populated sections, rests and earns upper
  while(!(await state(page)).completed){
   try{
    let current=await state(page);
-   if(current.gatePhase==='closed'){await walkTo(page,{x:550,y:70},true);await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).gatePhase).toBe('open');}
+   if(current.gatePhase==='closed'){await approachGate(page);await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).gatePhase).toBe('open');}
    if((await state(page)).checkpoint.y>=0){
     // Backtracking is real movement; surviving enemies may pursue, so retain defensive combat.
     await walkTo(page,{x:320,y:320},true);await page.keyboard.press('KeyE');await walkTo(page,{x:485,y:-110},true);
