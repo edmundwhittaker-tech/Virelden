@@ -166,7 +166,7 @@ export class WorldView{
     this.enemyObjects.forEach((objects,i)=>objects.forEach(object=>(object as Phaser.GameObjects.Image).setVisible(i<s.enemies.length)));
     this.labels.forEach((label,i)=>label.setVisible(i<s.enemies.length));
     this.archerObjects.forEach(objects=>objects.forEach(object=>(object as Phaser.GameObjects.Image).setVisible(false)));
-    const frame=playerPoseFrame(s,leverInteraction(s),moving);this.actorFacing=s.attack.phase==='idle'?facing:s.attack.facing;
+    const frame=playerPoseFrame(s,leverInteraction(s),moving);this.actorFacing=frame.facing;
     this.actor.draw({...frame.input,position:project(s.position)},frame.pose);
     if(s.areaId==='station')this.stationGate.draw(s);
     const rolling=s.rollTimer>0;

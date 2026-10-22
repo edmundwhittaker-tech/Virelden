@@ -1,0 +1,3 @@
+import{defineConfig}from'@playwright/test';
+/** Fresh normal UI/main controller. No seeds, game mutation or browser bypasses. */
+export default defineConfig({testDir:'./experiments/player-controller-native',testMatch:'controller.browser.spec.ts',workers:1,retries:0,timeout:180_000,use:{baseURL:'http://127.0.0.1:4189',viewport:{width:1280,height:900},headless:true,trace:'off',video:'off',screenshot:'only-on-failure'},outputDir:'test-results/player-controller-native',webServer:{command:'npm run dev -- --host 127.0.0.1 --port 4189 --strictPort',url:'http://127.0.0.1:4189',reuseExistingServer:!process.env.CI,timeout:30_000}});

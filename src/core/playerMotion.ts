@@ -13,6 +13,11 @@ export function createPlayerMotion(position:Point,facing:Facing='east',reason='n
  * limbs and blending through an incompatible elbow branch.
  */
 export function preparePlayerFacingCut(state:PlayerMotionState,position:Point,facing:Facing):PlayerFacingCut|undefined{
+ // Eligibility is checked by attack/roll BEFORE this call. A finished action
+ // can be chained on its exit frame, before an ordinary cleanup tick. Its
+ // rendered ready pose must also own a neutral lower-body snapshot; stale
+ // pre-action walking feet must not reappear in the new entry bridge.
+ if(state.action){state.gait=createDirectionalJog(project(position),state.gait.frame);state.action=undefined;state.resetReason='completed-action-chain';}
  const from=state.gait.frame,to=playerJogFrame(facing);
  if(from.view===to.view&&from.flipped===to.flipped)return;
  const cut:PlayerFacingCut={from:{...from},to:{...to},reason:'action-source-view-change'};

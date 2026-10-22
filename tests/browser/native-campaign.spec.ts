@@ -129,7 +129,15 @@ async function completeStation(page:Page){
  for(const id of ['west-cache','north-cache','south-cache'])if(!(await state(page)).looted.includes(id)){await stationLoot(page,id);await forge(page);await restAndTrain(page,c.LOCATIONS.checkpoint);}
  for(const id of ['raider','watcher','captain'])await clearEncounter(page,id);
  if(!(await state(page)).shortcut){await useLandmark(page,c.LOCATIONS.lever);await expect.poll(async()=>(await state(page)).shortcut).toBe(true);}
- if((await state(page)).gatePhase!=='open'){await forge(page);await restAndTrain(page,c.LOCATIONS.checkpoint);await useLandmark(page,c.STATION_GATE.lever,{x:550,y:105});await expect.poll(async()=>(await state(page)).gatePhase,{timeout:8_000}).toBe('open');expect((await state(page)).gate.width).toBe(520);await checkpointEvidence(page,'station-monumental-gate-open');}
+ if((await state(page)).gatePhase!=='open'){
+  await forge(page);await restAndTrain(page,c.LOCATIONS.checkpoint);
+  const operatingApproach={x:560,y:115},before=await state(page);
+  expect(c.adventureCanStand(before,operatingApproach),'native route targets the clear operating side, not the solid column').toBe(true);
+  expect(clearSegment(c,before,operatingApproach,c.STATION_GATE.stance),'visible operating approach remains collision-clear').toBe(true);
+  await useLandmark(page,c.STATION_GATE.lever,operatingApproach);
+  await expect.poll(async()=>(await state(page)).gatePhase,{timeout:8_000}).toBe('open');
+  expect((await state(page)).gate.width).toBe(520);await checkpointEvidence(page,'station-monumental-gate-open');
+ }
  for(const id of ['ascent-raider','ascent-watcher','ascent-guard','transfer-raider','transfer-watcher'])await clearEncounter(page,id);
  await stationLoot(page,'transfer-cache');await restAndTrain(page,c.CHECKPOINTS[1]);
  for(const id of ['transfer-guard','watch-raider','watch-watcher','upper-captain'])await clearEncounter(page,id);
@@ -179,3 +187,4 @@ test('fresh QA native campaign earns all1620XP, finds all gear and physically re
   await walkTo(page,c.LOCATIONS.smith);expect(c.atForge(await state(page))).toBe(true);expect(await page.evaluate(()=>Object.keys(localStorage).filter(k=>!k.startsWith('virelden-underworks-qa-')).map(k=>[k,localStorage.getItem(k)]).sort())).toEqual(normalBefore);expect(errors).toEqual([]);await checkpointEvidence(page,'full-campaign-reloaded-and-forge-reached');console.log('NATIVE_CAMPAIGN_COMPLETE '+JSON.stringify({deaths:metrics.deaths,wallSeconds:(Date.now()-metrics.started)/1000,attackInputs:metrics.attackInputs,damagingSamples:metrics.damagingSamples,observedDamage:metrics.observedDamage,xp:(await state(page)).progression.xp}));
  }catch(error){try{await evidence(page,'failure');}catch{/* retain original startup failure */}throw error;}
 });
+
