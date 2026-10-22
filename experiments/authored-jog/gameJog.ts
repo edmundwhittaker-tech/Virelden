@@ -4,25 +4,25 @@
  */
 import {evaluateRig,twoBone,type RigInput,type RigPose,type RigPoint,type RigPartId} from '../../src/core/modularRig.js';
 type Side='near'|'far';
-const TAU=Math.PI*2,STRIDE=54,AMPLITUDE=12,PICKUP=1.2,WEIGHT=2.5;
+const TAU=Math.PI*2,AMPLITUDE=12,PICKUP=1.2,WEIGHT=2.5;
 const SIDES=['near','far']as const;
 const copy=(p:RigPoint)=>({...p});
 const mix=(a:RigPoint,b:RigPoint,t:number)=>({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t});
 const smooth=(t:number)=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
 const neutral=(s:Side):RigPoint=>s==='near'?{x:-5,y:-4}:{x:7,y:-7};
-export interface GameJogState{root:RigPoint;mode:'idle'|'travel'|'settle';phase:number;weight:number;feet:Record<Side,RigPoint>;contact:Record<Side,boolean>;stop?:{first:Side;stage:number;time:number;from:Record<Side,RigPoint>};}
-export function createGameJog(root:RigPoint={x:0,y:0}):GameJogState{return{root:copy(root),mode:'idle',phase:0,weight:0,feet:{near:neutral('near'),far:neutral('far')},contact:{near:true,far:true}};}
-function travelFoot(phase:number,side:Side){
+export interface GameJogState{root:RigPoint;mode:'idle'|'travel'|'settle';phase:number;weight:number;cycleDistance:number;stanceFraction:number;feet:Record<Side,RigPoint>;contact:Record<Side,boolean>;stop?:{first:Side;stage:number;time:number;from:Record<Side,RigPoint>};}
+export function createGameJog(root:RigPoint={x:0,y:0},cadence:'compact'|'relaxed'='compact'):GameJogState{return{cycleDistance:cadence==='relaxed'?72:54,stanceFraction:cadence==='relaxed'?1/3:.5,root:copy(root),mode:'idle',phase:0,weight:0,feet:{near:neutral('near'),far:neutral('far')},contact:{near:true,far:true}};}
+function travelFoot(phase:number,side:Side,stanceFraction:number){
  const q=((phase/TAU+(side==='far'?.5:0))%1+1)%1,n=neutral(side);
- if(q<.5)return{point:{x:n.x+AMPLITUDE*(1-4*q),y:n.y},contact:true};
- const t=(q-.5)*2;return{point:{x:n.x+AMPLITUDE*(-1+2*smooth(t)),y:n.y-PICKUP*Math.sin(Math.PI*t)**2},contact:false};
+ if(q<stanceFraction)return{point:{x:n.x+AMPLITUDE*(1-2*q/stanceFraction),y:n.y},contact:true};
+ const t=(q-stanceFraction)/(1-stanceFraction);return{point:{x:n.x+AMPLITUDE*(-1+2*smooth(t)),y:n.y-PICKUP*Math.sin(Math.PI*t)**2},contact:false};
 }
 /** East resolved root only. Restart during settling is explicitly unaccepted. */
 export function advanceGameJog(s:GameJogState,root:RigPoint,dt:number){
  if(!Number.isFinite(root.x)||!Number.isFinite(root.y)||!Number.isFinite(dt)||dt<=0||dt>.05)throw Error('Expected bounded finite resolved root step');
  const distance=Math.hypot(root.x-s.root.x,root.y-s.root.y),moving=distance>.0001;s.root=copy(root);
- if(moving){if(s.mode==='idle'){s.phase=0;s.weight=0;}s.mode='travel';s.stop=undefined;s.phase+=TAU*distance/STRIDE;s.weight=Math.min(1,s.weight+dt/.12);
-  const blend=smooth(s.weight);for(const side of SIDES){const f=travelFoot(s.phase,side);s.feet[side]=mix(neutral(side),f.point,blend);s.contact[side]=f.contact;}return;
+ if(moving){if(s.mode==='idle'){s.phase=0;s.weight=0;}s.mode='travel';s.stop=undefined;s.phase+=TAU*distance/s.cycleDistance;s.weight=Math.min(1,s.weight+dt/.12);
+  const blend=smooth(s.weight);for(const side of SIDES){const f=travelFoot(s.phase,side,s.stanceFraction);s.feet[side]=mix(neutral(side),f.point,blend);s.contact[side]=f.contact;}return;
  }
  if(s.mode==='travel'){const first:Side=s.contact.near?'far':'near';s.mode='settle';s.stop={first,stage:0,time:0,from:{near:copy(s.feet.near),far:copy(s.feet.far)}};return;}
  if(s.mode==='settle'){
@@ -46,4 +46,4 @@ export function gameJogPose(input:RigInput,s:GameJogState):RigPose{
  }
  pose.hand=copy(pose.parts.hand_near.end);pose.supportHand=copy(pose.parts.hand_far.end);pose.support=s.contact.near&&s.contact.far?'both':s.contact.near?'near':'far';return pose;
 }
-export function gameJogModel(input:RigInput,s:GameJogState){const pose=gameJogPose(input,s);const world=(p:RigPoint)=>({x:s.root.x+p.x,y:s.root.y+p.y});return{mode:s.mode,hipHeight:pose.parts.thigh_near.start.y,legs:Object.fromEntries(SIDES.map(side=>[side,{contact:s.contact[side],screen:{hip:world(pose.parts[`thigh_${side}`].start),knee:world(pose.parts[`greave_${side}`].start),ankle:world(pose.parts[`foot_${side}`].start),sole:world({...pose.feet[side],y:pose.feet[side].y+4})}}]))};}
+export function gameJogModel(input:RigInput,s:GameJogState){const pose=gameJogPose(input,s);const world=(p:RigPoint)=>({x:s.root.x+p.x,y:s.root.y+p.y});return{kind:'authored-2d',cycleDistance:s.cycleDistance,stanceFraction:s.stanceFraction,mode:s.mode,hipScreenY:pose.parts.thigh_near.start.y,legs:Object.fromEntries(SIDES.map(side=>[side,{contact:s.contact[side],screen:{hip:world(pose.parts[`thigh_${side}`].start),knee:world(pose.parts[`greave_${side}`].start),ankle:world(pose.parts[`foot_${side}`].start),sole:world({...pose.feet[side],y:pose.feet[side].y+4})}}]))};}
