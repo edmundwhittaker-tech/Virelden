@@ -9,7 +9,8 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:5180',
     viewport: { width: 1280, height: 1200 },
     screenshot: 'only-on-failure',
-    video: { mode: 'on', size: { width: 1280, height: 1200 } },
+    // The native canvas recorder supplies video without a duplicate encoder.
+    video: 'off',
     trace: 'retain-on-failure',
   },
   outputDir: '../../.gait-browser-results',

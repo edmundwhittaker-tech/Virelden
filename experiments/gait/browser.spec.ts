@@ -8,11 +8,11 @@ async function startContinuousCapture(page: Page, route: string) {
     harness.render({ route, time: 0 });
     harness.startRecording();
     const canvas = document.querySelector('canvas')!;
-    const stream = canvas.captureStream(60);
-    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-      ? 'video/webm;codecs=vp9' : 'video/webm';
+    const stream = canvas.captureStream(30);
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
+      ? 'video/webm;codecs=vp8' : 'video/webm';
     const recorder = new MediaRecorder(stream, {
-      mimeType, videoBitsPerSecond: 8_000_000,
+      mimeType, videoBitsPerSecond: 6_000_000,
     });
     const chunks: Blob[] = [];
     recorder.addEventListener('dataavailable', event => {
@@ -25,7 +25,7 @@ async function startContinuousCapture(page: Page, route: string) {
         reader.readAsDataURL(new Blob(chunks, { type: mimeType }));
       });
     });
-    (window as any).__gaitCapture = { stream, recorder, done };
+    (window as any).__gaitCapture = { stream, recorder, done, startedAt: performance.now() };
     const { width, height, frameRate } = stream.getVideoTracks()[0].getSettings();
     recorder.start(100);
     harness.play();
@@ -39,11 +39,12 @@ async function stopContinuousCapture(page: Page) {
     harness.pause();
     const recording = harness.stopRecording();
     const capture = (window as any).__gaitCapture;
+    const captureSeconds = (performance.now() - capture.startedAt) / 1000;
     capture.recorder.stop();
     const videoBase64 = await capture.done;
     capture.stream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
     delete (window as any).__gaitCapture;
-    return { recording, videoBase64 };
+    return { recording, videoBase64, captureSeconds };
   });
 }
 
@@ -77,19 +78,25 @@ for (const route of ['east', 'northeast', 'southeast', 'turns']) {
     const captureSettings = await startContinuousCapture(page, route);
     expect(captureSettings.width).toBe(1200);
     expect(captureSettings.height).toBe(820);
-    await page.waitForTimeout(4100);
-    const { recording, videoBase64 } = await stopContinuousCapture(page);
+    // Wait for the actual simulation endpoint, not an encoder-sensitive wall timer.
+    await page.waitForFunction(() => (window as any).gaitHarness.snapshot().time >= 4,
+      undefined, { timeout: 15000 });
+    await page.waitForTimeout(80);
+    const { recording, videoBase64, captureSeconds } = await stopContinuousCapture(page);
     const videoFile = testInfo.outputPath(`${route}-continuous-native.webm`);
     await writeFile(videoFile, Buffer.from(videoBase64, 'base64'));
     await testInfo.attach(`${route}-continuous-native`, {
       path: videoFile, contentType: 'video/webm',
     });
     const metricsFile = testInfo.outputPath(`${route}-render-metrics.json`);
-    await writeFile(metricsFile, JSON.stringify({ ...recording, captureSettings }, null, 2));
+    await writeFile(metricsFile, JSON.stringify({ ...recording, captureSettings, captureSeconds }, null, 2));
     await testInfo.attach(`${route}-render-metrics`, {
       path: metricsFile, contentType: 'application/json',
     });
     expect(recording.metrics.samples).toBeGreaterThan(30);
+    expect(recording.samples.at(-1).time).toBe(4);
+    expect(recording.samples.every((frame: any, index: number) =>
+      !index || frame.time >= recording.samples[index - 1].time)).toBe(true);
     expect(recording.metrics.maxRenderedAnkleError).toBeLessThan(1e-4);
     // Float32 screen-coordinate rounding is amplified when divided by frame dt.
     expect(recording.metrics.maxRenderedSupportFrameDelta).toBeLessThan(.0005);

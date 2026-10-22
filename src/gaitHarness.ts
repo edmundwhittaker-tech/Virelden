@@ -19,7 +19,7 @@ class GaitComparison extends Phaser.Scene{
   Object.assign(window,{gaitHarness:{ready:true,gameplayDefaultChanged:false,render:(options:{route?:Route;time?:number;markers?:boolean;follow?:boolean;armour?:ArmorSetId})=>{paused=true;if(options.route)route.value=options.route;if(options.time!==undefined)clock=options.time;if(options.markers!==undefined)markers.checked=options.markers;if(options.follow!==undefined)follow.checked=options.follow;if(options.armour)armour.value=options.armour;this.drawFrame();return this.snapshot();},play:()=>paused=false,pause:()=>paused=true,snapshot:()=>this.snapshot(),metrics:()=>traceMetrics(traces[route.value as Route]),startRecording:()=>{this.recorded=[];this.recordingActive=true;},stopRecording:()=>{this.recordingActive=false;return this.recordingReport();}}});
   this.drawFrame();
  }
- update(_:number,delta:number){if(!paused)clock=(clock+delta/1000)%4;this.drawFrame();}
+ update(_:number,delta:number){if(!paused){const next=clock+delta/1000;clock=this.recordingActive?Math.min(next,4):next%4;}this.drawFrame();}
  captureRendered(){
   const f=this.current,camera=follow.checked?f.position:{x:0,y:0};
   return this.actors.map((actor,i)=>{const row=Math.floor(i/2),scale=row?3:1,anchor={x:(i%2)*600+250,y:row?770:260},raw=actor.renderGeometry();const world=(p:{x:number;y:number})=>({x:(p.x-anchor.x)/scale+camera.x,y:(p.y-anchor.y)/scale+camera.y});return{parts:Object.fromEntries(Object.entries(raw.parts).map(([id,p])=>[id,world(p)])),crown:world(raw.crown)};});
