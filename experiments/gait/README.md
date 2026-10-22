@@ -11,13 +11,17 @@ The fixture-only renderer snapshot adds pose injection, viewport masking and act
 ## Checks
 
 - `npm run test:gait`: 12 pure experiment tests, including all eight directions, both views/mirrors, 90/150/180 px/s, 30/60/120 fps, pause, immutability and attack/roll/interaction bypass.
-- `npm test` / `npm run build`: unchanged game baseline plus separate fixture build.
+- `npm test`: 133 preserved gameplay tests. `npm run build`: game plus separate fixture build.
 - `npm run test:gait:browser`: four focused Playwright routes. Screenshots, continuous-route videos and rendered-foot/transition JSON go to CI artifacts, not Git.
 
 The browser test records actual Phaser image matrices, converts rendered ankles/joints/crown back to world pixels, and compares them with the planner. It reports supported-foot drift, exact rendered ankle agreement, crown-height changes and largest joint jumps (including view switches). Numerical constraints are not final visual acceptance.
 
 Known visual review concerns: the rear knee IK branch differs from the frozen idle helper, NE uses a shorter/faster step pattern, and abrupt view changes need human inspection. Swing lift is 1.8 px and preferred crouch 2.5 px. Gameplay remains on its existing helper until the browser evidence is accepted.
 
-Local Chromium is blocked by the environment; no local browser retry/bypass is attempted. Focused Actions uses its supported Chromium environment. Parent has statically accepted the candidate only for this controlled comparison.
+## Verification status
+
+[Focused Chromium verification](https://github.com/edmundwhittaker-tech/Virelden/actions/runs/39734237189) passed all four browser routes, 12 gait tests, 133 preserved gameplay tests and the build. Screenshots, continuous-route videos and raw rendered-matrix metrics are retained as CI artifacts.
+
+The recorded rendered ankle agreement is within 0.000032 world px and supported-foot drift within 0.00334 px/s. The largest recorded joint displacement is 31.03 px at a front/rear view switch; view-change appearance remains a visual review item. Passing numerical tests is not final motion acceptance. The candidate remains isolated and does not change gameplay defaults.
 
 Phaser uses Float32 screen matrices: their subpixel rounding is amplified when divided by frame time. CPU support drift must remain exactly zero; actual rendered support is bounded by 0.0005 world px per sampled frame and 0.02 px/s, with raw measurements retained before assertions. This is a numerical precision allowance, not a visual sliding allowance.
