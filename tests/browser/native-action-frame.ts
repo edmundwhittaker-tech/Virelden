@@ -12,3 +12,14 @@ export async function observeAttackPhase(page:Page,phase:'windup'|'active'|'reco
  const frame=await page.waitForFunction(expected=>{const s=(window as any).vireldenDebug();return s.attack.phase===expected?s:null;},phase,{polling:'raf',timeout:5_000});
  return frame.jsonValue();
 }
+/** Small physical movement pulse measured in rendered game frames. Keyboard press/release
+ * latency must not turn a near-corner wall-clock pulse into a large overshooting stride. */
+export async function moveForFrames(page:Page,keys:string[],frames:number):Promise<void>{
+ try{
+  for(const key of keys)await page.keyboard.down(key);
+  const start=await page.evaluate(()=>(window as any).vireldenDebug().timing.frames),count=Math.max(1,Math.min(3,Math.floor(frames)));
+  await page.waitForFunction(({start,count})=>(window as any).vireldenDebug().timing.frames>=start+count,{start,count},{polling:'raf',timeout:5_000});
+ }finally{for(const key of keys)await page.keyboard.up(key);}
+ const released=await page.evaluate(()=>(window as any).vireldenDebug().timing.frames);
+ await page.waitForFunction(frame=>(window as any).vireldenDebug().timing.frames>frame,released,{polling:'raf',timeout:5_000});
+}

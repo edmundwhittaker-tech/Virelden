@@ -1,4 +1,4 @@
-import {pressAction,observeAttackPhase} from './native-action-frame';
+import {pressAction,observeAttackPhase,moveForFrames} from './native-action-frame';
 import {test,expect,type Page} from '@playwright/test';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {movementKeys,spearSpacing,retreatBlocked} from '../../browser-tests/native-steering';
@@ -43,7 +43,7 @@ async function clearThreats(page:Page){
   const s=await state(page);expect(s.hp,'alive during native spear combat').toBeGreaterThan(0);
   for(const e of s.enemies){const id=`${s.areaId}:${e.id}`,prior=metrics.enemyHp.get(id);if(prior!==undefined&&e.hp<prior){metrics.damagingSamples++;metrics.observedDamage+=prior-e.hp;}metrics.enemyHp.set(id,e.hp);}
   const threats=s.enemies.filter((e:any)=>e.hp>0).map((e:any)=>({e,...delta(s.position,e.position)})).filter((t:any)=>Math.hypot(t.x,t.y)<220&&clearSegment(c,s,s.position,t.e.position)).sort((a:any,b:any)=>Math.hypot(a.x,a.y)-Math.hypot(b.x,b.y));
-  if(!threats.length)return;const target=threats[0],range=Math.hypot(target.x,target.y);
+  if(!threats.length){await idle(page);return;}const target=threats[0],range=Math.hypot(target.x,target.y);
   if(s.attack.phase!=='idle'||s.rollTimer>0){await page.waitForTimeout(65);continue;}
   const imminent=target.e.kind!=='watcher'&&target.e.phase==='windup'&&target.e.timer<.32&&range<(target.e.kind==='captain'?88:68);
   const incoming=s.projectiles.some((p:any)=>distance(p.position,s.position)<55);
@@ -64,10 +64,10 @@ async function clearThreats(page:Page){
  throw Error('Native combat did not resolve within the bounded real encounter window');
 }
 /** Replans only after genuine combat movement. The actual browser receives ordinary movement keys. */
-async function walkTo(page:Page,target:Point,combat=true){
- const c=await core(),grid=16;
+async function walkTo(page:Page,target:Point,combat=true,stopWhenDefeated?:string){
+ const c=await core(),grid=16;let steeringReplans=0;
  for(let plan=0;plan<60;plan++){
-  const initial=await state(page);expect(initial.hp,'alive before native route planning').toBeGreaterThan(0);
+  const initial=await state(page);if(stopWhenDefeated&&initial.enemies.find((e:any)=>e.id===stopWhenDefeated)?.hp===0)return;expect(initial.hp,'alive before native route planning').toBeGreaterThan(0);
   const safe=(p:Point)=>[[0,0],[3,0],[-3,0],[0,3],[0,-3]].every(([dx,dy])=>c.adventureCanStand(initial,{x:p.x+dx,y:p.y+dy}));
   const blocked=!c.adventureCanStand(initial,target),atTarget=(p:Point)=>distance(p,target)<(blocked?37:8),planningTarget=(p:Point)=>distance(p,target)<(blocked?29:8);
   if(atTarget(initial.position)){if(combat)await clearThreats(page);if(atTarget((await state(page)).position))return;continue;}
@@ -78,11 +78,11 @@ async function walkTo(page:Page,target:Point,combat=true){
   expect(end,`connected native approach in ${initial.areaId}: ${JSON.stringify(target)}`).not.toBeNull();const path:Point[]=[end!];while(parents.get(key(path[0])))path.unshift(parents.get(key(path[0]))!);if(!blocked)path.push(target);
   // Keep short grid corners, as in the accepted station driver; quantized keys never cut a long bend.
   let replan=false;
-  for(const waypoint of path){let reached=false;for(let n=0;n<140;n++){
-   if(combat){const before=(await state(page)).position;await clearThreats(page);if(distance(before,(await state(page)).position)>10){replan=true;break;}}
+  for(const waypoint of path){let reached=false;const samples:any[]=[];for(let n=0;n<80;n++){
+   if(combat){const before=(await state(page)).position;await clearThreats(page);const after=await state(page);if(stopWhenDefeated&&after.enemies.find((e:any)=>e.id===stopWhenDefeated)?.hp===0)return;if(distance(before,after.position)>10){replan=true;break;}}
    const s=await state(page);expect(s.hp,'alive traversing native route').toBeGreaterThan(0);expect(s.areaId).toBe(initial.areaId);const d=delta(s.position,waypoint),range=Math.hypot(d.x,d.y);if(range<7){reached=true;break;}
-   await hold(page,movementKeys(d.x,d.y),Math.max(18,Math.min(70,range/150*1000)));
-  }if(replan)break;expect(reached,`native grid corner ${JSON.stringify(waypoint)}`).toBe(true);}
+   const keys=movementKeys(d.x,d.y),frames=Math.max(1,Math.min(3,Math.floor(range*.15))),wallStarted=Date.now();await moveForFrames(page,keys,frames);const after=await state(page);samples.push({before:s.position,after:after.position,range,afterRange:distance(after.position,waypoint),keys,frames,wallMs:Date.now()-wallStarted});if(samples.length>8)samples.shift();
+  }if(replan)break;if(!reached){steeringReplans++;if(steeringReplans>4)throw Error('Native steering exhausted bounded physical replans '+JSON.stringify({areaId:initial.areaId,target,waypoint,position:(await state(page)).position,samples}));console.log('NATIVE_STEERING_REPLAN '+JSON.stringify({areaId:initial.areaId,target,waypoint,steeringReplans,samples}));replan=true;break;}}
   if(replan)continue;if(combat)await clearThreats(page);if(atTarget((await state(page)).position))return;
  }
  const failed=await state(page);throw Error('Native route exceeded combat-driven replanning window '+JSON.stringify({areaId:failed.areaId,position:failed.position,target,hint:(await core()).interactionHint(failed)}));
@@ -115,7 +115,7 @@ async function restAndTrain(page:Page,checkpoint:Point){
 }
 async function clearEncounter(page:Page,id:string){
  const s=await state(page),enemy=s.enemies.find((e:any)=>e.id===id);expect(enemy,`catalogued encounter ${s.areaId}:${id}`).toBeTruthy();if(enemy.hp<=0)return;
- await walkTo(page,enemy.home);await clearThreats(page);expect((await state(page)).enemies.find((e:any)=>e.id===id).hp,`${s.areaId}:${id} cleared by native contact`).toBe(0);
+ await walkTo(page,enemy.home,true,id);await clearThreats(page);expect((await state(page)).enemies.find((e:any)=>e.id===id).hp,`${s.areaId}:${id} cleared by native contact`).toBe(0);
 }
 async function stationLoot(page:Page,id:string){const s=await state(page);if(s.looted.includes(id))return;const c=await core(),loot=c.LOOT.find((l:any)=>l.id===id);const stances=[{x:loot.position.x-40,y:loot.position.y},{x:loot.position.x+40,y:loot.position.y},{x:loot.position.x,y:loot.position.y+40},{x:loot.position.x,y:loot.position.y-40}].filter(p=>c.adventureCanStand(s,p));expect(stances.length).toBeGreaterThan(0);await useLandmark(page,loot.position,stances[0]);await expect.poll(async()=>(await state(page)).looted).toContain(id);}
 async function areaLoot(page:Page,id:string){const s=await state(page);if(s.looted.includes(id))return;const c=await core(),loot=c.EXPEDITIONS[s.areaId].loot.find((l:any)=>l.id===id);for(const guard of loot.reward.requiresDefeated)await clearEncounter(page,guard);await useLandmark(page,loot.position,loot.stance);await expect.poll(async()=>(await state(page)).looted).toContain(id);await equipMarcher(page);}
