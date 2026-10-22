@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sword spacing — actual renderer fixture</title>
+<style>body{margin:0;background:#12181c;color:#e0d9ca;font:14px system-ui}main{width:640px;margin:24px auto}h1{font-size:20px}p{line-height:1.5}canvas{display:block;outline:1px solid #73694e}small{color:#a9b3b6}</style></head>
+<body><main><h1>Sword spacing — isolated renderer fixture</h1><p id="status">Loading the production player, sword and legacy-raider renderers…</p><div id="game"></div>
+<p>Press <strong>A/S</strong> to move away, aim with the pointer, then press <strong>F</strong> to attack. The initial feet and aim reproduce an observed close-overlap miss. The fixed target stays staggered; it does not chase or retaliate.</p>
+<small>Actual Adventure movement/contact and production renderers, with one fixed simulation step per painted frame. Captures are taken after Phaser renders. This isolated fixed-target fixture is not an earned expedition route. F submits this fixture’s stored or pointer-derived aim directly to Adventure; production Scene keyboard-facing is outside this isolated test. No saved expedition is read or written.</small></main>
+<script type="module">
+import Phaser from 'phaser';
+import {ModularKnightSprite} from '/src/game/ModularKnightSprite.ts';
+import {KnightSprite} from '/src/game/KnightSprite.ts';
+import {createAdventure,attack,tick,adventureCanStand} from '/src/core/adventure.ts';
+import {WEAPON_CATALOG} from '/src/core/weaponCatalog.ts';
+import {project,STEP} from '/src/core/game.ts';
+import {facingForInput} from '/src/core/facing.ts';
+import floorUrl from '/src/assets/environment-v1/slate-court.webp';
+const initial={hero:{x:226.19842407970074,y:215.37196753574068},foe:{x:227.42508023961346,y:198.7818175746037},foeAim:{x:-.9336968837484686,y:.35806442057037535},aim:{x:.9138206100512252,y:-.406118077220907}};
+const w=WEAPON_CATALOG.sword,captures={};
+let state,actor,foe,scene,keys,ready=false,started=false,done=false,result='pending',movementFrames=0,walkable=true,pointerEvent=null;
+const feet=()=>({hero:project(state.position),foe:project(state.enemies[0].position)});
+const snapshot=()=>{const p=feet();return structuredClone({ready,done,result,control:'Fixture F submits stored/pointer-derived aim; Scene keyboard-facing is not under test',initial,position:state.position,foePosition:state.enemies[0].position,foeAim:state.enemies[0].aim,heroFoot:p.hero,enemyFoot:p.foe,distance:Math.hypot(p.foe.x-p.hero.x,p.foe.y-p.hero.y),aim:state.aim,attack:state.attack,damage:1000-state.enemies[0].hp,foeHp:state.enemies[0].hp,character:actor.snapshot(),enemy:foe.snapshot(),camera:{x:scene.cameras.main.scrollX,y:scene.cameras.main.scrollY},movementFrames,walkable,pointerEvent,time:state.time,frame:scene.game.loop.frame,captureNames:Object.keys(captures)});};
+function capture(name){
+ const data=snapshot(),source=scene.game.canvas,h=data.heroFoot,e=data.enemyFoot,c=data.camera;
+ const x=Math.max(0,Math.floor(Math.min(h.x,e.x)-c.x-100)),y=Math.max(0,Math.floor(Math.min(h.y,e.y)-c.y-170));
+ const bounds={x,y,width:Math.min(source.width-x,Math.ceil(Math.abs(h.x-e.x)+200)),height:Math.min(source.height-y,Math.ceil(Math.abs(h.y-e.y)+210))};
+ const crop=document.createElement('canvas');crop.width=bounds.width;crop.height=bounds.height;crop.getContext('2d').drawImage(source,bounds.x,bounds.y,bounds.width,bounds.height,0,0,bounds.width,bounds.height);
+ captures[name]={state:data,bounds,png:crop.toDataURL('image/png')};
+}
+class SpacingScene extends Phaser.Scene{
+ preload(){ModularKnightSprite.preload(this);KnightSprite.preload(this);this.load.image('spacing-floor',floorUrl);}
+ create(){
+  scene=this;state=createAdventure();state.position={...initial.hero};state.aim={...initial.aim};state.attack.facing='north-east';
+  state.enemies=[{id:'audit',kind:'raider',position:{...initial.foe},home:{...initial.foe},hp:1000,maxHp:1000,phase:'stagger',timer:1000,aim:{...initial.foeAim},reward:0}];
+  if(!adventureCanStand(state,state.position)||!adventureCanStand(state,state.enemies[0].position))throw Error('Observed initial feet must remain on walkable station floor');
+  this.add.tileSprite(0,0,640,400,'spacing-floor').setOrigin(0).setScrollFactor(0).setDepth(-1000).setAlpha(.55);
+  actor=new ModularKnightSprite(this);foe=new KnightSprite(this);const p=feet();this.cameras.main.centerOn((p.hero.x+p.foe.x)/2,(p.hero.y+p.foe.y)/2-43);
+  keys=this.input.keyboard.addKeys('A,S');this.input.keyboard.on('keydown-F',()=>{if(!started&&!done)started=attack(state);});
+  this.game.canvas.addEventListener('mousemove',event=>{
+   if(started||done)return;const b=this.game.canvas.getBoundingClientRect(),logical={x:(event.clientX-b.x)/b.width*640,y:(event.clientY-b.y)/b.height*400},p=project(state.position),dx=logical.x-(p.x-this.cameras.main.scrollX),dy=logical.y-(p.y-this.cameras.main.scrollY),length=Math.hypot(dx,dy);
+   pointerEvent={client:{x:event.clientX,y:event.clientY},logical,canvasCSS:{x:b.x,y:b.y,width:b.width,height:b.height},canvasBacking:{width:this.game.canvas.width,height:this.game.canvas.height},logicalGame:{width:640,height:400},devicePixelRatio:devicePixelRatio};if(length>10)state.aim={x:dx/length,y:dy/length};
+  });
+  this.game.canvas.tabIndex=0;this.game.canvas.focus();this.drawActors({x:0,y:0});ready=true;
+  this.game.events.on(Phaser.Core.Events.POST_RENDER,()=>{
+   if(!ready)return;
+   if(state.attack.phase==='active'&&!captures['first-active'])capture('first-active');
+   if(done&&!captures.result)capture('result');
+  });
+  document.getElementById('status').textContent='Ready: exact close-overlap feet · A/S to retreat · F to attack';
+ }
+ drawActors(input){
+  const a=state.attack,phase=a.phase,duration=phase==='windup'?w.windup:phase==='active'?w.active:w.recovery,progress=phase==='idle'?0:Math.max(0,Math.min(1,1-a.timer/duration));
+  const moving=phase==='idle'&&!!(input.x||input.y),facing=phase==='idle'?facingForInput(moving?input:state.aim,'east'):a.facing;
+  actor.draw({position:project(state.position),view:facing.startsWith('north')?'rear':'front',flipped:facing.endsWith('west'),motion:phase==='idle'?(moving?'walk':'idle'):'attack',time:state.time,phase:phase==='idle'?undefined:phase,progress,weapon:'sword',aim:phase==='idle'?state.aim:a.aim,weaponMotion:w.motion,weaponHands:w.hands,weaponReach:w.range});
+  actor.effects(0xffffff,0,1,1);foe.draw(state.enemies[0].position,false,facingForInput(state.enemies[0].aim,'west'));foe.effects(state.enemies[0].hp<1000?0xf0c5a0:0xa18b84,0,1,1);
+ }
+ update(){
+  if(!ready)return;const input={x:!started&&keys.A.isDown?-1:0,y:!started&&keys.S.isDown?1:0};
+  if(!done){const before={...state.position};tick(state,input,STEP);if(state.position.x!==before.x||state.position.y!==before.y)movementFrames++;walkable=walkable&&adventureCanStand(state,state.position);
+   if(started&&state.enemies[0].hp<1000){done=true;result='hit';}else if(started&&(state.attack.phase==='recovery'||state.attack.phase==='idle')){done=true;result='miss';}
+  }
+  this.drawActors(input);if(done)document.getElementById('status').textContent=`${result} · ${1000-state.enemies[0].hp} damage · ${snapshot().distance.toFixed(2)} projected pixels apart`;
+ }
+}
+window.raiderSpacingSnapshot=(includeCaptures=false)=>ready?{...snapshot(),...(includeCaptures?{captures:structuredClone(captures)}:{})}:{ready:false};
+new Phaser.Game({type:Phaser.CANVAS,parent:'game',width:640,height:400,backgroundColor:'#20262b',banner:false,scene:[SpacingScene],fps:{target:60,smoothStep:false},render:{antialias:true,roundPixels:false},audio:{noAudio:true}});
+</script></body></html>

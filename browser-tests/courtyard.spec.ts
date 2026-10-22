@@ -1,4 +1,6 @@
+import {mkdir,writeFile} from 'node:fs/promises';
 import {movementKeys,spearSpacing,retreatBlocked} from './native-steering';
+import {moveForFrames} from '../tests/browser/native-action-frame';
 import {captureAttack} from './attack-capture';
 import {test,expect,type Page} from '@playwright/test';
 const state=(page:Page)=>page.evaluate(()=>window.vireldenDebug!());
@@ -122,9 +124,30 @@ test('real danger leads to death and retry returns healthy without stuck control
  await hold(page,['KeyA']);expect((await state(page)).screen.x).toBeLessThan(p.x-10);await page.keyboard.press('KeyI');await expect(page.getByRole('dialog')).toBeVisible();
 });
 
-test('real aimed attacks defeat raider, award marks once and persist the victory',async({page})=>{
- test.setTimeout(90_000);await open(page);await walkTo(page,{x:220,y:200});
+test('real aimed attacks defeat raider, award marks once and persist the victory',async({page},testInfo)=>{
+ test.setTimeout(90_000);await open(page);
+ // Read-only observer: record phase/health changes and actual delivered click events,
+ // not continuous traces or a mutation route. The five-click budget stays unchanged.
+ await page.evaluate(()=>{
+  let running=true,last='',frame=0;const events:any[]=[];
+  const sample=(cause:string,input?:unknown)=>{const s=window.vireldenDebug!(),raider=s.enemies.find(e=>e.id==='raider')!;if(events.length>=180)return;events.push({cause,input,frame:s.timing.frames,time:s.time,hp:s.hp,position:s.position,screen:s.screen,camera:s.camera,aim:s.aim,attack:s.attack,hand:s.character.hand,registration:s.character.registration,enemies:s.enemies.map(e=>({id:e.id,hp:e.hp,phase:e.phase,position:e.position,aim:e.aim})),projectiles:s.projectiles,raiderDistance:Math.hypot((raider.position.x-s.position.x-raider.position.y+s.position.y)*.8,(raider.position.x-s.position.x+raider.position.y-s.position.y)*.4)});};
+  const click=(e:MouseEvent)=>{if(e.target instanceof HTMLCanvasElement){const b=e.target.getBoundingClientRect();sample('delivered-click',{client:{x:e.clientX,y:e.clientY},logical:{x:(e.clientX-b.x)/b.width*1280,y:(e.clientY-b.y)/b.height*800},canvasCSS:{x:b.x,y:b.y,width:b.width,height:b.height},canvasBacking:{width:e.target.width,height:e.target.height},logicalGame:{width:1280,height:800},devicePixelRatio:window.devicePixelRatio});}};
+  const observe=()=>{if(!running)return;const s=window.vireldenDebug!(),key=JSON.stringify([s.attack.phase,s.hp,s.enemies.map(e=>[e.id,e.hp,e.phase])]);if(key!==last){last=key;sample('actual-frame-change');}frame=requestAnimationFrame(observe);};
+  window.addEventListener('click',click,true);observe();(window as any).aimedRaiderAudit=()=>{running=false;cancelAnimationFrame(frame);window.removeEventListener('click',click,true);sample('final');return events;};
+ });
+ const requests:any[]=[],spacingInputs:any[]=[];let observations:any[]|undefined;try{await walkTo(page,{x:220,y:200});
  for(let strike=0;strike<5;strike++){
+  // The raider can wind up while walkTo is still closing. Do not repeatedly swing
+  // through a body behind the actual blade: reposition only with real native keys.
+  let spaced=false;
+  for(let pulse=0;pulse<24;pulse++){
+   const s=await state(page),enemy=s.enemies.find(e=>e.id==='raider')!;expect(s.hp,'player survives raider duel').toBeGreaterThan(0);
+   if(enemy.hp<=0){spaced=true;break;}
+   const dx=(enemy.position.x-s.position.x-enemy.position.y+s.position.y)*.8,dy=(enemy.position.x-s.position.x+enemy.position.y-s.position.y)*.4,distance=Math.hypot(dx,dy);
+   if(distance>=45&&distance<=60){spacingInputs.push({strike,cause:'contact-band-ready',frame:s.timing.frames,position:s.position,distance});spaced=true;break;}
+   const keys=movementKeys(dx,dy,distance<45?-1:1);spacingInputs.push({strike,pulse,keys,frame:s.timing.frames,position:s.position,distance});await moveForFrames(page,keys,1);
+  }
+  expect(spaced,'real native movement reaches the sword contact band within bounded pulses').toBe(true);
   const s=await state(page),enemy=s.enemies.find(e=>e.id==='raider')!;if(enemy.hp<=0)break;
   expect(s.hp,'player survives raider duel').toBeGreaterThan(0);
   const canvas=await page.locator('canvas').boundingBox();expect(canvas).not.toBeNull();
@@ -132,6 +155,7 @@ test('real aimed attacks defeat raider, award marks once and persist the victory
   const dx=ex-s.screen.x,dy=ey-s.screen.y,length=Math.hypot(dx,dy);
   // Aim along the target direction beyond the intentional 10px pointer deadzone.
   const x=s.screen.x+(length?dx/length:1)*120,y=s.screen.y+(length?dy/length:0)*120;
+  requests.push({strike,frame:s.timing.frames,time:s.time,hp:s.hp,hero:s.position,enemy:enemy.position,screen:s.screen,camera:s.camera,canvasCSS:canvas,logicalGame:{width:1280,height:800},logicalPointer:{x,y},clientPointer:{x:canvas!.x+x/1280*canvas!.width,y:canvas!.y+y/800*canvas!.height}});
   await page.mouse.click(canvas!.x+x/1280*canvas!.width,canvas!.y+y/800*canvas!.height);
   await expect.poll(async()=>(await state(page)).attack.phase).not.toBe('idle');
   await expect.poll(async()=>(await state(page)).attack.phase,{timeout:15_000}).toBe('idle');
@@ -140,7 +164,11 @@ test('real aimed attacks defeat raider, award marks once and persist the victory
  const earned=(await state(page)).currency;expect(earned).toBe(25);await page.keyboard.press('KeyJ');
  await expect.poll(async()=>(await state(page)).attack.phase).not.toBe('idle');await expect.poll(async()=>(await state(page)).attack.phase,{timeout:15_000}).toBe('idle');expect((await state(page)).currency).toBe(earned);
  await page.keyboard.press('KeyI');await expect(page.getByRole('dialog')).toBeVisible();await page.screenshot({path:'test-results/expedition-earned-victory.png',fullPage:true});
- await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).enemies.find(e=>e.id==='raider')!.hp).toBe(0);expect((await state(page)).currency).toBe(earned);
+ observations=await page.evaluate(()=>(window as any).aimedRaiderAudit());await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).enemies.find(e=>e.id==='raider')!.hp).toBe(0);expect((await state(page)).currency).toBe(earned);
+ }finally{
+  observations??=await page.evaluate(()=>(window as any).aimedRaiderAudit());const dir=`test-results/aimed-raider-audit/run-${testInfo.repeatEachIndex}`;await mkdir(dir,{recursive:true});await writeFile(`${dir}/actual-frame-observations.json`,JSON.stringify({fixture:'Unseeded native sword duel: real-key contact spacing, original five-click budget and all survival/reward/reload assertions retained',spacingInputs,requests,observations},null,2));await page.screenshot({path:`${dir}/final.png`,fullPage:true});console.log('AIMED_RAIDER_OBSERVATIONS '+JSON.stringify({repeat:testInfo.repeatEachIndex,samples:observations.length,final:observations.at(-1)}));
+ }
+
 });
 
 
