@@ -92,7 +92,13 @@ test('native expedition traverses four populated sections, rests and earns upper
  test.setTimeout(900_000);await open(page);const wallStarted=Date.now();let priorSimulationSeconds=0;const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  const {CHECKPOINTS,FINISH}=await import('../src/core/level');
  // Acquire marks and temper the actual starting spear before the extended route.
- await walkTo(page,{x:150,y:420});await page.keyboard.press('KeyE');await walkTo(page,{x:260,y:330});await page.keyboard.press('KeyE');await page.locator('[data-action="upgrade"]').click();await page.keyboard.press('Escape');
+ await walkTo(page,{x:150,y:420});await page.keyboard.press('KeyE');await walkTo(page,{x:260,y:330});await page.keyboard.press('KeyE');
+ // Use the actual controlled panel, with bounded action timeouts for missing controls.
+ const beforeForge=await state(page);expect(beforeForge.equipped).toBe('spear');expect(beforeForge.currency).toBeGreaterThanOrEqual(30);
+ await page.getByRole('button',{name:'Weapons',exact:true}).click({timeout:5_000});
+ await page.getByRole('button',{name:'Improve for 30 marks',exact:true}).click({timeout:5_000});
+ await expect.poll(async()=>(await state(page)).levels.spear).toBe(1);expect((await state(page)).currency).toBe(beforeForge.currency-30);
+ await page.keyboard.press('Escape');await expect.poll(async()=>(await state(page)).paused).toBe(false);
  await walkTo(page,{x:320,y:320});await page.keyboard.press('KeyE');
  let deaths=0,lastDeathCleared=0;
  while(!(await state(page)).completed){

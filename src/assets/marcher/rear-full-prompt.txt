@@ -1,0 +1,9 @@
+Use case: stylized-concept. Asset type: REAR-RIGHT matching modular cutout MARCHER ordinary fullplate atlas,15 rigid separate armour pieces.
+Image1 referenceONLY for the exact heavy MARCHER body design, broad angular breastplate/shoulders, flaredcuffs, broadknees, blunttoes and darkpainterlysteel finish. Image2 referenceONLY for the corrected FLAT-CROWN square-faced closed Marcher helmet; use its RIGHT rear helmet (blankrearplate, no visor/vents).
+Create matchingREARparts seen fromBEHIND, facingup-rightAWAY, elevatedorthographiccamera lookingdown25degrees, fixedupper-leftlight. Broad angular heavy conventional ordinary plate, NOT seamless mythicalWarplate. BACKPLATE has broadsolidfacetedsteel and subtlecentralspinekeel, notfrontbreastplate and notnarrowhorizontalDelverlames. Broad squared pauldrons, flaredbracercuffs, broadkneecaps, broadblunt sabatons. Sameadultbonescale and finish asfront; armour shell broader than lightersets.
+Squaretransparent4×4atlas, oneDISCONNECTEDisolatedpartpercell,15parts, lastempty. Longsegmentsmostlyverticaldown, unbent, withoverlapmetalrims forskeletaljoints. Exactorder:
+row1 FLAT-CROWN rearhelmet+shortnecklamesONLY(noeye/visor/vents); torsoBACKPLATE+neckcollar+waistlipONLY(NOhead/arms/pelvis); pelvisbelt+shortbroadMETALtassetsONLY; NEAR upperarm+broadsquaredpauldronONLY.
+row2 FAR upperarm+pauldron; NEAR forearmbracer/elbowcup/FLAREDcuffONLY; FAR forearmbracer/flaredcuffONLY; NEAR closedemptymetalgauntletONLY.
+row3 FAR closedemptygauntlet; NEAR thigh; FAR thigh; NEAR greavebroadkneecup+OPENanklecuffNOfoot.
+row4 FAR greaveOPENanklecuffNOfoot; NEAR standalonebroadBLUNTsabaton; FAR standalonebroadBLUNTsabaton; EMPTY.
+Showreararm/legplates andbacksofgauntlets; feetpointupperrightawayfromviewer. No cloth,skin,cape,tabard,fabric,shield,weapon,floor,shadow,text,label,drawngrid,checkerboard,assembledfigure,extraobjects. Transparentalpha and amplegaps. Darkpainterlygameasset, notvector/cartoon/scifi.

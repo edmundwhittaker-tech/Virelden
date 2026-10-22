@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "status": "Runtime expedition environment registration. Generated art is an adaptation, not official campaign canon.",
+  "projection": {
+    "x": ".8*(worldX-worldY)",
+    "y": ".4*(worldX+worldY)",
+    "humanVisibleHeight": 88
+  },
+  "source": "Original raster generated with built-in image_gen, 2026-10-22. Mechanical trim/resize/lossless alpha WebP encode using ImageMagick. Full prompts in provenance.json; large raw sources remain local-only.",
+  "assets": {
+    "reservoir-water": {
+      "file": "reservoir-water-v1.webp",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": "opaque",
+      "origin": [
+        0,
+        0
+      ],
+      "display": "Continuous ground UV material; suggested512world-unit repeat. Texture is top-down material, not already-isometric floor diamond.",
+      "footprint": "Material only; authoritative nonwalkable reservoir region remains unchanged.",
+      "layerOrder": "Behind all walkable floor/bridge and props; clip to water hazard and exclude active return-bridge floor.",
+      "notes": "Muted charcoal/olive-slate fine ripples and sparse lantern warmth; no blue glow or portal.2\u00d72 repeat and half-tile offset visually inspected; no obvious hard seam. This is static diffuse, not animated wave simulation. Do not reset UV at floor-segment boundaries."
+    },
+    "record-shelf": {
+      "file": "record-shelf-v1.webp",
+      "size": [
+        208,
+        492
+      ],
+      "alpha": "preserved generated alpha",
+      "displaySize": [
+        52,
+        123
+      ],
+      "visibleDisplayHeight": 119.5,
+      "scale": 0.25,
+      "groundOriginPx": [
+        104,
+        432.9132
+      ],
+      "origin": [
+        0.5,
+        0.879905
+      ],
+      "opaqueFootprintScreenRelativeToGround": [
+        [
+          -23.885,
+          -6.448
+        ],
+        [
+          -10.669,
+          -13.055
+        ],
+        [
+          23.885,
+          6.368
+        ],
+        [
+          10.828,
+          12.896
+        ]
+      ],
+      "layerOrder": "Use foot-based groundDepth(contact.y, stableSlot), existing actor occluder fade to.32; do not depth-sort from bottom image edge.",
+      "collision": "Do not derive a new collision radius from whole sprite. Keep planned prop collision and retest route clearance if replacing a reserved solid. Drawn footprint is approximately48\u00d726screen px.",
+      "notes": "Freestanding iron/stone shelf; dusty books/bundles have no legible invented lore. No baked floor/drop shadow. Severe human-built architecture only; not official campaign lore."
+    },
+    "lever-base": {
+      "file": "lever-base-v1.webp",
+      "size": [
+        256,
+        384
+      ],
+      "alpha": "preserved generated alpha",
+      "scale": 0.096471504,
+      "displaySize": [
+        24.6967,
+        37.0451
+      ],
+      "groundOriginPx": [
+        131.8351,
+        309.0902
+      ],
+      "origin": [
+        0.514981,
+        0.804922
+      ],
+      "socketPx": [
+        131.8351,
+        101.7751
+      ],
+      "socketScreenRelativeToGround": [
+        0,
+        -20
+      ],
+      "opaqueFootprintScreenRelativeToGround": [
+        [
+          -11.87,
+          0.285
+        ],
+        [
+          -2.189,
+          -5.469
+        ],
+        [
+          11.13,
+          0.285
+        ],
+        [
+          1.387,
+          6.076
+        ]
+      ],
+      "collisionFootprintScreen": [
+        23,
+        12
+      ],
+      "layerOrder": "Base at lp.y+2, then current procedural shaft/grip above base at same depth; actor hand/gauntlet layer may overlay grip. Retain current scene sorting.",
+      "handleContract": {
+        "ground": "lp=project(STATION_GATE.lever)",
+        "pivot": [
+          0,
+          -20
+        ],
+        "hand": "[-13+pull*23,-43+pull*13]",
+        "horizontalGripEndpoints": "hand.x\u00b15,hand.y",
+        "pullDurationSeconds": 0.8,
+        "noneOfTheseMayChange": true
+      },
+      "notes": "Footprint remains23\u00d7approximately12screen px and socket exact. Physical art body is about29px above contact versus the old flat rectangle23px; this is optional visual polish, not a collision or hand-target change. No interaction, geometry or rig changes authorized by this art package."
+    }
+  }
+}

@@ -16,7 +16,7 @@ export function canStand(p:Point):boolean {
     && SCENERY.every(o=>Math.hypot(p.x-o.x,p.y-o.y)>=o.radius+RADIUS);
 }
 /** Screen-relative input; normalized speed; substeps prevent tunnelling. */
-export function move(position:Point,input:Point,dt:number):Point {
+export function move(position:Point,input:Point,dt:number,canOccupy:(p:Point)=>boolean=canStand):Point {
   const length=Math.hypot(input.x,input.y);
   if(!length || dt<=0)return {...position};
   const sx=input.x/length*SPEED, sy=input.y/length*SPEED;
@@ -25,9 +25,9 @@ export function move(position:Point,input:Point,dt:number):Point {
   const result={...position};
   for(let i=0;i<steps;i++){
     const x={x:result.x+dx*seconds/steps,y:result.y};
-    if(canStand(x))result.x=x.x;
+    if(canOccupy(x))result.x=x.x;
     const y={x:result.x,y:result.y+dy*seconds/steps};
-    if(canStand(y))result.y=y.y;
+    if(canOccupy(y))result.y=y.y;
   }
   return result;
 }

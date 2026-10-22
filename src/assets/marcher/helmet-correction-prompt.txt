@@ -1,0 +1,4 @@
+Use case: precise-object-edit. Image1 is EDIT TARGET: TWO isolated flat-crown Marcher steel helmets on transparent background.
+Keep LEFT front-right helmet EXACTLY unchanged, and preserve overall image, right helmet's size, lighting, materials, flat crown, broad silhouette, short metal neck lames, transparency and positions.
+Correct ONLY RIGHT helmet's rear-facing construction: it must show ONLY back and rear-right side plates while looking AWAY up-right. Remove the narrow front face/visor panel and ALL vertical breathing slots currently visible along the right edge. Replace those with plain continuous faceted riveted REAR/SIDE STEEL PLATES. There must be NO visor, eye slit, vent slots, face grille or forward-facing faceplate visible anywhere on this RIGHT helmet. Broad blank backplate, flat chamfered crown, ordinary metal seams. Do not turn head back toward viewer.
+No other changes, no body/cloth/skin/floor/shadow/text/grid. Actual transparent alpha.

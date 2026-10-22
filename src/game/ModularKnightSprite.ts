@@ -3,15 +3,17 @@ import frontUrl from '../assets/ward/front.webp';
 import rearUrl from '../assets/ward/rear.webp';
 import delverFrontUrl from '../assets/delver/front.webp';
 import delverRearUrl from '../assets/delver/rear.webp';
+import marcherFrontUrl from '../assets/marcher/front.webp';
+import marcherRearUrl from '../assets/marcher/rear.webp';
 import {evaluateRig,actorPoint,type RigInput,type RigPoint,type RigPose,type RigPartId,type RigWeapon} from '../core/modularRig.js';
-import {WARD_MANIFEST,DELVER_MANIFEST,type ArmorSlot,type ArmorManifest} from './paintRig.js';
+import {WARD_MANIFEST,DELVER_MANIFEST,MARCHER_MANIFEST,type ArmorSlot,type ArmorManifest} from './paintRig.js';
 import {preloadWeaponArt,weaponArtReady,weaponTexture,WEAPON_ART} from './WeaponArt.js';
 import {placeWeaponArt} from '../core/weaponPlacement.js';
 export type ArmorSetId='ward'|'delver'|'marcher';
 export type ArmorLoadout=Record<ArmorSlot,ArmorSetId>;
 const STARTER:ArmorLoadout={helmet:'ward',chest:'ward',gauntlets:'ward',legs:'ward'};
-const SETS:Partial<Record<ArmorSetId,ArmorManifest>>={ward:WARD_MANIFEST,delver:DELVER_MANIFEST};
-const URLS={'ward-front':frontUrl,'ward-rear':rearUrl,'delver-front':delverFrontUrl,'delver-rear':delverRearUrl};
+const SETS:Partial<Record<ArmorSetId,ArmorManifest>>={ward:WARD_MANIFEST,delver:DELVER_MANIFEST,marcher:MARCHER_MANIFEST};
+const URLS={'ward-front':frontUrl,'ward-rear':rearUrl,'delver-front':delverFrontUrl,'delver-rear':delverRearUrl,'marcher-front':marcherFrontUrl,'marcher-rear':marcherRearUrl};
 export interface DrawFrame extends RigInput{position:RigPoint;weaponPhase?:'idle'|'windup'|'active'|'recovery';weaponProgress?:number}
 /** Art-only renderer. Core supplies phase/progress; no independent attack timing or stats. */
 export class ModularKnightSprite {
