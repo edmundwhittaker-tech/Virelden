@@ -18,22 +18,10 @@ function poly(g:Graphics,points:Point[],color:number,stroke=0x465052){
 function corners(x:number,y:number,r:number):Point[]{
   return [{x:x-r,y:y-r},{x:x+r,y:y-r},{x:x+r,y:y+r},{x:x-r,y:y+r}].map(project);
 }
-function column(scene:Phaser.Scene,x:number,y:number,radius:number,height:number){
-  const g=scene.add.graphics().setDepth(project({x,y}).y+radius*.4);
-  const [a,b,c,d]=corners(x,y,radius), p=project({x,y});
-  const top=(q:Point)=>({x:q.x,y:q.y-height});
-  g.fillStyle(0x05080b,.3).fillEllipse(p.x+32,p.y+7,105,25);
-  poly(g,corners(x,y,radius+6),0x41494a);
-  poly(g,[b,c,top(c),top(b)],0x263035);
-  poly(g,[c,d,top(d),top(c)],0x3d484b);
-  poly(g,[a,b,c,d].map(top),0x56605e);
-  poly(g,corners(x,y,radius+4).map(q=>({x:q.x,y:q.y-height+14})),0x58615e);
-  g.lineStyle(2,0x89918a,.25).lineBetween(c.x-6,c.y-20,c.x-6,c.y-height+30);
-  g.lineStyle(1,0xb3a078,.4).lineBetween(d.x+6,d.y-height+28,c.x-6,c.y-height+28);
-}
-/** Courtyard geometry and a replaceable animated character renderer. */
+/** Textured, depth-sorted ward and the preserved directional character renderer. */
 export class WorldView{
   private actor:KnightSprite;
+  private mist:Phaser.GameObjects.Image;
   private enemies:KnightSprite[]=[];
   private effects:Graphics;
   private gates:Graphics[]=[];
@@ -89,6 +77,9 @@ export class WorldView{
     }
     const caption=(p:Point,text:string)=>{const q=project(p);return scene.add.text(q.x,q.y+18,text,{fontFamily:'Georgia',fontSize:'12px',color:'#c5b58e',align:'center'}).setOrigin(.5,0).setDepth(1500).setAlpha(.8);};
     caption(LOCATIONS.checkpoint,'CHECKPOINT');caption(LOCATIONS.smith,'FORGE');caption(LOCATIONS.lever,'GATE LEVER');
+    const mist=scene.textures.createCanvas('ward-mist',1280,800)!;const ctx=mist.context;
+    for(const [x,y,r] of [[110,230,460],[1050,160,420]]){const gradient=ctx.createRadialGradient(x,y,0,x,y,r);gradient.addColorStop(0,'rgba(143,164,175,0.14)');gradient.addColorStop(1,'rgba(143,164,175,0)');ctx.fillStyle=gradient;ctx.fillRect(0,0,1280,800);}mist.refresh();
+    this.mist=scene.add.image(640,400,'ward-mist').setDepth(-990);
     this.effects=scene.add.graphics().setDepth(1400);
     this.actor=new KnightSprite(scene);
     this.enemies=[new KnightSprite(scene),new KnightSprite(scene),new KnightSprite(scene)];
@@ -98,6 +89,7 @@ export class WorldView{
     this.actor.draw(position,moving,facing);
   }
   drawAdventure(s:Adventure,moving:boolean,facing:Facing){
+    this.mist.setX(640+Math.sin(s.time*.06)*18);
     this.actor.draw(s.position,moving,facing);
     const rolling=s.rollTimer>0;
     this.actor.effects(s.hurtTimer>0?0xf2aaa0:invulnerable(s)?0xb9d9df:0xffffff,rolling?(1-s.rollTimer/.38)*360:0,invulnerable(s)?.6:1,rolling?.72:1);

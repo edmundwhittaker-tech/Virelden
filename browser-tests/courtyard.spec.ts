@@ -103,3 +103,25 @@ test('real danger leads to death and retry returns healthy without stuck control
  expect(await state(page)).toMatchObject({hp:140,position:{x:320,y:320},paused:false,rollTimer:0});const p=(await state(page)).screen;
  await hold(page,['KeyA']);expect((await state(page)).screen.x).toBeLessThan(p.x-10);await page.keyboard.press('KeyI');await expect(page.getByRole('dialog')).toBeVisible();
 });
+
+test('real aimed attacks defeat raider, award marks once and persist the victory',async({page})=>{
+ test.setTimeout(90_000);await open(page);await walkTo(page,{x:220,y:200});
+ for(let strike=0;strike<5;strike++){
+  const s=await state(page),enemy=s.enemies.find(e=>e.id==='raider')!;if(enemy.hp<=0)break;
+  expect(s.hp,'player survives raider duel').toBeGreaterThan(0);
+  const canvas=await page.locator('canvas').boundingBox();expect(canvas).not.toBeNull();
+  const x=640+(enemy.position.x-enemy.position.y)*.8,y=180+(enemy.position.x+enemy.position.y)*.4;
+  await page.mouse.move(canvas!.x+x/1280*canvas!.width,canvas!.y+y/800*canvas!.height);await page.keyboard.press('KeyJ');
+  await expect.poll(async()=>(await state(page)).attack.phase).not.toBe('idle');
+  await expect.poll(async()=>(await state(page)).attack.phase,{timeout:15_000}).toBe('idle');
+ }
+ await expect.poll(async()=>(await state(page)).enemies.find(e=>e.id==='raider')!.hp).toBe(0);
+ const earned=(await state(page)).currency;expect(earned).toBe(25);await page.keyboard.press('KeyJ');
+ await expect.poll(async()=>(await state(page)).attack.phase).not.toBe('idle');await expect.poll(async()=>(await state(page)).attack.phase,{timeout:15_000}).toBe('idle');expect((await state(page)).currency).toBe(earned);
+ await page.keyboard.press('KeyI');await expect(page.getByRole('dialog')).toBeVisible();await page.screenshot({path:'test-results/expedition-earned-victory.png',fullPage:true});
+ await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).enemies.find(e=>e.id==='raider')!.hp).toBe(0);expect((await state(page)).currency).toBe(earned);
+});
+
+test('foreground simulation keeps pace independently of compositor frames',async({page})=>{
+ await open(page);const before=await state(page),start=Date.now();await page.waitForTimeout(1500);const after=await state(page);const elapsed=(Date.now()-start)/1000;console.log(`Simulation pace: ${(after.time-before.time).toFixed(2)}s / ${elapsed.toFixed(2)}s wall clock`);expect(after.paused).toBe(false);expect(after.time-before.time).toBeGreaterThan(elapsed*.7);expect(after.time-before.time).toBeLessThan(elapsed*1.2);
+});
