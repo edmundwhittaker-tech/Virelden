@@ -1,3 +1,4 @@
+import {movementKeys,spearSpacing,retreatBlocked} from './native-steering';
 import {test,expect,type Page} from '@playwright/test';
 import {mkdir,writeFile} from 'node:fs/promises';
 const state=(page:Page)=>page.evaluate(()=>window.vireldenDebug!());
@@ -39,7 +40,7 @@ async function walkTo(page:Page,target:{x:number;y:number},combat=false){
  expect(atTarget(end),'native route has connected collision-safe approach').toBe(true);const route:{x:number;y:number}[]=[];let k:string|null=key(end);while(k){const [x,y]=k.split(',').map(Number);route.unshift({x,y});k=parents.get(k)??null;}
  const corners=route; // Retain grid waypoints: diagonal keys must not cut long obstacle corners.
 
- for(const p of corners){let reached=false;for(let step=0;step<150;step++){if(combat){const before=(await state(page)).position;await clearThreats(page);const after=(await state(page)).position;if(Math.hypot(after.x-before.x,after.y-before.y)>10)return walkTo(page,target,combat);}const s=await state(page);expect(s.hp,'alive traversing native route').toBeGreaterThan(0);const dx=(p.x-s.position.x-p.y+s.position.y)*.8,dy=(p.x-s.position.x+p.y-s.position.y)*.4;if(Math.hypot(dx,dy)<7){reached=true;break;}const keys:string[]=[];if(Math.abs(dx)>Math.abs(dy)*.42)keys.push(dx>0?'KeyD':'KeyA');if(Math.abs(dy)>Math.abs(dx)*.42)keys.push(dy>0?'KeyS':'KeyW');await hold(page,keys,Math.max(20,Math.min(70,Math.hypot(dx,dy)/150*1000)));}expect(reached,'native movement reaches route corner').toBe(true);}
+ for(const p of corners){let reached=false;for(let step=0;step<150;step++){if(combat){const before=(await state(page)).position;await clearThreats(page);const after=(await state(page)).position;if(Math.hypot(after.x-before.x,after.y-before.y)>10)return walkTo(page,target,combat);}const s=await state(page);expect(s.hp,'alive traversing native route').toBeGreaterThan(0);const dx=(p.x-s.position.x-p.y+s.position.y)*.8,dy=(p.x-s.position.x+p.y-s.position.y)*.4;if(Math.hypot(dx,dy)<7){reached=true;break;}const keys=movementKeys(dx,dy);await hold(page,keys,Math.max(20,Math.min(70,Math.hypot(dx,dy)/150*1000)));}expect(reached,'native movement reaches route corner').toBe(true);}
 }
 
 test('monumental gate blocks native movement, animates once, pauses and reloads safely',async({page})=>{
@@ -79,8 +80,9 @@ async function clearThreats(page:Page){
   // Close through a fired arrow with the real roll iframe; far-away circling never reaches spear range.
   const imminent=t.e.kind!=='watcher'&&t.e.phase==='windup'&&t.e.timer<.3&&distance<(t.e.kind==='captain'?88:68);
   const incoming=s.projectiles.some(p=>Math.hypot((p.position.x-s.position.x-p.position.y+s.position.y)*.8,(p.position.x-s.position.x+p.position.y-s.position.y)*.4)<55);
-  if((imminent||incoming)&&s.stamina>=28&&s.rollCooldown===0&&s.rollTimer===0){const keys:string[]=[];if(t.e.kind==='watcher'){if(Math.abs(t.dx)>Math.abs(t.dy)*.42)keys.push(t.dx>0?'KeyD':'KeyA');if(Math.abs(t.dy)>Math.abs(t.dx)*.42)keys.push(t.dy>0?'KeyS':'KeyW');}else keys.push(Math.abs(t.dx)>Math.abs(t.dy)?(t.dy>=0?'KeyW':'KeyS'):(t.dx>=0?'KeyA':'KeyD'));for(const k of keys)await page.keyboard.down(k);await page.keyboard.press('Space');await page.waitForTimeout(100);for(const k of keys)await page.keyboard.up(k);continue;}
-  if((distance<70&&!stuckRetreat)||distance>90){const before={...s.position};const sign=distance<70?-1:1,keys:string[]=[];if(Math.abs(t.dx)>Math.abs(t.dy)*.42)keys.push(t.dx*sign>0?'KeyD':'KeyA');if(Math.abs(t.dy)>Math.abs(t.dx)*.42)keys.push(t.dy*sign>0?'KeyS':'KeyW');await hold(page,keys,65);const after=(await state(page)).position;stuckRetreat=distance<70&&Math.hypot(after.x-before.x,after.y-before.y)<2;}
+  if((imminent||incoming)&&s.stamina>=28&&s.rollCooldown===0&&s.rollTimer===0){const keys=t.e.kind==='watcher'?movementKeys(t.dx,t.dy):[Math.abs(t.dx)>Math.abs(t.dy)?(t.dy>=0?'KeyW':'KeyS'):(t.dx>=0?'KeyA':'KeyD')];for(const k of keys)await page.keyboard.down(k);await page.keyboard.press('Space');await page.waitForTimeout(100);for(const k of keys)await page.keyboard.up(k);continue;}
+  const spacing=spearSpacing(distance,stuckRetreat);
+  if(spacing){const before={...s.position},keys=movementKeys(t.dx,t.dy,spacing);await hold(page,keys,65);const after=(await state(page)).position;stuckRetreat=retreatBlocked(distance,before,after);}
   else if(s.stamina>=20){metrics.attackInputs++;const box=await page.locator('canvas').boundingBox();expect(box).not.toBeNull();await page.mouse.click(box!.x+(s.screen.x+t.dx)/1280*box!.width,box!.y+(s.screen.y+t.dy)/800*box!.height);await page.waitForTimeout(65);}else await page.waitForTimeout(65);
  }
  throw new Error('Native combat failed to clear visible threats within bounded encounter window');
