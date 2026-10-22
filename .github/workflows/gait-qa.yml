@@ -1,0 +1,34 @@
+name: Isolated gait QA
+on:
+  push:
+    branches: ['qa/modular-gait-*']
+permissions:
+  contents: read
+concurrency:
+  group: gait-qa-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  compare-gait:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Pure gait and preserved gameplay tests
+        run: npm run test:gait && npm test
+      - name: Build game plus isolated fixture
+        run: npm run build
+      - name: Install supported Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Four real Phaser floor and motion comparisons
+        run: npm run test:gait:browser
+      - name: Keep screenshots, continuous-route videos and rendered metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: virelden-gait-browser-evidence
+          path: .gait-browser-results/
+          retention-days: 7

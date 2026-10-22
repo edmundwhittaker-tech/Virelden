@@ -1,0 +1,2 @@
+import{defineConfig}from'@playwright/test';import{fileURLToPath}from'node:url';
+export default defineConfig({testDir:'.',testMatch:'browser.spec.ts',timeout:60000,use:{baseURL:'http://127.0.0.1:5180',viewport:{width:1280,height:1200},screenshot:'only-on-failure',video:'on',trace:'retain-on-failure'},outputDir:'../../.gait-browser-results',webServer:{cwd:fileURLToPath(new URL('../..',import.meta.url)),command:'./node_modules/.bin/vite --host 127.0.0.1 --port 5180',url:'http://127.0.0.1:5180/gait.html',reuseExistingServer:true}});
