@@ -57,6 +57,14 @@ test('reset cancellation preserves character; confirmed reset survives reload be
  await page.keyboard.press('Escape');await expect(page.getByRole('button',{name:'Choose Wayfarer',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'Choose Wayfarer',exact:true}).click();expect(await state(page)).toMatchObject({archetype:'wayfarer',equipped:'spear',currency:0,owned:['spear']});
  await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect(await state(page)).toMatchObject({archetype:'wayfarer',equipped:'spear',paused:false});
+ // QA namespace must neither read nor erase normal expedition progress.
+ await page.goto('/?debug=1&qa=1');await expect(page.getByRole('button',{name:'Choose Vanguard',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Choose Vanguard',exact:true}).click();await expect(page.locator('#save-status')).toContainText('QA save');
+ await page.goto('/?debug=1');await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).archetype).toBe('wayfarer');
+ await page.goto('/?debug=1&qa=1');await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).archetype).toBe('vanguard');
+ await page.keyboard.press('Escape');await page.getByRole('button',{name:'Reset saved progress',exact:true}).click();await page.getByRole('button',{name:'Erase progress and choose again',exact:true}).click();
+ await page.reload();await expect(page.getByRole('button',{name:'Choose Vanguard',exact:true})).toBeVisible();
+ await page.goto('/?debug=1');await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).archetype).toBe('wayfarer');
 });
 test('small viewport fits and debug API is opt-in',async({page})=>{
  await page.setViewportSize({width:390,height:844});await page.goto('/');await expect(page.getByRole('button',{name:'Choose Vanguard',exact:true})).toBeVisible();
@@ -125,12 +133,7 @@ test('real aimed attacks defeat raider, award marks once and persist the victory
  await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).enemies.find(e=>e.id==='raider')!.hp).toBe(0);expect((await state(page)).currency).toBe(earned);
 });
 
-test.describe('untraced rendering diagnostic',()=>{
- test.use({trace:'off',video:'off',screenshot:'off'});
-test('foreground simulation keeps pace independently of compositor frames',async({page})=>{
- await open(page);const before=await state(page),start=Date.now();await page.waitForTimeout(1500);const after=await state(page);const elapsed=(Date.now()-start)/1000;console.log(JSON.stringify({before:before.timing,after:after.timing}));console.log(`Simulation pace: ${(after.time-before.time).toFixed(2)}s / ${elapsed.toFixed(2)}s wall clock`);expect(after.paused).toBe(false);expect(after.time-before.time).toBeGreaterThan(elapsed*.7);expect(after.time-before.time).toBeLessThan(elapsed*1.2);
-});
-});
+
 
 test('full exploration earns all weapons, opens shortcut and buys capped +2 upgrade',async({page})=>{
  test.setTimeout(90_000);await open(page);

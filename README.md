@@ -61,3 +61,5 @@ Expected Pages URL: https://edmundwhittaker-tech.github.io/Virelden/
 Pull requests run verification only. Main pushes verify and can publish through GitHub Actions when Pages is configured. Do not confuse a local build or draft PR with deployment. The prior courtyard remains in Git history at `94c9f7f`.
 
 Desktop keyboard/mouse first; no audio, multiplayer or touch controls. Enemy bodies reuse the knight art with distinct labels and ground markers, not bespoke enemy sprites. Attack effects and rolling transforms are procedural treatments of existing idle/walk sheets. See `docs/CHARACTER_ART.md` for original artwork details.
+
+Live QA may use `?qa=1&debug=1` for a clearly labelled separate local save. It has identical gameplay and cannot read or erase the normal expedition.

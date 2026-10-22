@@ -4,7 +4,8 @@ import {createAdventure,tick,attack,roll,interact,equip,upgrade,retry,serialize,
 import {WorldView} from './WorldView.js';
 import {KnightSprite} from './KnightSprite.js';
 import {facingForInput,type Facing} from '../core/facing.js';
-const SAVE='virelden-underworks-v1';
+const QA=new URLSearchParams(location.search).get('qa')==='1';
+const SAVE=QA?'virelden-underworks-qa-v1':'virelden-underworks-v1';
 declare global{interface Window{vireldenDebug?:()=>Adventure & {screen:Point;moving:boolean;character:ReturnType<KnightSprite['snapshot']>;paused:boolean;timing:{frames:number;rawDelta:number;fps:number;renderMs:number;updateMs:number}}}}
 export class CourtyardScene extends Phaser.Scene{
   private state=createAdventure('vanguard'); private held=new Set<string>(); private pendingKeys=new Set<string>(); private actions:string[]=[]; private accumulator=0; private view!:WorldView; private moving=false; private facing:Facing='east'; private menu=''; private saveTimer=0;private renderCost=0;private updateCost=0; private lastHud='';
@@ -39,7 +40,7 @@ export class CourtyardScene extends Phaser.Scene{
     this.showMenu(loaded?'':'start');this.render();
   }
   private aimAt(event:MouseEvent){const rect=this.game.canvas.getBoundingClientRect(),p=project(this.state.position);const x=(event.clientX-rect.left)*1280/rect.width-p.x,y=(event.clientY-rect.top)*800/rect.height-p.y;const length=Math.hypot(x,y);if(length>10)this.state.aim={x:x/length,y:y/length};}
-  private saveNotice(text:string){document.getElementById('save-status')!.textContent=text;}
+  private saveNotice(text:string){document.getElementById('save-status')!.textContent=(QA?'QA save · ':'')+text;}
   private save(){try{localStorage.setItem(SAVE,serialize(this.state));this.saveNotice('Local progress · saved');}catch{this.saveNotice('Saving unavailable · keep this tab open');}}
   private panelAction(action:string){
     if(action.startsWith('start:')){this.state=createAdventure(action.slice(6) as Archetype);this.facing='east';this.save();this.menu='';this.showMenu('');}
