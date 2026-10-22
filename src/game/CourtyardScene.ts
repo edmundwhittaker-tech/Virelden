@@ -11,6 +11,7 @@ export class CourtyardScene extends Phaser.Scene{
   private state=createAdventure('vanguard'); private held=new Set<string>(); private pendingKeys=new Set<string>(); private actions:string[]=[]; private accumulator=0; private view!:WorldView; private moving=false; private facing:Facing='east'; private menu=''; private saveTimer=0;private renderCost=0;private updateCost=0; private lastHud='';
   preload(){KnightSprite.preload(this);WorldView.preload(this);}
   create(){
+    this.saveNotice('Local progress');
     let loaded=false;try{const raw=localStorage.getItem(SAVE);if(raw){const restored=restore(raw);if(restored){this.state=restored;loaded=true;}}}catch{this.saveNotice('Saving unavailable in this browser');}
     this.view=new WorldView(this);
     let renderStart=0;const beforeRender=()=>{renderStart=performance.now();};const afterRender=()=>{this.renderCost=performance.now()-renderStart;};this.game.events.on(Phaser.Core.Events.PRE_RENDER,beforeRender);this.game.events.on(Phaser.Core.Events.POST_RENDER,afterRender);this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>{this.game.events.off(Phaser.Core.Events.PRE_RENDER,beforeRender);this.game.events.off(Phaser.Core.Events.POST_RENDER,afterRender);});
@@ -48,7 +49,7 @@ export class CourtyardScene extends Phaser.Scene{
     else if(action==='upgrade'){upgrade(this.state);this.save();this.showMenu('inventory');}
     else if(action==='retry'){retry(this.state);this.save();this.showMenu('');}
     else if(action==='reset')this.showMenu('reset');
-    else if(action==='confirm-reset'){try{localStorage.removeItem(SAVE);}catch{}this.showMenu('start');}
+    else if(action==='confirm-reset'){try{localStorage.removeItem(SAVE);this.saveNotice('No expedition saved');this.showMenu('start');}catch{this.saveNotice('Could not erase save · check browser storage permissions');}}
     else if(action==='resume')this.showMenu('');
     else if(action==='pause')this.showMenu('pause');
   }
