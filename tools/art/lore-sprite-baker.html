@@ -1,0 +1,140 @@
+<!doctype html><meta charset="utf-8"><title>Offline lore sprite exporter</title>
+<script type="module">
+import {evaluateRig,actorPoint,twoBone} from '/__work/rig.mjs';
+const config=await fetch('/__work/config.json').then(r=>r.json());
+const images={};
+await Promise.all(config.characters.flatMap(ch=>[
+ ...Object.values(ch.views).map(async v=>{const im=new Image();im.src='/__work/'+v.image;await im.decode();images[ch.id+'/'+v.image]=im;}),
+ ...Object.values(ch.equipment).map(async e=>{const im=new Image();im.src='/src/assets/lore-characters-v1/'+ch.id+'/'+e.image;await im.decode();images[ch.id+'/'+e.image]=im;})
+]));
+const CELL=384,FOOT={x:176,y:304};
+const counts={idle:4,walk:16,attack:18,hurt:6,death:8,dead:1,guard:4,interact:6};
+const make=()=>{const c=document.createElement('canvas');c.width=c.height=CELL;return c;};
+function bone(start,end,depth){return{start,end,angle:Math.atan2(end.y-start.y,end.x-start.x),length:Math.hypot(end.x-start.x,end.y-start.y),depth};}
+function holdOffhand(pose,view,target){
+ const upper=pose.parts.upperarm_far,lower=pose.parts.forearm_far,hand=pose.parts.hand_far;
+ const chain=twoBone(upper.start,{x:target.x,y:target.y+4},13,12,-1);
+ pose.parts.upperarm_far=bone(upper.start,chain.joint,upper.depth);
+ pose.parts.forearm_far=bone(chain.joint,chain.end,lower.depth);
+ pose.parts.hand_far=bone(chain.end,{x:chain.end.x,y:chain.end.y-4},hand.depth);
+ pose.supportHand={...pose.parts.hand_far.end};
+}
+function inputFor(ch,view,state,index){
+ const n=counts[state],u=n>1?index/(n-1):0;
+ let motion='idle',phase='idle',progress=u,time=0;
+ if(state==='walk'){motion='walk';time=index/16/1.6;}
+ if(state==='attack'){
+  motion='attack';if(index<6){phase='windup';progress=index/5;}else if(index<10){phase='active';progress=(index-6)/3;}else{phase='recovery';progress=(index-10)/7;}
+ }
+ if(state==='interact'){motion='interact';}
+ const caster=ch.action==='cast'||ch.action==='invoke';
+ const weapon=ch.action==='slash'?'sword':ch.action==='mace-strike'?'hammer':'spear';
+ const input={view,flipped:false,motion,time,phase:phase==='idle'?undefined:phase,progress,weapon,weaponHands:1,aim:{x:1,y:view==='rear'?-.30:.30},
+   ...(caster?{weaponMotion:{kind:'thrust',startAngle:0,endAngle:0}}:{}),
+   ...(state==='interact'?{handTarget:{x:14+u*9,y:-50-u*8}}:{})};
+ return{input,u,phase,progress};
+}
+function poseFor(ch,view,state,index){
+ const entry=inputFor(ch,view,state,index),pose=evaluateRig(entry.input),u=entry.u;
+ // Offhand equipment has a stable carry, not an unrelated arm counter-swing.
+ if(ch.id==='harbinger_road_knight')holdOffhand(pose,view,{x:view==='rear'?-12:14,y:state==='guard'?-55:-44});
+ if(ch.id==='eryndor_magister')holdOffhand(pose,view,{x:view==='rear'?-8:8,y:-52});
+ if(ch.id==='pale_shepherd_keeper')holdOffhand(pose,view,{x:view==='rear'?-14:15,y:-43-(state==='attack'?Math.sin(u*Math.PI)*14:0)});
+ const actor={angle:0,scaleX:1,scaleY:1,x:0,y:0};
+ if(state==='idle')actor.y=-Math.sin(u*Math.PI*2)*.30;
+ if(state==='hurt'){actor.angle=-Math.sin(u*Math.PI)*.14;actor.x=-Math.sin(u*Math.PI)*2;}
+ if(state==='death'||state==='dead'){
+  const t=state==='dead'?1:u;actor.angle=t*Math.PI/2;actor.scaleY=1-t*.18;actor.x=-25*t;actor.y=-6*t;
+ }
+ return{...entry,pose,actor};
+}
+function transformPoint(p,actor,fit){const q=actorPoint(p,actor);return{x:FOOT.x+(q.x+actor.x)*2*fit,y:FOOT.y+(q.y+actor.y)*2*fit};}
+function gearFor(ch,view,state,entry,fit){
+ const {pose,actor}=entry,primary=pose.hand,offhand=pose.supportHand,rear=view==='rear';
+ const list=[];
+ const add=(name,hand,angle,layer)=>{
+  if(!ch.equipment[name])return;
+  const e=ch.equipment[name],p=hand==='right'?primary:offhand;
+  // Lay the sword/mace along the fallen body instead of pointing below the cell.
+  if((state==='death'||state==='dead')&&hand==='right'&&(name==='sword'||name==='mace')) { const t=state==='dead'?1:entry.u;angle=angle*(1-t)-Math.PI/2*t; }
+  list.push({id:name,image:e.image,hand,position:transformPoint(p,actor,fit),grip:e.grip,
+   rotation:angle+actor.angle,scale:fit,layer,handVisible:!(rear&&hand==='left')});
+ };
+ if(state!=='interact'){
+  if(ch.action==='slash')add('sword','right',pose.weaponAngle,14);
+  else if(ch.action==='mace-strike')add('mace','right',pose.weaponAngle,14);
+  else add(ch.action==='cast'?'staff':'crook','right',-Math.PI/2+(state==='attack'?Math.sin(entry.u*Math.PI)*.10:0),14);
+ }
+ if(ch.action==='mace-strike')add(rear?'shield-back':'shield-front','left',0,rear?0:14.5);
+ if(ch.action==='cast')add(rear?'folio-back':'folio-front','left',0,rear?0:14.5);
+ if(ch.action==='invoke')add('lantern','left',0,rear?0:14.5);
+ return list;
+}
+function drawParts(ctx,ch,view,entry,fit,onlyHands=false){
+ const {pose,actor}=entry,v=ch.views[view],atlas=images[ch.id+'/'+v.image];
+ ctx.save();ctx.translate(FOOT.x,FOOT.y);ctx.scale(2*fit,2*fit);ctx.translate(actor.x,actor.y);ctx.rotate(actor.angle);ctx.scale(actor.scaleX,actor.scaleY);
+ for(const [id,part]of Object.entries(pose.parts).sort((a,b)=>a[1].depth-b[1].depth)){
+  if(onlyHands&&!id.startsWith('hand'))continue;
+  if(!onlyHands&&!['helmet','torso','pelvis'].includes(id)){
+   ctx.fillStyle=ch.id==='valdren_warplate_bearer'?'#363a3a':'#242526';ctx.beginPath();ctx.arc(part.start.x,part.start.y,id.startsWith('upperarm')?3.2:2.1,0,Math.PI*2);ctx.fill();
+  }
+  const a=v.parts[id],[px,py]=a.pivot,[dx,dy]=a.distal,scale=part.length/Math.hypot(dx-px,dy-py);
+  ctx.save();ctx.translate(part.start.x,part.start.y);ctx.rotate(part.angle-Math.atan2(dy-py,dx-px));ctx.scale(scale,scale);
+  ctx.drawImage(atlas,a.frame%4*256,Math.floor(a.frame/4)*256,256,256,-px,-py,256,256);ctx.restore();
+ }
+ ctx.restore();
+}
+function paintGear(ctx,ch,record){
+ ctx.save();ctx.translate(record.position.x,record.position.y);ctx.rotate(record.rotation);ctx.scale(record.scale,record.scale);
+ ctx.drawImage(images[ch.id+'/'+record.image],-record.grip.x,-record.grip.y);ctx.restore();
+}
+function fitFor(ch,view){
+ const c=make(),ctx=c.getContext('2d',{willReadFrequently:true}),entry=poseFor(ch,view,'idle',0);drawParts(ctx,ch,view,entry,1);
+ const data=ctx.getImageData(0,0,CELL,CELL).data;let top=CELL;
+ for(let y=0;y<CELL;y++)for(let x=0;x<CELL;x++)if(data[(y*CELL+x)*4+3]>64){top=Math.min(top,y);break;}
+ return 176/(FOOT.y-top);
+}
+function frame(ch,view,state,index,fit){
+ const body=make(),hands=make(),full=make(),entry=poseFor(ch,view,state,index);
+ drawParts(body.getContext('2d'),ch,view,entry,fit);drawParts(hands.getContext('2d'),ch,view,entry,fit,true);
+ const gear=gearFor(ch,view,state,entry,fit),ctx=full.getContext('2d');
+ for(const record of gear.filter(g=>g.layer<8))paintGear(ctx,ch,record);
+ ctx.drawImage(body,0,0);
+ for(const record of gear.filter(g=>g.layer>=8))paintGear(ctx,ch,record);
+ // These exact hand images occlude the held grips after foreground equipment.
+ ctx.drawImage(hands,0,0);
+ const record={state,phase:entry.phase,progress:entry.progress,foot:{...FOOT},
+  hands:{right:{...transformPoint(entry.pose.hand,entry.actor,fit),visible:true},left:{...transformPoint(entry.pose.supportHand,entry.actor,fit),visible:view!=='rear'}},
+  equipment:gear,actor:{...entry.actor},equipmentIncluded:true};
+ return{body,hands,full,record};
+}
+function duration(ch,state,index){
+ if(state==='idle')return 250;if(state==='walk')return ch.walkMs/16;
+ if(state==='attack')return index<6?ch.timing[0]/6:index<10?ch.timing[1]/4:ch.timing[2]/8;
+ return({hurt:50,death:90,dead:1000,guard:200,interact:100})[state];
+}
+async function bake(id,view){
+ const ch=config.characters.find(c=>c.id===id),fit=fitFor(ch,view),count=Object.values(counts).reduce((a,b)=>a+b,0),columns=8,rows=Math.ceil(count/8);
+ const sheets=Object.fromEntries(['body','hands','full'].map(name=>{const c=document.createElement('canvas');c.width=columns*CELL;c.height=rows*CELL;return[name,c];}));
+ const frames=[],animations={};let cursor=0;
+ for(const [state,n]of Object.entries(counts)){
+  const indices=[],durations=[];
+  for(let i=0;i<n;i++){
+   const f=frame(ch,view,state,i,fit),x=cursor%8*CELL,y=Math.floor(cursor/8)*CELL,ms=duration(ch,state,i);
+   for(const name of Object.keys(sheets))sheets[name].getContext('2d').drawImage(f[name],x,y);
+   frames.push({index:cursor,rect:[x,y,CELL,CELL],durationMs:ms,...f.record});indices.push(cursor++);durations.push(ms);
+  }
+  animations[state]={frames:indices,durationsMs:durations,loop:['idle','walk','guard'].includes(state)};
+ }
+ if(ch.action==='cast'||ch.action==='invoke')animations.cast={...animations.attack};
+ return{images:Object.fromEntries(Object.entries(sheets).map(([k,c])=>[k,c.toDataURL('image/webp',.97)])),
+  view,fit,frames,animations,layout:{columns,rows,frameWidth:CELL,frameHeight:CELL,width:columns*CELL,height:rows*CELL},
+  phaseFrames:{windup:animations.attack.frames.slice(0,6),active:animations.attack.frames.slice(6,10),recovery:animations.attack.frames.slice(10)}};
+}
+function preview(){
+ const c=document.createElement('canvas');c.width=1000;c.height=450;const ctx=c.getContext('2d');ctx.fillStyle='#20292a';ctx.fillRect(0,0,c.width,c.height);
+ config.characters.forEach((ch,i)=>{const fit=fitFor(ch,'front'),f=frame(ch,'front','idle',0,fit);ctx.drawImage(f.full,i*250-30,20);ctx.fillStyle='#d1d5cb';ctx.font='13px sans-serif';ctx.fillText(ch.name,i*250+12,420);});
+ return c.toDataURL('image/png');
+}
+window.loreBake={ready:true,config,bake,preview};
+</script>
