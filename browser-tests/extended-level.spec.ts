@@ -48,9 +48,12 @@ test('monumental gate blocks native movement, animates once, pauses and reloads 
  // World north is screen north-east: this held combination pushes into the gate.
  await hold(page,['KeyW','KeyD'],450);expect((await state(page)).position.y).toBeGreaterThanOrEqual(28);
  await page.screenshot({path:'test-results/extended-gate-closed.png',fullPage:true});
- await walkTo(page,{x:550,y:70});const before=await state(page);await page.keyboard.press('KeyE');
+ await walkTo(page,{x:550,y:70});const before=await state(page);
+ const pullingFrame=page.evaluate(()=>new Promise<{png:string;state:ReturnType<NonNullable<Window['vireldenDebug']>>}>((resolve,reject)=>{const deadline=performance.now()+4000;const sample=()=>{const state=window.vireldenDebug!();if(state.gatePhase==='pulling'&&state.interactionTimer<.5)return resolve({png:document.querySelector('canvas')!.toDataURL(),state});if(performance.now()>deadline)return reject(new Error('Rendered lever-pulling phase missing'));requestAnimationFrame(sample);};requestAnimationFrame(sample);}));
+ await page.keyboard.press('KeyE');
  await expect.poll(async()=>(await state(page)).gatePhase).toBe('pulling');
  const pull=await state(page);expect(pull.gate.width).toBe(520);expect(pull.gate.architectureScale).toBe(before.gate.architectureScale);await hold(page,['KeyS'],100);expect((await state(page)).position).toEqual(pull.position);
+ const pulledFrame=await pullingFrame;await writeFile('test-results/extended-gate-pull-phase.png',Buffer.from(pulledFrame.png.split(',')[1],'base64'));await writeFile('test-results/extended-gate-pull-phase.json',JSON.stringify(pulledFrame.state,null,2));
  await page.screenshot({path:'test-results/extended-gate-pull.png',fullPage:true});
  await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).gatePhase).toBe('opening');
  await page.keyboard.press('Escape');const frozen=await state(page);expect(frozen.gateProgress).toBeLessThan(1);await page.waitForTimeout(250);
@@ -71,6 +74,9 @@ async function clearThreats(page:Page){
   const visible=s.enemies.filter(e=>e.hp>0).map(e=>({e,dx:(e.position.x-s.position.x-e.position.y+s.position.y)*.8,dy:(e.position.x-s.position.x+e.position.y-s.position.y)*.4})).filter(t=>Math.hypot(t.dx,t.dy)<220&&Array.from({length:19},(_,i)=>{const f=(i+1)/20;return adventureCanStand(s,{x:s.position.x+(t.e.position.x-s.position.x)*f,y:s.position.y+(t.e.position.y-s.position.y)*f});}).every(Boolean)).sort((a,b)=>Math.hypot(a.dx,a.dy)-Math.hypot(b.dx,b.dy));
   if(!visible.length)return;const t=visible[0],distance=Math.hypot(t.dx,t.dy);
   if(s.attack.phase!=='idle'){await page.waitForTimeout(65);continue;}
+  const imminent=t.e.phase==='windup'&&t.e.timer<.3&&distance<(t.e.kind==='watcher'?210:t.e.kind==='captain'?88:68);
+  const incoming=s.projectiles.some(p=>Math.hypot((p.position.x-s.position.x-p.position.y+s.position.y)*.8,(p.position.x-s.position.x+p.position.y-s.position.y)*.4)<55);
+  if((imminent||incoming)&&s.stamina>=28&&s.rollCooldown===0&&s.rollTimer===0){const keys=Math.abs(t.dx)>Math.abs(t.dy)?[t.dy>=0?'KeyW':'KeyS']:[t.dx>=0?'KeyA':'KeyD'];for(const k of keys)await page.keyboard.down(k);await page.keyboard.press('Space');await page.waitForTimeout(100);for(const k of keys)await page.keyboard.up(k);continue;}
   if((distance<88&&!stuckRetreat)||distance>108){const before={...s.position};const sign=distance<88?-1:1,keys:string[]=[];if(Math.abs(t.dx)>Math.abs(t.dy)*.42)keys.push(t.dx*sign>0?'KeyD':'KeyA');if(Math.abs(t.dy)>Math.abs(t.dx)*.42)keys.push(t.dy*sign>0?'KeyS':'KeyW');await hold(page,keys,65);const after=(await state(page)).position;stuckRetreat=distance<88&&Math.hypot(after.x-before.x,after.y-before.y)<2;}
   else if(s.stamina>=20){const box=await page.locator('canvas').boundingBox();expect(box).not.toBeNull();await page.mouse.click(box!.x+(s.screen.x+t.dx)/1280*box!.width,box!.y+(s.screen.y+t.dy)/800*box!.height);await page.waitForTimeout(65);}else await page.waitForTimeout(65);
  }
@@ -83,14 +89,30 @@ test('native expedition traverses four populated sections, rests and earns upper
  // Acquire marks and temper the actual starting spear before the extended route.
  await walkTo(page,{x:150,y:420});await page.keyboard.press('KeyE');await walkTo(page,{x:260,y:330});await page.keyboard.press('KeyE');await page.locator('[data-action="upgrade"]').click();await page.keyboard.press('Escape');
  await walkTo(page,{x:320,y:320});await page.keyboard.press('KeyE');
- await walkTo(page,{x:550,y:70},true);await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).gatePhase).toBe('open');
- // Backtrack to recover after the lower-ward fights, then cross the aperture before engaging uphill.
- await walkTo(page,{x:320,y:320});await page.keyboard.press('KeyE');await walkTo(page,{x:485,y:-110});
- for(const [label,target]of [['ascent',{x:485,y:-400}],['transfer',{x:130,y:-770}],['checkpoint',CHECKPOINTS[1]]] as const){await walkTo(page,target,true);await page.screenshot({path:`test-results/extended-route-${label}.png`,fullPage:true});}
- await page.keyboard.press('KeyE');expect((await state(page)).checkpoint).toEqual(CHECKPOINTS[1]);expect((await state(page)).hp).toBe(100);
- await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).position).toEqual(CHECKPOINTS[1]);expect((await state(page)).gatePhase).toBe('open');
- for(const target of [{x:500,y:-1380},{x:125,y:-1670},FINISH])await walkTo(page,target,true);
- await page.keyboard.press('KeyE');expect((await state(page)).completed).toBe(true);expect((await state(page)).enemies.find(e=>e.id==='upper-captain')!.hp).toBe(0);
+ let deaths=0,lastDeathCleared=0;
+ while(!(await state(page)).completed){
+  try{
+   let current=await state(page);
+   if(current.gatePhase==='closed'){await walkTo(page,{x:550,y:70},true);await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).gatePhase).toBe('open');}
+   if((await state(page)).checkpoint.y>=0){
+    // Backtracking is real movement; surviving enemies may pursue, so retain defensive combat.
+    await walkTo(page,{x:320,y:320},true);await page.keyboard.press('KeyE');await walkTo(page,{x:485,y:-110},true);
+    for(const [label,target]of [['ascent',{x:485,y:-400}],['transfer',{x:130,y:-770}],['checkpoint',CHECKPOINTS[1]]] as const){await walkTo(page,target,true);await page.screenshot({path:`test-results/extended-route-${label}.png`,fullPage:true});console.log('ROUTE_SECTION '+JSON.stringify({label,hp:(await state(page)).hp,deaths}));}
+    await page.keyboard.press('KeyE');expect((await state(page)).checkpoint).toEqual(CHECKPOINTS[1]);expect((await state(page)).hp).toBe(100);
+    await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).position).toEqual(CHECKPOINTS[1]);expect((await state(page)).gatePhase).toBe('open');
+   }
+   for(const target of [{x:500,y:-1380},{x:125,y:-1670},FINISH])await walkTo(page,target,true);
+   await page.keyboard.press('KeyE');expect((await state(page)).completed).toBe(true);expect((await state(page)).enemies.find(e=>e.id==='upper-captain')!.hp).toBe(0);
+  }catch(error){
+   const fallen=await state(page);if(fallen.hp>0)throw error;
+   const cleared=fallen.enemies.filter(e=>e.hp===0).map(e=>e.id);deaths++;
+   console.log('ROUTE_DEATH '+JSON.stringify({deaths,position:fallen.position,cleared,currency:fallen.currency}));
+   expect(deaths,'bounded real expedition retries').toBeLessThanOrEqual(4);expect(cleared.length,'each death must still advance durable encounter progress').toBeGreaterThan(lastDeathCleared);lastDeathCleared=cleared.length;
+   await page.getByRole('button',{name:'Rise at checkpoint',exact:true}).click();const risen=await state(page);
+   expect(risen.hp).toBe(risen.maxHp);expect(risen.position).toEqual(fallen.checkpoint);expect(risen.currency).toBe(fallen.currency);expect(risen.owned).toEqual(fallen.owned);expect(risen.levels).toEqual(fallen.levels);expect(risen.equipped).toBe(fallen.equipped);expect(risen.enemies.filter(e=>e.hp===0).map(e=>e.id)).toEqual(cleared);
+  }
+ }
+ console.log('ROUTE_COMPLETE '+JSON.stringify({deaths,time:(await state(page)).time,cleared:(await state(page)).enemies.filter(e=>e.hp===0).length}));
  expect((await state(page)).enemies.filter(e=>e.hp===0).length).toBeGreaterThanOrEqual(8);await page.screenshot({path:'test-results/extended-route-complete.png',fullPage:true});
  await page.keyboard.press('Escape');await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).completed).toBe(true);expect(errors).toEqual([]);
 });

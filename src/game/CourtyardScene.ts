@@ -83,8 +83,11 @@ export class CourtyardScene extends Phaser.Scene{
     const p=project(this.state.position),camera=this.cameras.main;
     // Keep the original courtyard framing; pan at a generous deadzone instead of shrinking actors.
     const x=p.x-camera.scrollX,y=p.y-camera.scrollY;
-    camera.scrollX+=x<280?x-280:x>1000?x-1000:0;
-    camera.scrollY+=y<240?y-240:y>630?y-630:0;
+    // Beyond the gate, leave room ahead for telegraphs instead of pinning the actor under the HUD.
+    const bounds=this.state.position.y<0?{left:440,right:840,top:360,bottom:570}:{left:280,right:1000,top:240,bottom:630};
+    const catchUp=x<0||x>1280||y<0||y>800?1:.18;
+    camera.scrollX+=(x<bounds.left?x-bounds.left:x>bounds.right?x-bounds.right:0)*catchUp;
+    camera.scrollY+=(y<bounds.top?y-bounds.top:y>bounds.bottom?y-bounds.bottom:0)*catchUp;
   }
   private render(){if(!this.view)return;this.followPlayer();this.view.drawAdventure(this.state,this.moving,this.facing);const s=this.state;const hint=interactionHint(s);const signature=[Math.ceil(s.hp),Math.ceil(s.stamina),s.equipped,s.currency,s.message,s.completed,s.gatePhase,Math.floor(s.position.y/640),hint].join('|');if(signature===this.lastHud)return;this.lastHud=signature;for(const [id,value,max] of [['health',s.hp,s.maxHp],['stamina',s.stamina,s.maxStamina]] as const){const meter=document.getElementById(id) as HTMLMeterElement;meter.max=max;meter.value=value;document.getElementById(id+'-label')!.textContent=`${Math.ceil(value)} / ${max}`;}document.getElementById('weapon-label')!.textContent=`${WEAPONS[s.equipped].name} +${s.levels[s.equipped]}`;document.getElementById('currency-label')!.textContent=`${s.currency} iron marks`;document.getElementById('message')!.textContent=s.message;document.getElementById('interaction')!.textContent=hint;const section=LEVEL_SECTIONS.find(section=>s.position.y>=section.y&&s.position.y<=section.y+section.height)??LEVEL_SECTIONS[0];document.getElementById('objective-text')!.textContent=s.completed?'Upper watch secured. Expedition complete. Explore remaining caches or replay using Reset.':s.gatePhase==='closed'?'Lower Ward · Find equipment and prepare at the forge. Pull the station gate lever beside the northern arch.':s.gatePhase!=='open'?'Station gate · The leaves are withdrawing. Wait for the passage to clear.':`${section.name} · ${section.id==='ward'?'Walk through the open station gate.':section.id==='ascent'?'Follow the lamp-lit bends into the transfer court.':section.id==='transfer'?'Find the checkpoint, then continue to the upper watch.':'Defeat the upper captain and secure the marked exit.'}`;}
 }
