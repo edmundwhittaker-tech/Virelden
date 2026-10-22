@@ -1,0 +1,30 @@
+name: Aimed raider native diagnosis
+on:
+  push:
+    branches: [qa/aimed-raider-diagnostic]
+permissions:
+  contents: read
+jobs:
+  exact-five-click-observation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run check
+      - run: npx playwright install --with-deps chromium
+      - name: Six independent fresh native observations, retaining every inherited assertion
+        run: npx playwright test browser-tests/courtyard.spec.ts --grep 'real aimed attacks defeat raider' --repeat-each=6 --output test-results/aimed-raider-runs
+      - name: Keep compact actual-frame state and screenshots, not traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aimed-raider-native-observations
+          path: |
+            test-results/**/*.png
+            test-results/**/*.json
+            test-results/**/*.md
+          retention-days: 7
