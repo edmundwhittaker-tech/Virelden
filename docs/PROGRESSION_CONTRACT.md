@@ -1,3 +1,9 @@
+# Connected runtime contract (v4)
+
+The active three-area runtime uses the strict v4 envelope described in [Connected expeditions](CONNECTED_EXPEDITIONS.md). Its world schema 2 stores independent station, cistern and annex facts alongside the complete authoritative equipment/progression/armory extension. The total authored budget is 1,620 XP. All v3-current, v3-good and v1 keys remain read-only during migration and reset. `legacyCampaignSave.ts` retains the released full-v3 codec and older-client forward guards; the active migration calls only its pure `readCampaignSave`.
+
+The v3 description below is the historical station-release contract, not the active storage version.
+
 # Equipment, combat progression and persistence
 
 These are prototype game mechanics and ordinary manufactured equipment, not changes to published campaign canon. The player renderer uses articulated metal parts; true Warplate is not starter gear or a forge upgrade.

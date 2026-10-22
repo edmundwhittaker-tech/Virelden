@@ -24,7 +24,7 @@ export class ArcherView{
  this.body.setFrame(pose).setFlipX(flip<0).setPosition(p.x,p.y+bob).setDepth(p.y).setVisible(e.hp>0).setTint(e.phase==='stagger'?0xffbda8:0xffffff);
  this.shadow.setPosition(p.x,p.y).setDepth(p.y-.1).setVisible(e.hp>0);
  const hand={x:p.x+(221-128)*.405*flip,y:p.y+(75-241)*.405+bob};
- const draw=e.phase==='windup'?Math.min(1,(.9-e.timer)/.35):0;
+ const draw=e.phase==='windup'?Math.max(0,Math.min(1,(.9-e.timer)/.35)):0;
  const length=Math.hypot(e.aim.x,e.aim.y)||1,u={x:e.aim.x/length,y:e.aim.y/length},n={x:-u.y,y:u.x};
  const off=archerNockOffset(e.aim,draw),nock={x:p.x+off.x,y:p.y-ARROW_HEIGHT+off.y+bob};
  const g=this.bow;g.clear().setDepth(p.y+.03).setVisible(e.hp>0);
