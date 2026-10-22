@@ -1,89 +1,63 @@
-# Virelden — The Courtyard
+# Virelden — Beneath the Station
 
-A small **Phaser + TypeScript + Vite** starter: one isometric stone courtyard and one movable knight. The character has generated full-plate artwork, idle poses and six-frame walk cycles for east/west and all four isometric diagonals. The environment remains placeholder geometry in Virelden's muted dark fantasy style.
+A compact **Phaser + TypeScript + Vite** action-RPG slice: explore an underworks ward, recover equipment, improve mundane steel, open a shortcut and defeat an armoured captain.
 
-**Controls:** WASD or arrow keys to walk. **Reset position** returns to the centre.
-The courtyard edges and four pillars are solid. Keyboard and desktop browser first.
+## Play
 
-| Direction | Keys |
+Choose **Vanguard** (140 health, 90 stamina, sword) or **Wayfarer** (100 health, 130 stamina, spear). Both share the existing ordinary full-plate knight artwork, closed helmet and no cloth. Neither wears true Warplate.
+
+| Control | Action |
 | --- | --- |
-| Northeast | W + D |
-| Northwest | W + A |
-| Southeast | S + D |
-| Southwest | S + A |
+| WASD / arrow keys | Screen-relative movement and facing |
+| J / left click | Attack; mouse aims, movement sets facing |
+| Space | Roll in movement direction, or current facing when still |
+| E | Open cache, rest, use forge, open shortcut |
+| I | Equipment, comparison and upgrades |
+| H | Controls and survival guide |
+| Escape | Pause / resume |
 
-Equivalent arrow-key pairs also work. W/S alone switch to rear/front artwork while retaining the last horizontal side.
+The sword sweeps broadly, the spear thrusts farther in a narrow cone, and the slow hammer staggers. Watch enemy windups and allow stamina to recover. Rolls briefly avoid damage but cost stamina and have recovery. Three equipment caches reward side exploration. The forge near the starting checkpoint upgrades equipped weapons to +1 (30 marks) and +2 (60 marks).
 
-## Develop entirely in your browser
+Equipment, upgrades, earned marks, cleared foes, opened caches and the shortcut persist through death and reload. A reload starts safely at the checkpoint, not mid-fight. Living enemies reset on retry. Rest heals but does not revive cleared enemies. Menus and lost browser focus pause play. **Pause → Reset saved progress** requires confirmation and permits trying the other loadout. Saves are local to this browser; no account or server sync.
 
-You do not need to install anything on your computer or open a separate Phaser application.
+The ward and adversaries are explicitly prototype adaptations, not additions to official campaign canon. Public Plate-station and monumental Imperial architecture guide the environment. No private GM content is included.
 
-1. Open [this repository](https://github.com/edmundwhittaker-tech/Virelden).
-2. Click **Code → Codespaces → Create codespace on main**.
-3. Wait for setup to finish. It installs the project dependencies automatically.
-4. In the terminal at the bottom, type:
+## Develop in a browser
 
-   ```sh
-   npm run dev
-   ```
+1. Open this repository on GitHub.
+2. **Code → Codespaces → Create codespace on main** (or choose the feature branch being reviewed).
+3. Run `npm run dev`, then open forwarded port **5173**.
+4. Commit changes and stop the Codespace when done. Codespaces may incur costs beyond included allowance; this project does not start one automatically.
 
-5. Click **Open in Browser** when prompted. If there is no prompt, open the **Ports** panel and click the browser icon beside **5173**.
-6. Keep that game tab open. Changes to the source update the preview automatically.
-7. When finished, commit and push changes from **Source Control**, then stop the Codespace at [github.com/codespaces](https://github.com/codespaces).
-
-Codespaces has a monthly included allowance; usage beyond it can cost money if billing is enabled. A stopped Codespace no longer uses compute, but stored Codespaces still use storage. This project does not create or start one automatically.
-
-## What each part does
-
-| Part | Purpose |
-| --- | --- |
-| GitHub repository | Saves the game's files and change history |
-| Codespaces | Optional editor and development server running in the cloud |
-| Phaser | The library that draws the scene and runs the game |
-| TypeScript | The language used for the game code |
-| Vite | Runs the live preview and builds the finished game |
-| GitHub Actions | Automatically tests and builds code |
-| GitHub Pages | Can host the built game at a permanent browser link |
-
-You can use VS Code on your home computer later with the same repository. It is optional; you do not need a powerful gaming computer for this prototype.
-
-## Play a published build
-
-Expected Pages address: https://edmundwhittaker-tech.github.io/Virelden/
-
-If Pages is not configured, open **Settings → Pages → Build and deployment → Source → GitHub Actions**.
-Then open **Actions → Verify and publish → Run workflow** on main.
-A green verification job alone does not mean Pages publication happened; check the publish job and its deployment URL.
-Playing a published build does not need a running Codespace.
-
-## Commands
-
-Node 22.12+ in the 22.x line is configured in Codespaces and CI.
+For local development, use Node **22.12+ in the 22.x line** and clone the repository:
 
 ```sh
 npm ci
-npm run dev             # Live preview on port 5173
-npm test                # Movement and collision checks
-npm run build           # TypeScript check + production build into dist/
+npm run dev
+npm test
+npm run build
 npx playwright install chromium
-npm run test:browser    # Real keyboard input and screenshot checks
-npm run preview         # Test the production build on port 4173
+npm run test:browser
+npm run preview
 ```
 
-For a fresh local setup, install Node 22 and VS Code, clone this repository, then run the same commands.
+`npm run check` runs rule tests and production build. Browser tests separately exercise actual keyboard/browser flows. Debug snapshots are read-only and opt-in at `?debug=1`; there is no gameplay mutation API.
 
-## Files to know
+## Architecture
 
-- src/core/game.ts — movement, solid boundaries and isometric projection
-- src/game/WorldView.ts — courtyard and character drawing
-- src/game/KnightSprite.ts — generated full-plate sprite and animation
-- docs/CHARACTER_ART.md — artwork layout, direction limits and generation prompt
-- src/game/CourtyardScene.ts — keyboard controls and game loop
-- src/style.css and index.html — surrounding page and controls
-- .devcontainer/devcontainer.json — browser development setup
-- .github/workflows/verify-and-publish.yml — checks and optional Pages deployment
+- `src/core/game.ts` — original movement, collision, isometric projection
+- `src/core/adventure.ts` — deterministic combat, AI, exploration collision, equipment, progress validation
+- `src/game/CourtyardScene.ts` — fixed-step integration, buffered actions, DOM menus and saves
+- `src/game/WorldView.ts` — depth-sorted environment and procedural combat feedback
+- `src/game/KnightSprite.ts` — preserved generated six-facing idle/walk art
+- `tests/` — deterministic movement/combat/progression tests
+- `browser-tests/` — real-browser inputs and UI regression checks
+- `docs/STATUS.md` — exact verification and publication status
 
-The larger combat prototype has been superseded by this deliberately basic starting point. Its version remains in Git history.
-There is no combat, AI, inventory, saving, audio, multiplayer or touch control in this starter.
-The code and any Pages build are public: keep private GM content and credentials out of them.
+## Publication and scope
 
+Expected Pages URL: https://edmundwhittaker-tech.github.io/Virelden/
+
+Pull requests run verification only. Main pushes verify and can publish through GitHub Actions when Pages is configured. Do not confuse a local build or draft PR with deployment. The prior courtyard remains in Git history at `94c9f7f`.
+
+Desktop keyboard/mouse first; no audio, multiplayer or touch controls. Enemy bodies reuse tinted knight art, not bespoke enemy sprites. Attack effects and rolling transforms are procedural treatments of existing idle/walk sheets. See `docs/CHARACTER_ART.md` for original artwork details.

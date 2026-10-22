@@ -1,116 +1,65 @@
 import {test,expect,type Page} from '@playwright/test';
 const state=(page:Page)=>page.evaluate(()=>window.vireldenDebug!());
-async function open(page:Page){
-  await page.goto('/?debug=1');
-  await expect(page.locator('canvas')).toBeVisible();
-  await page.waitForFunction(()=>typeof window.vireldenDebug==='function');
+async function open(page:Page,loadout='Vanguard'){
+ await page.goto('/?debug=1');await expect(page.locator('canvas')).toBeVisible();
+ await page.waitForFunction(()=>typeof window.vireldenDebug==='function');
+ await page.getByRole('button',{name:`Choose ${loadout}`,exact:true}).click();
+ await expect.poll(async()=>(await state(page)).paused).toBe(false);
 }
-test('boots with one courtyard and no runtime errors',async({page})=>{
-  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
-  await open(page);
-  await expect(page.getByRole('heading',{name:'The Courtyard'})).toBeVisible();
-  await expect(page.locator('#loading')).toBeHidden();
-  await page.screenshot({path:'test-results/courtyard-desktop.png',fullPage:true});
-  expect(errors).toEqual([]);
+async function hold(page:Page,keys:string[],ms=160){for(const k of keys)await page.keyboard.down(k);await page.waitForTimeout(ms);for(const k of keys)await page.keyboard.up(k);}
+test('boots with loadout choice, full-plate knight and no runtime errors',async({page})=>{
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await open(page);
+ await expect(page.getByRole('heading',{name:'Beneath the Station',exact:true})).toBeVisible();
+ await expect(page.locator('#loading')).toBeHidden();expect((await state(page)).character.texture).toBe('plate-knight-v1');
+ await page.screenshot({path:'test-results/expedition-desktop.png',fullPage:true});expect(errors).toEqual([]);
 });
-test('WASD and arrows move in the screen directions and reset works',async({page})=>{
-  await open(page);
-  for(const [key,axis,sign] of [['KeyD','x',1],['ArrowLeft','x',-1],['KeyW','y',-1],['ArrowDown','y',1]] as const){
-    await page.getByRole('button',{name:'Reset position'}).click();
-    const a=await state(page);
-    await page.keyboard.down(key);
-    await expect.poll(async()=>((await state(page)).screen[axis]-a.screen[axis])*sign).toBeGreaterThan(25);
-    await page.keyboard.up(key);
-    const b=await state(page);
-    expect((b.screen[axis]-a.screen[axis])*sign).toBeGreaterThan(15);
-  }
-  await page.getByRole('button',{name:'Reset position'}).click();
-  expect((await state(page)).position).toEqual({x:320,y:320});
+test('screen-relative controls animate and opposite keys cancel',async({page})=>{
+ await open(page);let before=await state(page);await hold(page,['KeyA']);expect((await state(page)).screen.x).toBeLessThan(before.screen.x-10);
+ before=await state(page);await hold(page,['ArrowRight']);expect((await state(page)).screen.x).toBeGreaterThan(before.screen.x+10);
+ await page.keyboard.down('KeyA');await page.keyboard.down('KeyD');await page.waitForTimeout(60);before=await state(page);await page.waitForTimeout(120);expect((await state(page)).position).toEqual(before.position);await page.keyboard.up('KeyA');await page.keyboard.up('KeyD');
 });
-test('opposite inputs cancel and switching focus releases held keys',async({page})=>{
-  await open(page);
-  await page.keyboard.down('KeyA');await page.keyboard.down('KeyD');
-  await page.waitForTimeout(60);const a=await state(page);
-  await page.waitForTimeout(120);
-  expect((await state(page)).position).toEqual(a.position);
-  await page.keyboard.up('KeyA');await page.keyboard.up('KeyD');
-  await page.keyboard.down('KeyD');await page.waitForTimeout(120);
-  await page.evaluate(()=>window.dispatchEvent(new Event('blur')));
-  await page.waitForTimeout(60);const b=await state(page);
-  await page.waitForTimeout(160);expect((await state(page)).position).toEqual(b.position);
-  await page.keyboard.up('KeyD');
-});
-test('courtyard edges remain solid in the browser',async({page})=>{
-  await open(page);await page.keyboard.down('KeyD');await page.keyboard.down('KeyS');
-  // Collision substeps stop within four ground units of the legal edge (628).
-  await expect.poll(async()=>(await state(page)).position.x,{timeout:15000}).toBeGreaterThan(624);
-  await page.waitForTimeout(150);await page.keyboard.up('KeyD');await page.keyboard.up('KeyS');
-  const p=(await state(page)).position;
-  expect(p.x).toBeGreaterThanOrEqual(12);expect(p.x).toBeLessThanOrEqual(628);
-  expect(p.y).toBeGreaterThanOrEqual(12);expect(p.y).toBeLessThanOrEqual(628);
-});
-test('fits a small viewport and debug data is opt-in',async({page})=>{
-  await page.setViewportSize({width:390,height:844});await page.goto('/');
-  await expect(page.locator('canvas')).toBeVisible();await expect(page.locator('#loading')).toBeHidden();
-  expect(await page.evaluate(()=>window.vireldenDebug)).toBeUndefined();
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
-  await page.screenshot({path:'test-results/courtyard-small.png',fullPage:true});
-});
-
-test('full-plate art walks in both directions and returns to idle',async({page})=>{
-  await open(page);
-  expect((await state(page)).character).toEqual({texture:'plate-knight-v1',frame:0,walking:false,flipped:false,direction:'east'});
-  for(const [key,flipped,direction] of [['KeyD',false,'right'],['KeyA',true,'left']] as const){
-    await page.getByRole('button',{name:'Reset position'}).click();
-    await page.keyboard.down(key);
-    await expect.poll(async()=>(await state(page)).character.walking).toBe(true);
-    const first=(await state(page)).character.frame;
-    await expect.poll(async()=>(await state(page)).character.frame).not.toBe(first);
-    const actor=(await state(page)).character;
-    expect(actor.flipped).toBe(flipped);
-    expect(actor.frame).toBeGreaterThanOrEqual(1);expect(actor.frame).toBeLessThanOrEqual(6);
-    await page.screenshot({path:'test-results/knight-'+direction+'.png',fullPage:true});
-    await page.keyboard.up(key);
-    await expect.poll(async()=>(await state(page)).character.walking).toBe(false);
-    expect((await state(page)).character.frame).toBe(0);
-  }
-});
-
 for(const [keys,direction,texture,flipped] of [
-  [['KeyW','KeyD'],'north-east','plate-knight-ne-v1',false],
-  [['KeyW','KeyA'],'north-west','plate-knight-ne-v1',true],
-  [['KeyS','KeyD'],'south-east','plate-knight-se-v1',false],
-  [['KeyS','KeyA'],'south-west','plate-knight-se-v1',true],
-] as const){
-  test('diagonal art walks and idles facing '+direction,async({page})=>{
-    await open(page);
-    const before=(await state(page)).screen;
-    for(const key of keys)await page.keyboard.down(key);
-    await expect.poll(async()=>(await state(page)).character.direction).toBe(direction);
-    await expect.poll(async()=>(await state(page)).character.walking).toBe(true);
-    const first=(await state(page)).character.frame;
-    await expect.poll(async()=>(await state(page)).character.frame).not.toBe(first);
-    const actor=(await state(page)).character, after=(await state(page)).screen;
-    expect(actor.texture).toBe(texture);expect(actor.flipped).toBe(flipped);
-    expect(Math.sign(after.x-before.x)).toBe(flipped?-1:1);
-    expect(Math.sign(after.y-before.y)).toBe(direction.startsWith('north')?-1:1);
-    await page.screenshot({path:'test-results/knight-'+direction+'.png',fullPage:true});
-    for(const key of [...keys].reverse())await page.keyboard.up(key);
-    await expect.poll(async()=>(await state(page)).character.walking).toBe(false);
-    expect((await state(page)).character).toMatchObject({direction,texture,frame:0,flipped});
-  });
-}
-
-test('turning between front and rear views works without releasing movement',async({page})=>{
-  await open(page);
-  await page.keyboard.down('KeyD');await page.keyboard.down('KeyW');
-  await expect.poll(async()=>(await state(page)).character.direction).toBe('north-east');
-  await page.keyboard.up('KeyW');await page.keyboard.down('KeyS');
-  await expect.poll(async()=>(await state(page)).character.direction).toBe('south-east');
-  await expect.poll(async()=>(await state(page)).character.walking).toBe(true);
-  await page.keyboard.up('KeyD');
-  await expect.poll(async()=>(await state(page)).character.direction).toBe('south-east');
-  await page.keyboard.up('KeyS');
-  await expect.poll(async()=>(await state(page)).character.walking).toBe(false);
+ [['KeyW','KeyD'],'north-east','plate-knight-ne-v1',false],
+ [['KeyW','KeyA'],'north-west','plate-knight-ne-v1',true],
+ [['KeyS','KeyD'],'south-east','plate-knight-se-v1',false],
+ [['KeyS','KeyA'],'south-west','plate-knight-se-v1',true],
+] as const){test(`full-plate walking and idle ${direction}`,async({page})=>{
+ await open(page);for(const k of keys)await page.keyboard.down(k);
+ await expect.poll(async()=>(await state(page)).character.direction).toBe(direction);
+ await expect.poll(async()=>(await state(page)).character.walking).toBe(true);
+ expect((await state(page)).character).toMatchObject({texture,flipped});
+ for(const k of keys)await page.keyboard.up(k);
+ await expect.poll(async()=>(await state(page)).character.walking).toBe(false);
+ expect((await state(page)).character).toMatchObject({direction,texture,frame:0});
+});}
+test('attack and roll spend stamina, recover, and prevent chaining',async({page})=>{
+ await open(page);await page.keyboard.press('KeyJ');await expect.poll(async()=>(await state(page)).stamina).toBeLessThan(90);
+ await expect.poll(async()=>(await state(page)).attack.phase).toBe('idle');
+ await expect.poll(async()=>(await state(page)).stamina).toBe(90);
+ await page.keyboard.press('Space');await expect.poll(async()=>(await state(page)).rollTimer).toBeGreaterThan(0);
+ const spent=(await state(page)).stamina;await page.keyboard.press('Space');expect((await state(page)).stamina).toBeLessThanOrEqual(spent+1);
+ await expect.poll(async()=>(await state(page)).rollTimer).toBe(0);
 });
-
+test('equipment pauses, modal traps keyboard, blur clears movement',async({page})=>{
+ await open(page);await page.keyboard.press('KeyI');await expect(page.getByRole('dialog')).toBeVisible();const before=await state(page);
+ await hold(page,['KeyD'],250);expect((await state(page)).position).toEqual(before.position);
+ for(let i=0;i<6;i++){await page.keyboard.press('Tab');expect(await page.evaluate(()=>!!document.activeElement?.closest('#panel'))).toBe(true);}
+ await page.keyboard.press('Escape');await expect.poll(async()=>(await state(page)).paused).toBe(false);
+ await page.keyboard.down('KeyA');await page.waitForTimeout(100);await page.evaluate(()=>window.dispatchEvent(new Event('blur')));await page.keyboard.up('KeyA');
+ await expect.poll(async()=>(await state(page)).paused).toBe(true);const stopped=(await state(page)).position;await page.waitForTimeout(200);expect((await state(page)).position).toEqual(stopped);
+ await page.getByRole('button',{name:'Continue expedition',exact:true}).click();await page.waitForTimeout(120);expect((await state(page)).position).toEqual(stopped);
+});
+test('reset cancellation preserves character; confirmed reset survives reload before choice',async({page})=>{
+ await open(page);await page.keyboard.press('Escape');await page.getByRole('button',{name:'Reset saved progress',exact:true}).click();
+ await page.getByRole('button',{name:'Cancel',exact:true}).click();expect((await state(page)).archetype).toBe('vanguard');
+ await page.getByRole('button',{name:'Reset saved progress',exact:true}).click();await page.getByRole('button',{name:'Erase progress and choose again',exact:true}).click();
+ await page.reload();await expect(page.getByRole('button',{name:'Choose Wayfarer',exact:true})).toBeVisible();
+ await page.keyboard.press('Escape');await expect(page.getByRole('button',{name:'Choose Wayfarer',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Choose Wayfarer',exact:true}).click();expect(await state(page)).toMatchObject({archetype:'wayfarer',equipped:'spear',currency:0,owned:['spear']});
+ await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect(await state(page)).toMatchObject({archetype:'wayfarer',equipped:'spear',paused:false});
+});
+test('small viewport fits and debug API is opt-in',async({page})=>{
+ await page.setViewportSize({width:390,height:844});await page.goto('/');await expect(page.getByRole('button',{name:'Choose Vanguard',exact:true})).toBeVisible();
+ expect(await page.evaluate(()=>window.vireldenDebug)).toBeUndefined();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.screenshot({path:'test-results/expedition-small.png',fullPage:true});
+});

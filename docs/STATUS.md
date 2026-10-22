@@ -1,36 +1,25 @@
-# Status — isometric knight directions, 22 October 2026
+# Status — playable underworks slice, 22 October 2026
 
 ## Implemented
 
-Added northeast, northwest, southeast and southwest walking/idle artwork to the full-plate knight.
-Separate rear and front sheets share the original armour reference; west variants mirror the east source.
-The original east/west artwork remains available for horizontal movement.
-Diagonal key pairs select the matching facing. Pure north/south movement selects rear/front while keeping the most recent horizontal side.
-Idle retains the last facing and reset returns to east.
-Changing sheets retains the walk phase.
-Per-cell render registration aligns visible height, head and ground anchors across the new generated frames.
-Movement speed, collision, fixed simulation and courtyard geometry remain unchanged.
-See CHARACTER_ART.md for asset paths, controls, limitations and exact generation/edit prompts.
+Two ordinary full-plate starter loadouts; sword sweep, spear thrust, hammer impact; windup/active/recovery phases; health, stamina and timed dodge invulnerability; melee raider, ranged lookout and tougher captain. Partitioned exploration with three equipment caches, a physical shortcut gate, equipment comparison, +1/+2 forge upgrades, checkpoint/death/retry, local validated progress save, help/pause and confirmed reset. Existing six-direction knight art retained. Enemy bodies reuse tinted knight art; combat effects/roll transformations are procedural, not new animation sheets.
 
-## Local verification
+Atmospheric textured environment artwork is in progress; current branch rendering is not visually final.
 
-Node 22.22.0 with pinned repository dependencies.
-- npm test: nine tests passed, including all diagonal facings, vertical fallback and idle orientation.
-- npm run build: strict TypeScript and production build passed.
-- npm run test:browser: eleven Chromium tests cover existing controls/collision, all four diagonal textures and mirrors, advancing frames, idle direction, and front/rear transitions without releasing movement.
-- Directional screenshots were rendered and inspected.
-- The three transparent sheets total 335,664 bytes and are imported through Vite with content-hashed URLs.
-- The existing large Phaser chunk warning remains informational.
+## Verification so far
+
+- Pinned dependencies installed using `npm ci` (workspace cache).
+- Local `npm test`: 23/23 passed.
+- Local `npm run build`: strict TypeScript and production build passed.
+- Ten new real-input browser cases authored and parse; local execution blocked by sandbox browser launch permissions. CI execution pending on this draft PR.
+- Independent source QA found and prompted fixes for start/reset saving, paused focus, warning cone accuracy, equipped weapon silhouette and enemy movement animation.
+- Local runtime is Node 24.19; project/CI uses Node 22. Local compatibility warning disclosed; CI is the supported-runtime check.
+- Phaser's existing large-chunk build warning remains informational.
 
 ## Publication
 
-Pages is enabled and the prior full-plate knight was verified live.
-This change's PR runs verification before merging; main then verifies and publishes.
-The final delivery reports actual CI/deployment status.
-No Codespace or additional paid compute was started.
+Branch/draft PR only. No merge or deployment authorized or performed for this slice. Prior courtyard at main `94c9f7f` remains untouched. Final status must be updated after CI and rendered visual review.
 
 ## Limits
 
-Six facings: east/west plus the four diagonals. Exact north/south sprites are not independently authored.
-West-facing lighting is mirrored. Minor generated armour and pose variations remain.
-The environment remains procedural placeholder geometry. Gameplay is still courtyard movement only.
+Desktop keyboard/mouse; no audio/touch/multiplayer. Small bounded prototype, not a large RPG. Only mundane steel upgrades, no true Warplate. Specific ward, enemies and game rules are prototype adaptations, not official campaign canon. Defeated foes stay defeated; reset begins a fresh expedition.
