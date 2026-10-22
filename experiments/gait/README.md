@@ -20,7 +20,7 @@ Known visual review concerns: the rear knee IK branch differs from the frozen id
 
 ## Verification status
 
-[Focused Chromium verification](https://github.com/edmundwhittaker-tech/Virelden/actions/runs/39734237189) passed all four browser routes, 12 gait tests, 133 preserved gameplay tests and the build. Screenshots, continuous-route videos and raw rendered-matrix metrics are retained as CI artifacts.
+[Focused Chromium verification](https://github.com/edmundwhittaker-tech/Virelden/actions/runs/39734237189) passed all four browser routes, 12 gait tests, 133 preserved gameplay tests and the build. Screenshots, continuous-route videos and raw rendered-matrix metrics are retained as CI artifacts. Each `*-continuous-native.webm` captures only the continuous route directly from the 1200×820 canvas, preserving nominal 88px and 3× display scale; the full-page context video is also retained at 1280×1200.
 
 The recorded rendered ankle agreement is within 0.000032 world px and supported-foot drift within 0.00334 px/s. The largest recorded joint displacement is 31.03 px at a front/rear view switch; view-change appearance remains a visual review item. Passing numerical tests is not final motion acceptance. The candidate remains isolated and does not change gameplay defaults.
 
