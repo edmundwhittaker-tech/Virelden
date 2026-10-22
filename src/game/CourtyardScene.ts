@@ -6,7 +6,7 @@ import {KnightSprite} from './KnightSprite.js';
 import {facingForInput,type Facing} from '../core/facing.js';
 const QA=new URLSearchParams(location.search).get('qa')==='1';
 const SAVE=QA?'virelden-underworks-qa-v1':'virelden-underworks-v1';
-declare global{interface Window{vireldenDebug?:()=>Adventure & {screen:Point;moving:boolean;character:ReturnType<KnightSprite['snapshot']>;paused:boolean;timing:{frames:number;rawDelta:number;fps:number;renderMs:number;updateMs:number}}}}
+declare global{interface Window{vireldenDebug?:()=>Adventure & {screen:Point;moving:boolean;character:ReturnType<KnightSprite['snapshot']>;scenery:ReturnType<WorldView['scenerySnapshot']>;paused:boolean;timing:{frames:number;rawDelta:number;fps:number;renderMs:number;updateMs:number}}}}
 export class CourtyardScene extends Phaser.Scene{
   private state=createAdventure('vanguard'); private held=new Set<string>(); private pendingKeys=new Set<string>(); private actions:string[]=[]; private accumulator=0; private view!:WorldView; private moving=false; private facing:Facing='east'; private menu=''; private saveTimer=0;private renderCost=0;private updateCost=0; private lastHud='';
   preload(){KnightSprite.preload(this);WorldView.preload(this);}
@@ -35,7 +35,7 @@ export class CourtyardScene extends Phaser.Scene{
     Object.entries(handlers).forEach(([id,fn])=>document.getElementById(id)?.addEventListener('click',fn));
     const panelClick=(event:MouseEvent)=>this.panelAction((event.target as HTMLElement).closest<HTMLButtonElement>('button')?.dataset.action??'');
     document.getElementById('panel')!.addEventListener('click',panelClick);
-    if(new URLSearchParams(location.search).get('debug')==='1')window.vireldenDebug=()=>({...structuredClone(this.state),screen:project(this.state.position),moving:this.moving,character:this.view.characterSnapshot(),paused:!!this.menu,timing:{frames:this.game.loop.frame,rawDelta:this.game.loop.rawDelta,fps:this.game.loop.actualFps,renderMs:this.renderCost,updateMs:this.updateCost}});
+    if(new URLSearchParams(location.search).get('debug')==='1')window.vireldenDebug=()=>({...structuredClone(this.state),screen:project(this.state.position),moving:this.moving,character:this.view.characterSnapshot(),scenery:this.view.scenerySnapshot(),paused:!!this.menu,timing:{frames:this.game.loop.frame,rawDelta:this.game.loop.rawDelta,fps:this.game.loop.actualFps,renderMs:this.renderCost,updateMs:this.updateCost}});
     this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>{window.removeEventListener('keydown',down);window.removeEventListener('keyup',up);window.removeEventListener('blur',blur);window.removeEventListener('focus',focus);document.removeEventListener('visibilitychange',visibility);this.game.canvas.removeEventListener('click',click);this.game.canvas.removeEventListener('mousemove',pointer);Object.entries(handlers).forEach(([id,fn])=>document.getElementById(id)?.removeEventListener('click',fn));document.getElementById('panel')!.removeEventListener('click',panelClick);delete window.vireldenDebug;});
     this.game.canvas.tabIndex=0;this.game.canvas.setAttribute('aria-label','Virelden action RPG. Move with WASD, J to attack, Space to roll, E to interact.');this.game.canvas.setAttribute('role','img');document.getElementById('loading')!.hidden=true;
     this.showMenu(loaded?'':'start');this.render();

@@ -1,3 +1,4 @@
+import {captureAttack} from './attack-capture';
 import {test,expect,type Page} from '@playwright/test';
 const state=(page:Page)=>page.evaluate(()=>window.vireldenDebug!());
 async function open(page:Page,loadout='Vanguard'){
@@ -24,9 +25,12 @@ for(const [keys,direction,texture,flipped] of [
  [['KeyS','KeyD'],'south-east','plate-knight-se-v1',false],
  [['KeyS','KeyA'],'south-west','plate-knight-se-v1',true],
 ] as const){test(`full-plate walking and idle ${direction}`,async({page})=>{
- await open(page);for(const k of keys)await page.keyboard.down(k);
- await expect.poll(async()=>(await state(page)).character.direction).toBe(direction);
- await expect.poll(async()=>(await state(page)).character.walking).toBe(true);
+ await open(page);
+ // Observe the first matching rendered movement frame, before a nearby solid prop
+ // correctly stops the knight. Sequential coarse polls could miss this short window.
+ const walking=page.waitForFunction(direction=>{const c=window.vireldenDebug!().character;return c.direction===direction&&c.walking;},direction,{polling:'raf'});
+ for(const k of keys)await page.keyboard.down(k);
+ await walking;
  expect((await state(page)).character).toMatchObject({texture,flipped});
  for(const k of [...keys].reverse())await page.keyboard.up(k);
  await expect.poll(async()=>(await state(page)).character.walking).toBe(false);
@@ -77,13 +81,15 @@ async function walkTo(page:Page,target:{x:number;y:number}){
  const {adventureCanStand}=await import('../src/core/adventure');
  const initial=await state(page), grid=16;
  const safe=(p:{x:number;y:number})=>[[0,0],[3,0],[-3,0],[0,3],[0,-3]].every(([x,y])=>adventureCanStand(initial,{x:p.x+x,y:p.y+y}));
+ const targetBlocked=!adventureCanStand(initial,target);
+ const atTarget=(p:{x:number;y:number})=>targetBlocked?Math.hypot((p.x-target.x-p.y+target.y)*.8,(p.x-target.x+p.y-target.y)*.4)<30:Math.hypot(p.x-target.x,p.y-target.y)<18;
  const start={x:Math.round(initial.position.x/grid)*grid,y:Math.round(initial.position.y/grid)*grid};
  const key=(p:{x:number;y:number})=>`${p.x},${p.y}`;
  const queue=[start],parents=new Map<string,string|null>([[key(start),null]]);let end=start;
- for(let i=0;i<queue.length;i++){const p=queue[i];if(Math.hypot(p.x-target.x,p.y-target.y)<18){end=p;break;}
+ for(let i=0;i<queue.length;i++){const p=queue[i];if(atTarget(p)){end=p;break;}
   for(const [dx,dy]of [[grid,0],[-grid,0],[0,grid],[0,-grid]]){const q={x:p.x+dx,y:p.y+dy};if(!parents.has(key(q))&&safe(q)){parents.set(key(q),key(p));queue.push(q)}}
  }
- expect(Math.hypot(end.x-target.x,end.y-target.y),'route target reachable').toBeLessThan(18);
+ expect(atTarget(end),'route target or clear interaction approach reachable').toBe(true);
  const route:{x:number;y:number}[]=[];let k:string|null=key(end);while(k){const [x,y]=k.split(',').map(Number);route.unshift({x,y});k=parents.get(k)??null;}
  const corners=route.filter((p,i)=>i===route.length-1||i===0||((p.x-route[i-1].x)!==(route[i+1].x-p.x))||((p.y-route[i-1].y)!==(route[i+1].y-p.y)));
  for(const p of corners){let reached=false;for(let step=0;step<120;step++){
@@ -99,6 +105,7 @@ test('real exploration opens cache once, equips hammer, upgrades at forge and sa
  await expect.poll(async()=>(await state(page)).owned).toContain('hammer');const cash=(await state(page)).currency;
  await page.keyboard.press('KeyE');expect((await state(page)).currency).toBe(cash);
  await page.keyboard.press('KeyI');await page.locator('[data-action="equip:hammer"]').click();expect((await state(page)).equipped).toBe('hammer');await page.keyboard.press('Escape');
+ await captureAttack(page,'earned-hammer');
  await walkTo(page,{x:260,y:330});await page.keyboard.press('KeyE');await expect(page.getByRole('dialog')).toBeVisible();
  await page.locator('[data-action="upgrade"]').click();expect((await state(page)).levels.hammer).toBe(1);expect((await state(page)).currency).toBe(cash-30);
  await page.screenshot({path:'test-results/expedition-earned-upgrade.png',fullPage:true});await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');

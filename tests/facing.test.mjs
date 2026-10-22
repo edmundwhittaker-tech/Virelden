@@ -20,3 +20,8 @@ test('horizontal movement still selects the original left/right art',()=>{
   assert.equal(facingForInput({x:1,y:0},'north-west'),'east');
   assert.equal(facingForInput({x:-1,y:0},'south-east'),'west');
 });
+
+test('scaled pointer rounding does not turn horizontal aim into diagonal artwork',()=>{
+  for(const y of [-.0024,.0024]){assert.equal(facingForInput({x:.999997,y},'north-east'),'east');assert.equal(facingForInput({x:-.999997,y},'south-west'),'west');}
+  assert.equal(facingForInput({x:1,y:-.5},'east'),'north-east');
+});
