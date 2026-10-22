@@ -9,6 +9,7 @@ import courtUrl from '../assets/environment-v1/slate-court.webp';
 import pillarUrl from '../assets/environment-v1/gothic-pillar.webp';
 import vaultUrl from '../assets/environment-v1/sealed-vault.webp';
 import rubbleUrl from '../assets/environment-v1/fallen-masonry.webp';
+import masonryUrl from '../assets/environment-v1/slate-masonry-diffuse.webp';
 import mudUrl from '../assets/environment-v1/mud-track.webp';
 import cofferUrl from '../assets/environment-v1/iron-coffer.webp';
 import forgeUrl from '../assets/environment-v1/ember-forge.webp';
@@ -35,7 +36,7 @@ export class WorldView{
   private enemyPositions:Point[]=[];
   private wallViews:{g:Graphics|Phaser.GameObjects.Image;left:number;right:number;top:number;bottom:number}[]=[];
   private occluders:{id:string;image:Phaser.GameObjects.Image;position:Point;radius:number|null}[]=[];
-  static preload(scene:Phaser.Scene){for(const [key,url] of Object.entries({'ward-floor':courtUrl,'ward-pillar':pillarUrl,'ward-vault':vaultUrl,'ward-rubble':rubbleUrl,'ward-mud':mudUrl,'ward-coffer':cofferUrl,'ward-forge':forgeUrl,'ward-lantern':lanternUrl}))scene.load.image(key,url);}
+  static preload(scene:Phaser.Scene){for(const [key,url] of Object.entries({'ward-floor':courtUrl,'ward-masonry':masonryUrl,'ward-pillar':pillarUrl,'ward-vault':vaultUrl,'ward-rubble':rubbleUrl,'ward-mud':mudUrl,'ward-coffer':cofferUrl,'ward-forge':forgeUrl,'ward-lantern':lanternUrl}))scene.load.image(key,url);}
   constructor(scene:Phaser.Scene){
     this.scene=scene;
     const floor=scene.add.graphics().setDepth(-1000);
@@ -52,6 +53,16 @@ export class WorldView{
     };
     foundation(325,-125,315,145);foundation(-12,-12,SIZE+24,SIZE+24);
     scene.add.image(640,436,'ward-floor').setDisplaySize(1024,512).setDepth(-999).setTint(0xadb8b7);
+    // One continuous cropped stone patch, not a repeated diamond tile, follows the
+    // annex footprint. Canvas clipping is baked once; no per-frame mask overhead.
+    const apron=[{x:325,y:-125},{x:640,y:-125},{x:640,y:20},{x:325,y:20}].map(project);
+    const left=Math.min(...apron.map(p=>p.x)),top=Math.min(...apron.map(p=>p.y));
+    const apronTexture=scene.textures.createCanvas('ward-apron',Math.ceil(Math.max(...apron.map(p=>p.x))-left),Math.ceil(Math.max(...apron.map(p=>p.y))-top))!;
+    const apronCtx=apronTexture.context;apronCtx.beginPath();apron.forEach((p,i)=>i?apronCtx.lineTo(p.x-left,p.y-top):apronCtx.moveTo(p.x-left,p.y-top));apronCtx.closePath();apronCtx.clip();
+    apronCtx.drawImage(scene.textures.get('ward-floor').getSourceImage() as HTMLImageElement,556-left,96-top,1024,512);
+    apronCtx.fillStyle='rgba(7,13,16,0.18)';apronCtx.fillRect(0,0,apronTexture.width,apronTexture.height);apronTexture.refresh();
+    scene.add.image(left,top,'ward-apron').setOrigin(0,0).setDepth(-999.5);
+
     for(const position of [{x:235,y:450},{x:465,y:260}]){const p=project(position);scene.add.image(p.x,p.y,'ward-mud').setDisplaySize(230,111).setAlpha(.38).setDepth(-998.5);}
     const shadows=scene.add.graphics().setDepth(-998);
     const addProp=(position:Point,key:string,width:number,originY:number,slot:number,id:string,radius:number|null)=>{
@@ -88,6 +99,27 @@ export class WorldView{
           poly(g,[pts[2],pts[3],{x:pts[3].x,y:pts[3].y-height},{x:pts[2].x,y:pts[2].y-height}],0x454e4d);
           poly(g,pts.map(p=>({x:p.x,y:p.y-height})),segment%2?0x626a63:0x5a635e);
           for(const h of [13,26]){g.lineStyle(1,0x202a2b,.8);g.lineBetween(pts[1].x,pts[1].y-h,pts[2].x,pts[2].y-h);g.lineBetween(pts[2].x,pts[2].y-h,pts[3].x,pts[3].y-h);}
+          // Bake textured faces into the same exact projected block; material cannot
+          // move its feet, widen collision or change depth. No runtime shader/mask.
+          const bx=Math.floor(Math.min(...pts.map(p=>p.x)))-1,by=Math.floor(Math.min(...pts.map(p=>p.y))-height)-1;
+          const textureKey=`ward-block-${index}-${segment}`;
+          const texture=scene.textures.createCanvas(textureKey,Math.ceil(Math.max(...pts.map(p=>p.x))-bx)+2,Math.ceil(Math.max(...pts.map(p=>p.y))-by)+2)!;
+          const context=texture.context;
+          const material=scene.textures.get('ward-masonry').getSourceImage() as HTMLImageElement;
+          const face=(vertices:Point[],sx:number,sy:number,sw:number,sh:number,shade:number)=>{
+            const q=vertices.map(p=>({x:p.x-bx,y:p.y-by}));context.save();context.beginPath();q.forEach((p,i)=>i?context.lineTo(p.x,p.y):context.moveTo(p.x,p.y));context.closePath();context.clip();
+            context.transform((q[1].x-q[0].x)/sw,(q[1].y-q[0].y)/sw,(q[3].x-q[0].x)/sh,(q[3].y-q[0].y)/sh,q[0].x,q[0].y);
+            context.drawImage(material,sx,sy,sw,sh,0,0,sw,sh);context.restore();
+            context.beginPath();q.forEach((p,i)=>i?context.lineTo(p.x,p.y):context.moveTo(p.x,p.y));context.closePath();context.fillStyle=`rgba(3,10,14,${shade})`;context.fill();context.strokeStyle='rgba(22,28,28,.7)';context.lineWidth=.65;context.stroke();
+          };
+          const sx=(segment*128)%512,sy=64;
+          face([{x:pts[1].x,y:pts[1].y-height},{x:pts[2].x,y:pts[2].y-height},pts[2],pts[1]],sx,sy,128,192,.32);
+          face([{x:pts[2].x,y:pts[2].y-height},{x:pts[3].x,y:pts[3].y-height},pts[3],pts[2]],sx,sy,128,192,.08);
+          face(pts.map(p=>({x:p.x,y:p.y-height})),sx,sy,128,64,.02);
+          texture.refresh();g.setVisible(false);
+          const image=scene.add.image(bx,by,textureKey).setOrigin(0,0).setDepth(g.depth);
+          this.wallViews[this.wallViews.length-1].g=image;
+
         }
       }
     }

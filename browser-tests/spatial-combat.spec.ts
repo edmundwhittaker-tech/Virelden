@@ -42,14 +42,16 @@ test('registered scenery has uniform pillars and correct front/back depth transi
  }
  const forge=initial.scenery.find(o=>o.id==='forge')!;
  expect(initial.screen.y).toBeGreaterThan(forge.depth);
- await page.keyboard.down('KeyW');await page.waitForTimeout(250);await page.keyboard.up('KeyW');
- await page.keyboard.down('KeyA');await page.waitForTimeout(170);await page.keyboard.up('KeyA');
+ // Go around the solid checkpoint lantern rather than attempting to walk through it.
+ await page.keyboard.down('KeyD');await page.waitForTimeout(240);await page.keyboard.up('KeyD');
+ await page.keyboard.down('KeyW');await page.waitForTimeout(400);await page.keyboard.up('KeyW');
+ await page.keyboard.down('KeyA');await page.waitForTimeout(400);await page.keyboard.up('KeyA');
  const behind=await state(page),backForge=behind.scenery.find(o=>o.id==='forge')!;
  expect(behind.screen.y).toBeLessThan(backForge.depth);expect(backForge.alpha).toBeLessThan(1);
  expect(Math.hypot(behind.position.x-forge.world.x,behind.position.y-forge.world.y)).toBeGreaterThanOrEqual(forge.radius!+12-.01);
  await page.screenshot({path:'test-results/spatial-combat/forge-foreground.png',fullPage:true});
- await page.keyboard.down('KeyD');await page.waitForTimeout(170);await page.keyboard.up('KeyD');
- await page.keyboard.down('KeyS');await page.waitForTimeout(350);await page.keyboard.up('KeyS');
+ await page.keyboard.down('KeyD');await page.waitForTimeout(400);await page.keyboard.up('KeyD');
+ await page.keyboard.down('KeyS');await page.waitForTimeout(500);await page.keyboard.up('KeyS');
  const front=await state(page);expect(front.screen.y).toBeGreaterThan(forge.depth);
  await page.screenshot({path:'test-results/spatial-combat/forge-background.png',fullPage:true});
  expect(front.hp).toBeGreaterThan(0);

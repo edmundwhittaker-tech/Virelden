@@ -149,5 +149,12 @@
     ],
     "source": "Original AI-generated raster, built-in image_gen, 2026-10-22",
     "notes": "Transparent prop. Preserve world interaction position and scale for readability, not collision."
+  },
+  "slate-masonry-diffuse": {
+    "file": "slate-masonry-diffuse.webp",
+    "width": 512,
+    "height": 512,
+    "source": "Original AI-generated raster, built-in image_gen, 2026-10-22",
+    "notes": "Orthographic opaque wall material. Map continuous UV across full wall, not reset per25world segment. Seven horizontal masonry courses; use approximately2courses across38px wall height. Border repeat needs visual check, not guaranteed pixel-perfect seamless."
   }
 }

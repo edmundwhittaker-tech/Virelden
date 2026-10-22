@@ -6,7 +6,7 @@ The owner's next request expands the movement starter into a small deliberate-ac
 
 One compact, connected underworks ward beneath an unnamed outer Plate station. Two starter loadouts share the existing ordinary full-plate knight art. Three weapons differ in reach, arc, windup, recovery, damage and stamina cost. Two human enemy roles and an armoured captain provide a short combat/exploration loop. Find equipment caches, open a physical shortcut, temper mundane weapons at a forge, and return to a checkpoint after defeat.
 
-Atmospheric textured stone and props must maintain legible combat and accurate collision. Preserve closed helmets, no cloth, the existing isometric projection and six-direction idle/walk sprites. Procedural combat effects are not bespoke attack animation sheets.
+Atmospheric textured stone and props must maintain legible combat and accurate collision. Preserve closed helmets, no cloth, the existing isometric projection and six-direction idle/walk sprites. The corrective pass adds a bounded three-pose full-plate attack body rig and separate hand-attached weapon profiles. This is not a new armor system.
 
 ## Canon boundary
 
