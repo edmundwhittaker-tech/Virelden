@@ -28,3 +28,13 @@ test('ordinary service-stair art stays entirely within the existing walkable lan
  for(const a of Object.values(EXPEDITIONS))for(const exit of a.exits.filter(e=>e.target))for(const dx of [left,right])for(const dy of [back,front]){const p={x:exit.position.x+dx,y:exit.position.y+dy};assert.ok(a.floors.some(f=>!f.requires&&contains(p,f)),`${a.id}:${exit.id} masonry landing lies on original floor`);assert.ok(a.walls.every(w=>!contains(p,w)));}
 });
 test('station service-stair masonry also stays on the original walkable station landing',async()=>{const {STATION_EXPEDITION_PORT}=await import('../.test-build/core/expeditionCatalog.js');const s=createAdventure();s.gatePhase='open';const {left,right,back,front}=SERVICE_STAIR_GROUND;for(const dx of [left,right])for(const dy of [back,front])assert.ok(adventureCanStand(s,{x:STATION_EXPEDITION_PORT.position.x+dx,y:STATION_EXPEDITION_PORT.position.y+dy}));});
+test('reserved finale homes retain 26-unit feet, 40-unit retreat rings and actual approach/retreat motion after shelf placement',async()=>{
+ const {move,project}=await import('../.test-build/core/game.js');
+ for(const [areaId,enemyId,lanes] of [
+  ['cistern-viaduct','sluice-warden',[[{x:800,y:120},{x:800,y:820}],[{x:800,y:620},{x:800,y:740}],[{x:800,y:740},{x:800,y:820}],[{x:760,y:740},{x:840,y:740}]]],
+  ['record-annex','annex-keeper',[[{x:800,y:180},{x:640,y:440}],[{x:680,y:180},{x:800,y:180}],[{x:800,y:180},{x:800,y:300}],[{x:800,y:100},{x:800,y:180}],[{x:800,y:180},{x:880,y:180}]]],
+ ]){const a=EXPEDITIONS[areaId],home=a.enemies.find(e=>e.id===enemyId).home,clear=p=>expeditionCanStand(a,p,[],26);assert.ok(clear(home),`${areaId} reserved physical foot`);
+  for(let i=0;i<128;i++){const angle=i*Math.PI/64;assert.ok(clear({x:home.x+40*Math.cos(angle),y:home.y+40*Math.sin(angle)}),`${areaId} 40-unit centre retreat ring with 26-unit body`);}
+  for(const [start,end] of lanes){assert.ok(expeditionClearSegment(a,start,end,[],26),`${areaId} explicit 26-unit approach/retreat lane`);for(const [from,to] of [[start,end],[end,start]]){let p={...from};for(let n=0;n<1000&&Math.hypot(to.x-p.x,to.y-p.y)>.01;n++){const x=project(p),y=project(to),length=Math.hypot(y.x-x.x,y.y-x.y);p=move(p,{x:y.x-x.x,y:y.y-x.y},Math.min(1/60,length/150),clear);assert.ok(clear(p));}assert.ok(Math.hypot(to.x-p.x,to.y-p.y)<.01,`${areaId} actual move reaches and returns along 26-unit lane`);}}
+ }
+});
