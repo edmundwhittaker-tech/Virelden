@@ -1,3 +1,5 @@
+> Integration checkpoint: on `qa/player-rig-integration-2026-10-22` the canonical directional model/adapter are now in `src/core/playerGait*.ts` and consumed by the candidate player controller. This document below records the earlier east-only controls. Those exact-head native clips do not validate the later directional/controller integration. The live game is unchanged; see `docs/PLAYER_RIG_INTEGRATION.md` for current limits.
+
 # Authored east jog — isolated, not release-ready
 
 Candidate after root rejected both fitted/original global-sine movement and the first physically planted projection for visible float/kicking/crouch. This is an authored east/sword game-pose study, not an Elden Ring timing measurement or a production controller.

@@ -15,7 +15,7 @@ const plus=(a:RigPoint,b:RigPoint):RigPoint=>({x:a.x+b.x,y:a.y+b.y});
 /** End target is projected into the chain's reachable annulus; no segment stretching. */
 export function twoBone(start:RigPoint,target:RigPoint,a:number,b:number,bend:1|-1=1):{joint:RigPoint;end:RigPoint}{
  const dx=target.x-start.x,dy=target.y-start.y,raw=Math.hypot(dx,dy);
- const dist=clamp(raw,Math.abs(a-b)+1e-5,a+b-1e-5),theta=raw>1e-8?Math.atan2(dy,dx):Math.PI/2;
+ const dist=clamp(raw,Math.abs(a-b)+1e-5,a+b),theta=raw>1e-8?Math.atan2(dy,dx):Math.PI/2;
  const elbow=theta+bend*Math.acos(clamp((a*a+dist*dist-b*b)/(2*a*dist),-1,1));
  return {joint:{x:start.x+Math.cos(elbow)*a,y:start.y+Math.sin(elbow)*a},end:{x:start.x+Math.cos(theta)*dist,y:start.y+Math.sin(theta)*dist}};
 }
@@ -23,7 +23,7 @@ const DEPTH:Record<RigPartId,number>={upperarm_far:1,forearm_far:2,hand_far:3,th
 export function evaluateRig(input:RigInput):RigPose {
  const time=finite(input.time),p=clamp(finite(input.progress??0),0,1),walking=input.motion==='walk';
  const cycle=time*Math.PI*2*1.6,swing=walking?Math.sin(cycle):0;
- const bob=walking?-Math.abs(Math.sin(cycle))*1.1:0;
+ const bob=walking?Math.abs(Math.sin(cycle))*1.1:0;
  const attack=input.motion==='attack',phase=input.phase??'windup',weapon=input.weapon??'sword';
  const drive=attack?(phase==='windup'?p:phase==='active'?1-p*.15:.85*(1-p)):0;
  const carry=weapon==='spear'||weapon==='poleaxe'?-.25:.9,hands=input.weaponHands??(weapon==='poleaxe'?2:1);
@@ -50,7 +50,7 @@ export function evaluateRig(input:RigInput):RigPose {
   }
  }
 
- const hipNear=plus(pelvis,rear?{x:6,y:6}:{x:-5,y:6}),hipFar=plus(pelvis,rear?{x:-5,y:3}:{x:6,y:3});
+ const hipNear=plus(pelvis,rear?{x:7,y:6}:{x:-5,y:6}),hipFar=plus(pelvis,rear?{x:-5,y:3}:{x:7,y:3});
  const feet={near:{x:(rear?7:-5)+swing*6,y:-4-Math.max(0,swing)*4},far:{x:(rear?-5:7)-swing*6,y:-7-Math.max(0,-swing)*4}};
  let nearTarget={x:(rear?14:-14)-swing*5,y:-44+bob},farTarget={x:(rear?-12:12)+swing*5,y:-47+bob};
  let gripDirection:RigPoint|undefined,gripBlend=1;

@@ -46,8 +46,8 @@ export class ModularKnightSprite {
   if(!next||Object.keys(next).length!==4||!slots.every(slot=>this.hasArmorVisual({slot,set:next[slot]})))return false;
   this.equipment={...next};return true;
  }
- draw(input:DrawFrame){
-  const pose=this.evaluate(input),{position}=input;this.last={pose,input};this.alpha=1;
+ draw(input:DrawFrame,sharedPose?:RigPose){
+  const pose=sharedPose??this.evaluate(input),{position}=input;this.last={pose,input};this.alpha=1;
   // Reset every pooled transform first, including one-frame roll/death state.
   this.root.setPosition(position.x,position.y).setDepth(position.y).setRotation(pose.actor.angle).setScale(pose.actor.scaleX,pose.actor.scaleY).setAlpha(1).setVisible(true);
   this.shadow.setPosition(position.x,position.y+1).setDepth(position.y-.1).setAlpha(.5).setVisible(true);
