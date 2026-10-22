@@ -21,9 +21,13 @@ for(const [loadout,weapon] of [['Vanguard','sword'],['Wayfarer','spear']] as con
    expect((await state(page)).attack.phase).toBe('idle');
   }
   await expect.poll(async()=>(await state(page)).stamina).toBe((await state(page)).maxStamina);
-  await page.keyboard.press('KeyJ');await page.waitForFunction(()=>window.vireldenDebug!().attack.phase==='windup');await page.keyboard.press('Escape');
+  const lockStart=await state(page),lockBox=await page.locator('canvas').boundingBox();expect(lockBox).not.toBeNull();
+  await page.mouse.move(lockBox!.x+(lockStart.screen.x+140)/1280*lockBox!.width,lockBox!.y+lockStart.screen.y/800*lockBox!.height);
+  await page.keyboard.press('KeyJ');await page.waitForFunction(()=>window.vireldenDebug!().attack.phase==='windup');
+  await page.mouse.move(lockBox!.x+(lockStart.screen.x-140)/1280*lockBox!.width,lockBox!.y+lockStart.screen.y/800*lockBox!.height);
+  await page.keyboard.press('Escape');
   await expect.poll(async()=>(await state(page)).paused).toBe(true);
-  const frozen=await state(page);expect(frozen.attack.phase).not.toBe('idle');await page.waitForTimeout(200);
+  const frozen=await state(page);expect(frozen.attack.phase).not.toBe('idle');expect(frozen.attack.aim.x).toBeCloseTo(1,2);expect(frozen.character.direction).toBe('east');await page.waitForTimeout(200);
   expect((await state(page)).attack).toEqual(frozen.attack);
   await page.getByRole('button',{name:'Continue expedition',exact:true}).click();
   await expect.poll(async()=>(await state(page)).attack.phase).toBe('idle');expect(errors).toEqual([]);

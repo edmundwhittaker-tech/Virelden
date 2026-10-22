@@ -141,7 +141,8 @@ export class WorldView{
   }
   drawAdventure(s:Adventure,moving:boolean,facing:Facing){
     this.mist.setX(640+Math.sin(s.time*.06)*18);
-    this.actor.draw(s.position,moving,facing,{...s.attack,weapon:s.attack.phase==='idle'?s.equipped:s.attack.weapon});
+    const attackFacing=s.attack.phase==='idle'?facing:facingForInput(s.attack.aim,facing);
+    this.actor.draw(s.position,moving,attackFacing,{...s.attack,aim:s.attack.phase==='idle'?s.aim:s.attack.aim,weapon:s.attack.phase==='idle'?s.equipped:s.attack.weapon});
     const rolling=s.rollTimer>0;
     this.actor.effects(s.hurtTimer>0?0xf2aaa0:invulnerable(s)?0xb9d9df:0xffffff,rolling?(1-s.rollTimer/.38)*360:0,invulnerable(s)?.6:1,rolling?.72:1);
     const actors=[s.position,...s.enemies.filter(e=>e.hp>0).map(e=>e.position)].map(project);
