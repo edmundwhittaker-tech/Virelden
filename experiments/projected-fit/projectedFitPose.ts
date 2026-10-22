@@ -14,6 +14,6 @@ export function projectedFitPose(input:RigInput,state:LocomotionState):RigPose{
  for(const side of ['near','far']as const){const leg=model.legs[side],hip=local(leg.screen.hip),knee=local(leg.screen.knee),ankle=local(leg.screen.ankle),oldFoot=pose.parts[`foot_${side}`],vector={x:oldFoot.end.x-oldFoot.start.x,y:oldFoot.end.y-oldFoot.start.y};
   set(`thigh_${side}`,hip,knee,18);set(`greave_${side}`,knee,ankle,20);set(`foot_${side}`,ankle,{x:ankle.x+vector.x,y:ankle.y+vector.y});pose.feet[side]=ankle;
  }
- pose.hand={...pose.parts.hand_near.end};pose.supportHand={...pose.parts.hand_far.end};pose.support=model.legs.near.contact&&model.legs.far.contact?'both':model.legs.near.contact?'near':'far';
+ pose.hand={...pose.parts.hand_near.end};pose.supportHand={...pose.parts.hand_far.end};pose.support=model.legs.near.contact&&model.legs.far.contact?'both':model.legs.near.contact?'near':model.legs.far.contact?'far':'none';
  return pose;
 }

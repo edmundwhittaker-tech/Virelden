@@ -21,15 +21,26 @@ jobs:
         run: |
           npx tsc --strict --skipLibCheck --target ES2022 --module NodeNext --moduleResolution NodeNext --outDir .test-jog experiments/authored-jog/gameJog.ts
           node --test experiments/authored-jog/gameJog.test.mjs
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install chromium
       - name: Revalidate neutral and real lever image transforms
         run: npx playwright test --config playwright.neutral-fit.config.ts
       - name: Revalidate all poleaxe primary/support image grips
         run: npx playwright test --config playwright.poleaxe.config.ts
-      - name: Install explicit encoded-frame timing tool
-        run: sudo apt-get install -y ffmpeg
-      - name: Actual compact Canvas motion and encoded frame cadence
+      - name: Native clips and actual image-pivot plus settled-neutral registration
+        env:
+          FIT_MOTION_DEFER_TIMING: '1'
         run: npx playwright test --config playwright.fit-motion.config.ts
+      - name: Preserve native pixels before system tooling download
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fitted-motion-early-capture-encoding-audit-pending
+          path: test-results/fit-motion
+          retention-days: 7
+      - name: Install explicit encoded-frame timing tool
+        run: sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Mandatory independent encoded-PTS cadence and gap audit
+        run: node experiments/projected-fit/auditEncoding.mjs test-results/fit-motion
       - name: Preserve native motion evidence
         if: always()
         uses: actions/upload-artifact@v4

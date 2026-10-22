@@ -5,7 +5,7 @@ export type RigWeapon='sword'|'spear'|'hammer'|'axe'|'falchion'|'poleaxe';
 export interface RigWeaponMotion {kind:'cut'|'thrust'|'overhead'|'hook';startAngle:number;endAngle:number}
 export interface RigInput {view:'front'|'rear';flipped:boolean;motion:'idle'|'walk'|'attack'|'roll'|'interact';time:number;phase?:'windup'|'active'|'recovery';progress?:number;weapon?:RigWeapon;aim?:RigPoint;weaponMotion?:RigWeaponMotion;weaponHands?:1|2;weaponReach?:number;handTarget?:RigPoint}
 export interface RigPart {start:RigPoint;end:RigPoint;angle:number;length:number;depth:number;artSpan?:number}
-export interface RigPose {interaction?:{requested:RigPoint;actual:RigPoint;error:number;reached:boolean};weaponVisible:boolean;weaponAngle:number;weaponLength:number;parts:Record<RigPartId,RigPart>;hand:RigPoint;supportHand:RigPoint;foot:RigPoint;actor:{angle:number;scaleX:number;scaleY:number};feet:{near:RigPoint;far:RigPoint};support:'near'|'far'|'both'}
+export interface RigPose {interaction?:{requested:RigPoint;actual:RigPoint;error:number;reached:boolean};weaponVisible:boolean;weaponAngle:number;weaponLength:number;parts:Record<RigPartId,RigPart>;hand:RigPoint;supportHand:RigPoint;foot:RigPoint;actor:{angle:number;scaleX:number;scaleY:number};feet:{near:RigPoint;far:RigPoint};support:'near'|'far'|'both'|'none'}
 const clamp=(v:number,a:number,b:number)=>Math.max(a,Math.min(b,v));
 const finite=(v:number,fallback=0)=>Number.isFinite(v)?v:fallback;
 const lerp=(a:number,b:number,t:number)=>a+(b-a)*t;

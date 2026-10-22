@@ -1,5 +1,6 @@
 /** East-only authored game-pose experiment. No gameplay/input/save authority.
- * Visible foot return is24px per27px root half-step (~3px stylized slip),
+ * Compact visible foot return is24px per27px root half-step (~3px slip);
+ * relaxed uses24px return per24px stance travel (not rendered sole-lock proof),
  * not a foot-lock claim. Skeletal segment lengths and actual carry grips stay fixed.
  */
 import {evaluateRig,twoBone,type RigInput,type RigPose,type RigPoint,type RigPartId} from '../../src/core/modularRig.js';
@@ -21,13 +22,17 @@ function travelFoot(phase:number,side:Side,stanceFraction:number){
 export function advanceGameJog(s:GameJogState,root:RigPoint,dt:number){
  if(!Number.isFinite(root.x)||!Number.isFinite(root.y)||!Number.isFinite(dt)||dt<=0||dt>.05)throw Error('Expected bounded finite resolved root step');
  const distance=Math.hypot(root.x-s.root.x,root.y-s.root.y),moving=distance>.0001;s.root=copy(root);
- if(moving){if(s.mode==='idle'){s.phase=0;s.weight=0;}s.mode='travel';s.stop=undefined;s.phase+=TAU*distance/s.cycleDistance;s.weight=Math.min(1,s.weight+dt/.12);
-  const blend=smooth(s.weight);for(const side of SIDES){const f=travelFoot(s.phase,side,s.stanceFraction);s.feet[side]=mix(neutral(side),f.point,blend);s.contact[side]=f.contact;}return;
+ if(moving){if(s.mode==='idle'){s.phase=TAU*s.stanceFraction/2;s.weight=0;}s.mode='travel';s.stop=undefined;s.phase+=TAU*distance/s.cycleDistance;s.weight=Math.min(1,s.weight+dt/.1);
+  const blend=smooth(s.weight);for(const side of SIDES){const f=travelFoot(s.phase,side,s.stanceFraction);s.feet[side]=f.contact?f.point:mix(neutral(side),f.point,blend);s.contact[side]=f.contact;}return;
  }
- if(s.mode==='travel'){const first:Side=s.contact.near?'far':'near';s.mode='settle';s.stop={first,stage:0,time:0,from:{near:copy(s.feet.near),far:copy(s.feet.far)}};return;}
+ if(s.mode==='travel'){const first:Side=s.contact.near?'far':s.contact.far?'near':neutral('near').y-s.feet.near.y<neutral('far').y-s.feet.far.y?'near':'far';s.mode='settle';s.stop={first,stage:0,time:0,from:{near:copy(s.feet.near),far:copy(s.feet.far)}};return;}
  if(s.mode==='settle'){
   const stop=s.stop!;stop.time+=dt;
-  if(stop.stage<2){const side=stop.stage===0?stop.first:stop.first==='near'?'far':'near',q=Math.min(1,stop.time/.14),p=mix(stop.from[side],neutral(side),smooth(q));p.y-=PICKUP*Math.sin(Math.PI*q)**2;s.feet[side]=p;s.contact[side]=q>=1;
+  if(stop.stage<2){const side=stop.stage===0?stop.first:stop.first==='near'?'far':'near',held:Side=side==='near'?'far':'near';
+   // A foot already in flight is not a fixed support: let its visible sole land
+   // before holding that position during the other foot's replacement.
+   if(stop.stage===0&&!s.contact[held]){const land=Math.min(1,stop.time/.06);s.feet[held]={x:stop.from[held].x,y:stop.from[held].y+(neutral(held).y-stop.from[held].y)*smooth(land)};if(land>=1)s.contact[held]=true;}
+   const q=Math.min(1,stop.time/.14),p=mix(stop.from[side],neutral(side),smooth(q));p.y-=PICKUP*Math.sin(Math.PI*q)**2;s.feet[side]=p;s.contact[side]=q>=1;
    if(q>=1){stop.stage++;stop.time=0;stop.from={near:copy(s.feet.near),far:copy(s.feet.far)};}
   }else{s.weight=Math.max(0,s.weight-dt/.12);if(s.weight===0){s.mode='idle';s.stop=undefined;for(const side of SIDES){s.feet[side]=neutral(side);s.contact[side]=true;}}}
  }
@@ -44,6 +49,6 @@ export function gameJogPose(input:RigInput,s:GameJogState):RigPose{
   const upper=pose.parts.upperarm_far,wrist=pose.parts.forearm_far.end,off=(s.feet.far.x-7)*-.12;
   const arm=twoBone(upper.start,{x:wrist.x+off,y:wrist.y},10.5,10.5,-1);set('upperarm_far',upper.start,arm.joint);set('forearm_far',arm.joint,arm.end);const a=Math.atan2(arm.end.y-arm.joint.y,arm.end.x-arm.joint.x);set('hand_far',arm.end,{x:arm.end.x+Math.cos(a)*4,y:arm.end.y+Math.sin(a)*4});
  }
- pose.hand=copy(pose.parts.hand_near.end);pose.supportHand=copy(pose.parts.hand_far.end);pose.support=s.contact.near&&s.contact.far?'both':s.contact.near?'near':'far';return pose;
+ pose.hand=copy(pose.parts.hand_near.end);pose.supportHand=copy(pose.parts.hand_far.end);pose.support=s.contact.near&&s.contact.far?'both':s.contact.near?'near':s.contact.far?'far':'none';return pose;
 }
 export function gameJogModel(input:RigInput,s:GameJogState){const pose=gameJogPose(input,s);const world=(p:RigPoint)=>({x:s.root.x+p.x,y:s.root.y+p.y});return{kind:'authored-2d',cycleDistance:s.cycleDistance,stanceFraction:s.stanceFraction,mode:s.mode,hipScreenY:pose.parts.thigh_near.start.y,legs:Object.fromEntries(SIDES.map(side=>[side,{contact:s.contact[side],screen:{hip:world(pose.parts[`thigh_${side}`].start),knee:world(pose.parts[`greave_${side}`].start),ankle:world(pose.parts[`foot_${side}`].start),sole:world({...pose.feet[side],y:pose.feet[side].y+4})}}]))};}
