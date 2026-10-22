@@ -1,6 +1,9 @@
 import {test,expect,type Page} from '@playwright/test';
 import {mkdir,writeFile} from 'node:fs/promises';
 const state=(page:Page)=>page.evaluate(()=>window.vireldenDebug!());
+// Explicit phase images and compact state are sufficient; per-input tracing bloats full-route evidence.
+test.use({trace:'off'});
+test.afterEach(async({page},info)=>{if(info.status===info.expectedStatus)return;try{const s=await state(page),failure={test:info.title,position:s.position,hp:s.hp,gatePhase:s.gatePhase,gateProgress:s.gateProgress,paused:s.paused,attack:s.attack,checkpoint:s.checkpoint,time:s.time,enemies:s.enemies.map(e=>({id:e.id,hp:e.hp,position:e.position,phase:e.phase}))};console.log('EXTENDED_FAILURE_STATE '+JSON.stringify(failure));await info.attach('failure-state',{body:Buffer.from(JSON.stringify(failure,null,2)),contentType:'application/json'});await page.screenshot({path:info.outputPath('failure-state.png'),fullPage:true});}catch(error){console.log('Failure state unavailable',String(error));}});
 async function open(page:Page){await page.goto('/?debug=1&qa=1');await page.getByRole('button',{name:'Choose Wayfarer',exact:true}).click();await expect(page.locator('#save-status')).toContainText('QA save');}
 async function hold(page:Page,keys:string[],ms:number){for(const k of keys)await page.keyboard.down(k);await page.waitForTimeout(ms);for(const k of keys)await page.keyboard.up(k);}
 
