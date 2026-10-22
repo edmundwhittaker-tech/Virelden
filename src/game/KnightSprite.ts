@@ -66,6 +66,11 @@ export class KnightSprite {
     this.sprite.setPosition(p.x + offsetX, p.y).setDepth(p.y).setFlipX(flipped).setOrigin(.5, originY).setScale(scale);
   }
 
+  effects(tint=0xffffff, angle=0, alpha=1, size=1) {
+    this.sprite.setTint(tint).setAngle(angle).setAlpha(alpha);
+    this.sprite.setScale(this.sprite.scaleX*size, this.sprite.scaleY*size);
+  }
+
   snapshot() {
     return {
       texture: this.sprite.texture.key,

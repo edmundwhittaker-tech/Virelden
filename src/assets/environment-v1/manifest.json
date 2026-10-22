@@ -1,0 +1,153 @@
+{
+  "low-wall": {
+    "file": "low-wall.webp",
+    "width": 498,
+    "height": 256,
+    "origin": [
+      0.5,
+      1
+    ],
+    "source": "Original AI-generated raster, built-in image_gen, 2026-10-22",
+    "cropBox": [
+      51,
+      22,
+      1711,
+      876
+    ],
+    "notes": "Generated alpha preserved; trimmed to visible object bounds and downsampled. Floor is single-court texture, not seamless repeat."
+  },
+  "mud-track": {
+    "file": "mud-track.webp",
+    "width": 512,
+    "height": 247,
+    "origin": [
+      0.5,
+      0.5
+    ],
+    "source": "Original AI-generated raster, built-in image_gen, 2026-10-22",
+    "cropBox": [
+      35,
+      34,
+      1742,
+      856
+    ],
+    "notes": "Generated alpha preserved; trimmed to visible object bounds and downsampled. Floor is single-court texture, not seamless repeat."
+  },
+  "slate-court": {
+    "file": "slate-court.webp",
+    "width": 1024,
+    "height": 512,
+    "origin": [
+      0.5,
+      0.5
+    ],
+    "source": "Original AI-generated raster, built-in image_gen, 2026-10-22",
+    "cropBox": [
+      6,
+      30,
+      1528,
+      1005
+    ],
+    "notes": "Generated alpha preserved; trimmed to visible object bounds and downsampled. Floor is single-court texture, not seamless repeat."
+  },
+  "gothic-pillar": {
+    "file": "gothic-pillar.webp",
+    "width": 172,
+    "height": 640,
+    "origin": [
+      0.5,
+      1
+    ],
+    "source": "Original AI-generated raster, built-in image_gen, 2026-10-22",
+    "cropBox": [
+      314,
+      24,
+      706,
+      1484
+    ],
+    "notes": "Generated alpha preserved; trimmed to visible object bounds and downsampled. Floor is single-court texture, not seamless repeat.",
+    "groundOrigin": [
+      0.5,
+      0.94
+    ]
+  },
+  "sealed-vault": {
+    "file": "sealed-vault.webp",
+    "width": 960,
+    "height": 942,
+    "origin": [
+      0.5,
+      1
+    ],
+    "source": "Original AI-generated raster, built-in image_gen, 2026-10-22",
+    "cropBox": [
+      323,
+      5,
+      1350,
+      1013
+    ],
+    "notes": "Generated alpha preserved; trimmed to visible object bounds and downsampled. Floor is single-court texture, not seamless repeat."
+  },
+  "fallen-masonry": {
+    "file": "fallen-masonry.webp",
+    "width": 384,
+    "height": 243,
+    "origin": [
+      0.5,
+      1
+    ],
+    "source": "Original AI-generated raster, built-in image_gen, 2026-10-22",
+    "cropBox": [
+      281,
+      58,
+      1511,
+      837
+    ],
+    "notes": "Generated alpha preserved; trimmed to visible object bounds and downsampled. Floor is single-court texture, not seamless repeat."
+  },
+  "iron-coffer": {
+    "file": "iron-coffer.webp",
+    "width": 512,
+    "height": 297,
+    "origin": [
+      0.5,
+      0.9
+    ],
+    "suggestedDisplaySize": [
+      45,
+      27
+    ],
+    "source": "Original AI-generated raster, built-in image_gen, 2026-10-22",
+    "notes": "Transparent prop. Preserve world interaction position and scale for readability, not collision."
+  },
+  "ember-forge": {
+    "file": "ember-forge.webp",
+    "width": 512,
+    "height": 438,
+    "origin": [
+      0.5,
+      0.85
+    ],
+    "suggestedDisplaySize": [
+      60,
+      51
+    ],
+    "source": "Original AI-generated raster, built-in image_gen, 2026-10-22",
+    "notes": "Transparent prop. Preserve world interaction position and scale for readability, not collision."
+  },
+  "stone-lantern": {
+    "file": "stone-lantern.webp",
+    "width": 224,
+    "height": 640,
+    "origin": [
+      0.5,
+      0.92
+    ],
+    "suggestedDisplaySize": [
+      25,
+      60
+    ],
+    "source": "Original AI-generated raster, built-in image_gen, 2026-10-22",
+    "notes": "Transparent prop. Preserve world interaction position and scale for readability, not collision."
+  }
+}
