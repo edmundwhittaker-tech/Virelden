@@ -1,4 +1,4 @@
-name: Aimed raider native diagnosis
+name: Aimed raider physical spacing verification
 on:
   push:
     branches: [qa/aimed-raider-diagnostic]
@@ -16,8 +16,11 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npx playwright install --with-deps chromium
-      - name: Six independent fresh native observations, retaining every inherited assertion
+      - name: Six independent fresh native duels, retaining the five-click budget and assertions
         run: npx playwright test browser-tests/courtyard.spec.ts --grep 'real aimed attacks defeat raider' --repeat-each=6 --output test-results/aimed-raider-runs
+      - name: Actual production-renderer overlap miss and reachable spaced contact
+        if: always()
+        run: npx playwright test --config playwright.raider-spacing.config.ts --output test-results/raider-spacing-browser
       - name: Keep compact actual-frame state and screenshots, not traces
         if: always()
         uses: actions/upload-artifact@v4
