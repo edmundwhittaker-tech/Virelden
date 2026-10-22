@@ -1,0 +1,18 @@
+{
+  "source": "Built-in image_gen, 2026-10-22; original generated alpha preserved, ImageMagick downsample/WebP optimization only.",
+  "open-frame": {
+    "file": "open-frame.webp", "size": [960,960], "sourceFile": "exec-aa6442df-9aaa-442c-972e-b2469bc94e6f.png",
+    "reference": "../environment-v1/sealed-vault.webp", "groundAnchor": [472,776], "displayWidth": 520,
+    "aperturePolygon": [[374,716],[374,247],[454,190],[568,332],[568,845]],
+    "doorMechanism": "Two independent code-native etched steel leaves translate into lateral masonry pockets. Closed=0, open=1; smoothstep progress; per-leaf maximum translation +/-(115,58) source pixels. Mask clips leaves to aperture; no building scale animation.",
+    "prompt": "Edit target is this isometric monumental slate gothic station gate sprite. Preserve exactly its architectural silhouette, perspective, scale, stone texture and tiny amber lamps. Remove ONLY the two central metal door leaves, leaving a genuinely transparent empty walk-through pointed arch opening, not a black painted hole. Keep stone jambs and arch completely intact. No ground background, no new decorations, no people. Transparent background throughout and transparent arch hole. This is a game asset, same full composition and orientation as reference."
+  },
+  "archer-poses": {
+    "file": "archer-poses.webp", "size": [768,256], "sourceFile": "exec-356321f1-c54c-49f9-bfa6-dfcf7242afde.png",
+    "reference": "../knight-rig/attack-v1.webp", "cell": [256,256], "ground":241,"displayScale":0.405,
+    "frames": ["ready","draw","release"], "bowHand": [221,75], "fullDrawHand": [104,63],
+    "timing": "Windup .9s uses frame1, draw ramps0..1 during first.35s. Recovery uses frame2. Idle frame0. Left-facing mirrors bodies. Separate bow rotates around measured hand toward aim, string and arrow share core/archerRig nock socket.",
+    "prompt": "Create a transparent game sprite atlas matching EXACTLY this dark steel articulated plate knight style, scale and three-quarter facing RIGHT. Full closed helmet, no cloth, no cape. THREE equal square frames in a SINGLE ROW, full body same ground baseline. Each frame is an archer BODY with empty hands: absolutely NO bow, NO arrow, NO sword baked into body. Frame1 READY: left arm extended horizontally to right at chest height with closed gauntlet holding invisible bow; right hand forward near left hand. Frame2 DRAW: left arm extended right at chest height, right elbow back and right hand against cheek drawing invisible bowstring. Frame3 RELEASE: same left arm firmly extended right at chest height, right hand just behind cheek after release. Make anatomically clear plausible archery poses, same identical knight in all frames; do not repeat melee poses from reference. Leave comfortable transparent margins per frame; no text, no shadows or background."
+  },
+  "layeredVectorAssets": {"bow": "src/game/ArcherView.ts: wood limbs, pale string, gauntlet overlay; aim-oriented around hand", "arrow": "src/game/ArcherView.ts drawArrow: nock-origin wood shaft, silver broadhead, two pale fletchings", "lever": "src/game/StationGateView.ts: stone plinth, steel pivot shaft, brass handle; shared .8s pull progress with KnightSprite"}
+}

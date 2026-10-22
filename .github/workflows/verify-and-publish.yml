@@ -12,7 +12,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,8 +37,24 @@ jobs:
             dist/
             src/
             package-lock.json
-            test-results/
           retention-days: 14
+      - name: Keep compact browser screenshots and state
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: virelden-browser-evidence
+          path: |
+            test-results/**/*.png
+            test-results/**/*.json
+            test-results/**/*.md
+          retention-days: 14
+      - name: Keep short regression traces separately
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: virelden-browser-traces
+          path: test-results/**/trace.zip
+          retention-days: 3
   publish:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: verify

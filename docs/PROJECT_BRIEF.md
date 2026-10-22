@@ -2,7 +2,11 @@
 
 The owner's next request expands the movement starter into a small deliberate-action RPG, inspired by exploration and equipment progression rather than reproducing another game's world or artwork.
 
-## This milestone
+## Expanded milestone — owner follow-up
+
+One full connected level about four times the current playable content, preserving the original courtyard. Open and walk through the monumental station gate with lever/body/door animation, then explore three further sections with meaningful encounters, an optional cache, checkpoint and clear ending. Restore the monumental visual scale without breaking feet, depth or collision. Give the lookout a visibly drawn bow and real arrow projectiles. F is the primary keyboard attack; J remains and mouse click aims separately. No pointer movement is needed for keyboard combat. See FULL_LEVEL.md.
+
+## Original milestone
 
 One compact, connected underworks ward beneath an unnamed outer Plate station. Two starter loadouts share the existing ordinary full-plate knight art. Three weapons differ in reach, arc, windup, recovery, damage and stamina cost. Two human enemy roles and an armoured captain provide a short combat/exploration loop. Find equipment caches, open a physical shortcut, temper mundane weapons at a forge, and return to a checkpoint after defeat.
 

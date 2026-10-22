@@ -6,6 +6,7 @@ import northUrl from '../assets/plate-knight-ne-v1.webp';
 import southUrl from '../assets/plate-knight-se-v1.webp';
 import { project, type Point } from '../core/game.js';
 import type { Facing } from '../core/facing.js';
+import { STATION_GATE } from '../core/level.js';
 
 type Registration = readonly [headCentre: number, top: number, ground: number];
 const SOURCES = {
@@ -122,8 +123,27 @@ export class KnightSprite {
     this.rig={phase:combat.phase,pose,weapon:combat.weapon,visible:true,hand:{...world},grip:{...world},angle:m.angle,depth:weaponDepth};
   }
 
+  /** A deliberate reach / pull / settle, with the gauntlet registered to the lever grip. */
+  drawLeverPull(position:Point, facing:Facing, progress:number) {
+    const p=project(position),lever=project(STATION_GATE.lever),t=Math.max(0,Math.min(1,progress));
+    const hand={x:lever.x-13+t*23,y:lever.y-43+t*13};
+    const frame=1, socket=ATTACK_RIG.hands[frame],scale=ATTACK_RIG.scale;
+    // The reach pose is held at the real mechanism; small lean follows handle travel.
+    const x=p.x,y=p.y;
+    const gauntlet={x:x+(socket.x-128)*scale,y:y+(socket.y-ATTACK_RIG.ground)*scale};
+    this.sprite.stop().setTexture(ATTACK_RIG.key,frame).setFlipX(false).setOrigin(.5,ATTACK_RIG.ground/256).setScale(scale).setPosition(x,y).setDepth(Math.max(p.y,y)+.1);
+    this.shadow.setPosition(x,y+1).setDepth(Math.max(p.y,y)-.1);
+    this.weapon.clear().setPosition(0,0).setDepth(p.y+.2).setAngle(0).setScale(1).setAlpha(1);
+    this.weapon.lineStyle(10,0x172126).lineBetween(gauntlet.x-8,gauntlet.y,hand.x,hand.y);
+    this.weapon.lineStyle(7,0x75817f).lineBetween(gauntlet.x-8,gauntlet.y,hand.x,hand.y);
+    this.weapon.lineStyle(2,0xb8c2ba).lineBetween(gauntlet.x-8,gauntlet.y-2,hand.x,hand.y-2);
+    this.weapon.fillStyle(0x9ba6a0).fillCircle(hand.x,hand.y,4);this.direction=facing;
+    this.rig={phase:'pull',pose:'lever-reach',weapon:'none',visible:false,hand,grip:{...hand},angle:0,depth:p.y};
+  }
+
   effects(tint=0xffffff, angle=0, alpha=1, size=1) {
     this.sprite.setTint(tint).setAngle(angle).setAlpha(alpha);
+    this.shadow.setAlpha(alpha);
     this.sprite.setScale(this.sprite.scaleX*size, this.sprite.scaleY*size);
     this.weapon.setAngle(angle).setAlpha(alpha).setScale(size);
   }

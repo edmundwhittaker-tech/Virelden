@@ -1,7 +1,7 @@
 import {expect,type Page} from '@playwright/test';
 import {mkdir,writeFile} from 'node:fs/promises';
 // Only observes the rendered canvas and read-only debug snapshot; never injects game state.
-export async function captureAttack(page:Page,label:string){
+export async function captureAttack(page:Page,label:string,pointer=false){
  const capture=page.evaluate(()=>new Promise<Record<string,{png:string;state:ReturnType<NonNullable<Window['vireldenDebug']>>}>>((resolve,reject)=>{
   const frames:Record<string,{png:string;state:ReturnType<NonNullable<Window['vireldenDebug']>>}>={};
   const deadline=performance.now()+7000;let started=false;
@@ -14,7 +14,7 @@ export async function captureAttack(page:Page,label:string){
    requestAnimationFrame(sample);
   }requestAnimationFrame(sample);
  }));
- await page.keyboard.press('KeyJ');const frames=await capture;
+ if(pointer){await page.mouse.down();await page.mouse.up();}else await page.keyboard.press('KeyF');const frames=await capture;
  await mkdir('test-results/spatial-combat',{recursive:true});
  for(const [phase,frame]of Object.entries(frames)){
   await writeFile(`test-results/spatial-combat/${label}-${phase}.png`,Buffer.from(frame.png.split(',')[1],'base64'));

@@ -1,6 +1,6 @@
 # Virelden — Beneath the Station
 
-A compact **Phaser + TypeScript + Vite** action-RPG slice: explore an underworks ward, recover equipment, improve mundane steel, open a shortcut and defeat an armoured captain.
+A connected **Phaser + TypeScript + Vite** action-RPG level: explore the lower ward, open its monumental station gate, and ascend through the Lamp Ascent, Transfer Court and Upper Watch. Recover equipment, improve mundane steel, open a shortcut, secure a second checkpoint and defeat the final captain.
 
 ## Play
 
@@ -9,18 +9,19 @@ Choose **Vanguard** (140 health, 90 stamina, sword) or **Wayfarer** (100 health,
 | Control | Action |
 | --- | --- |
 | WASD / arrow keys | Screen-relative movement and facing |
-| J / left click | Attack; mouse aims, movement sets facing |
+| F / J | Attack in current or last keyboard movement direction; no mouse needed |
+| Left click | Aim and attack toward the cursor |
 | Space | Roll in movement direction, or current facing when still |
-| E | Open cache, rest, use forge, open shortcut |
+| E | Open cache, rest, use forge, open shortcut, pull station-gate lever, secure exit |
 | I | Equipment, comparison and upgrades |
 | H | Controls and survival guide |
 | Escape | Pause / resume |
 
-The sword sweeps broadly, the spear thrusts farther in a narrow cone, and the slow hammer staggers. Watch enemy windups and allow stamina to recover. Rolls briefly avoid damage but cost stamina and have recovery. Three equipment caches reward side exploration. The forge near the starting checkpoint upgrades equipped weapons to +1 (30 marks) and +2 (60 marks).
+The sword sweeps broadly, the spear thrusts farther in a narrow cone, and the slow hammer staggers. Watch enemy windups and allow stamina to recover. Rolls briefly avoid damage but cost stamina and have recovery. Four equipment caches reward side exploration. The forge near the starting checkpoint upgrades equipped weapons to +1 (30 marks) and +2 (60 marks).
 
-Equipment, upgrades, earned marks, cleared foes, opened caches and the shortcut persist through death and reload. A reload starts safely at the checkpoint, not mid-fight. Living enemies reset on retry. Rest heals but does not revive cleared enemies. Menus and lost browser focus pause play. **Pause → Reset saved progress** requires confirmation and permits trying the other loadout. Saves are local to this browser; no account or server sync.
+Equipment, upgrades, earned marks, cleared foes, opened caches, fully opened station gate, checkpoint and the shortcut persist through death and reload. A reload starts safely at the checkpoint, not mid-fight. An interrupted lever pull or partially opened gate resets closed; a fully opened gate stays open. Version-one saves migrate without losing earned equipment or upgrades, and the new route remains available after the old captain is defeated. Living enemies reset on retry. Rest heals but does not revive cleared enemies. Menus and lost browser focus pause play. **Pause → Reset saved progress** requires confirmation and permits trying the other loadout. Saves are local to this browser; no account or server sync.
 
-The ward and adversaries are explicitly prototype adaptations, not additions to official campaign canon. Public Plate-station and monumental Imperial architecture guide the environment. No private GM content is included.
+The four section names, ward and adversaries are explicitly prototype adaptations, not additions to official campaign canon. Public Plate-station and monumental Imperial architecture guide the environment. No private GM content is included.
 
 ## Develop in a browser
 

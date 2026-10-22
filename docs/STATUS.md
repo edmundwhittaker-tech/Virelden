@@ -1,25 +1,24 @@
-# Corrective slice verification — 22 October 2026
+# Station-route expansion — 22 October 2026
 
-## Implemented
+## Implemented candidate
 
-Same compact underworks ward and mechanics, with grounding/scale/depth corrections and visible knight attacks. Shared world-foot registrations now match solid prop collision; the vault has connected inaccessible footing; all four pillars have a consistent scale; wall blocks follow their real collision rectangles; near-black offboard and a continuous foundation replace the void ellipse. Physical weapons/projectiles/lever sort locally by ground feet; floor telegraphs stay below solids, and foreground geometry fades instead of falsely drawing the player above it.
+One continuous four-section station level preserves the Lower Ward and adds the Lamp Ascent, Transfer Court and Upper Watch. Twelve encounters replace the old three-encounter endpoint; the old captain remains but no longer ends the expedition. New optional cache, transfer checkpoint and marked final exit use the existing equipment/progression systems. The surveyed collision-valid route is 818 → 3,661 projected pixels (4.47×); connected floor area and encounter count are 4×. This is not an exact playtime claim.
 
-The ordinary closed-helmet full-plate knight now has three authored attack body poses with measured hand sockets and independent sword/spear/hammer profiles. Existing walking, text feedback, combat timing, saves, pause, retry and progression remain. This is a small reusable rig, not a full skeletal animation or armor system. See `SCENE_GROUNDING.md` and `KNIGHT_ATTACK_RIG.md`.
+The monumental station gate retains a520px-wide architectural silhouette with independently opening doors, a visibly pulled lever, registered ground feet and collision that releases only when fully open. It leads into the actual expanded route. New bow lookouts have three full-plate body poses, a held/drawn bow and separate shaft/head/fletching arrows sharing a measured nock origin. F is primary keyboard attack, J retained, and both use current/last keyboard heading independently of the cursor; clicking explicitly aims an attack. Camera deadzone scrolling preserves readable knight scale.
+
+Version-one saves migrate earned loot, upgrades, marks, cleared foes and shortcut. Version-two adds completed gate/checkpoint/finish. Partial gate animations safely restart closed after reload/retry. QA saves remain isolated via `?qa=1`.
 
 ## Verification state
 
-- Local complete deterministic suite: **30/30** gameplay, rig and geometry tests passed; strict TypeScript and production build passed.
-- Geometry tests cover prop footprint containment/collision, ground-depth tie rules and connected access to every existing interaction.
-- Browser suite expanded to20 cases, including four-direction attack-phase PNG/JSON capture, earned hammer capture, and real-input foreground/back depth transition.
-- Textured candidate `223f9342cb4561ad4fea1be24d93047c9340a990`: **20/20 real-input browser tests passed** in [CI39707528799](https://github.com/edmundwhittaker-tech/Virelden/actions/runs/39707528799), including all gameplay regressions, four-direction attack-phase captures and real foreground/background depth transitions. The initial spatial-test route ran into a correctly solid beacon; its route was corrected without weakening collision or assertions.
-- Actual in-game screenshots confirm textured exact-geometry walls, a grounded stone vault apron, uniform pillars, and changed attack body/weapon poses. Untraced timing: **58.25 FPS**, **1.52s simulation / 1.51s wall**, sampled **1ms render / 0.3ms update**. This is a CI measurement, not a device-wide guarantee.
-- This is a pre-merge evidence snapshot. A final narrow fix locks body facing to the attack aim while a swing is in progress and uses current aim for idle weapon layering; its real-pointer regression is included. That regression also exposed scaled-pointer rounding (east aim Y≈−0.0023) selecting rear artwork; a small near-horizontal facing/layer deadzone now rejects that jitter, with a deterministic test. Final exact-commit check and later publication are recorded in [PR #5](https://github.com/edmundwhittaker-tech/Virelden/pull/5) and the Actions run, rather than assumed here.
-- Local Chromium execution remains restricted by workspace permissions. Browser execution is via GitHub Actions. Local Node24; supported CI Node22. Canvas, normal requestAnimationFrame and no SwiftShader launch flags remain unchanged.
+- Local deterministic gameplay, migration, rig, geometry, passage/interruption, route connectivity and content metric tests are passing; final count and exact-commit CI recorded in the PR.
+- Strict TypeScript and production build pass locally.
+- Browser suite includes native keyboard-only heading, real gate operation/pause/reload/walkthrough, earned equipment/full-route combat/checkpoint/finish, and bow draw/release/projectile pixel capture, alongside old gameplay regressions.
+- Native browser evidence includes explicit screenshots and compact state, not expensive per-input tracing. The complete expedition has a 900-second automation budget, at most four real deaths, and requires new durable encounter progress between retries. Native actions retain earned equipment and cleared encounters; no health or save injection substitutes for traversal.
+- The exact candidate results, intermediate failures, final route timing/death count, screenshot review and publication status are recorded in [PR6](https://github.com/edmundwhittaker-tech/Virelden/pull/6). A passing local build or draft PR is not a claim that the public game has been updated.
+- Local Chromium launch was restricted in this workspace; it is not retried or represented as a local pass. GitHub Actions executes the actual browser using Canvas, normal requestAnimationFrame and no SwiftShader flags. Publication requires the full exact-commit suite and visual review to pass, followed by the main-branch Pages job.
 
-## Release / rollback
+## History and scope
 
-The previous published playable slice is retained at `7d6a1a2c5de0395ddbc3c8a27fda2ebf0c639de2` (PR #4). The older courtyard remains at `94c9f7f6cd68ec5e1c93da99038964310a5e5140`. Corrective PR #5 must pass exact-commit browser verification and visual inspection before authorized merge/publication.
+Last deployed corrective slice retained at `dc45e792e586a9307743b4edba23db9f873efa49` (PR5); previous monumental-gate reference at `7d6a1a2c5de0395ddbc3c8a27fda2ebf0c639de2`. Public upload, merge and deployment were explicitly authorized on 22 October 2026; publication remains gated on passing checks and visual review. No separate rollback archive is created.
 
-## Limits / canon
-
-Desktop keyboard/mouse; no audio, touch or multiplayer. One compact prototype, no new levels or systems, no lore changes or private GM information. Ordinary plate and mundane steel only, never true Warplate. Browser-local saves; reload at checkpoint. `?qa=1` visibly selects a separate QA save without reading or erasing normal progress.
+All local section names, gate and adversaries are prototype adaptations. No canonical sealed-Vault revelation, true Warplate, soul resurrection or private GM material. Desktop keyboard/mouse; no audio, touch, multiplayer, account service or sprawling RPG systems.
