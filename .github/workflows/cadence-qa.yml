@@ -21,8 +21,11 @@ jobs:
         run: npm run test:gait && npm run test:cadence && npm test
       - name: Strict build before native rendering
         run: npm run build
-      - name: Check encoded-frame timing tool
-        run: ffprobe -version
+      - name: Install encoded-frame timing tool from official distro packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y ffmpeg
+          ffprobe -version
       - name: Install supported Chromium
         run: npx playwright install --with-deps chromium
       - name: Four compact native routes and separate detail stills
