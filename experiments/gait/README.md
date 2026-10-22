@@ -18,7 +18,7 @@ The corrected posture candidate is **not accepted for gameplay**. Its diagonal f
 
 The fixture-only renderer adds pose injection, viewport masking and actual Phaser transform-matrix queries. It imports current game manifests and weapon geometry; it is not a gameplay-renderer replacement.
 
-- `npm run test:gait`: 15 pure tests. These include all eight directions, both art views/mirrors, 90/150/180 px/s, 30/60/120fps, actual rendered-leg geometry, unchanged upper body/east control, planted-contact invariance, pause/immutability and combat/roll/interaction bypass.
+- `npm run test:gait`: 17 pure tests. These include all eight directions, both art views/mirrors, 90/150/180 px/s, 30/60/120fps, actual rendered-leg geometry, unchanged upper body/east control, planted-contact invariance, pause/immutability and combat/roll/interaction bypass.
 - `npm test`: 133 preserved gameplay tests.
 - `npm run build`: game plus separate fixture build.
 - `npm run test:gait:browser`: four focused Playwright routes, including posture bounds measured from actual Phaser image matrices. Screenshots, native continuous-route videos and raw contact/joint/transition JSON are CI artifacts, not Git.
@@ -28,3 +28,13 @@ The fixture-only renderer adds pose injection, viewport masking and actual Phase
 Each `*-continuous-native.webm` records the complete route directly from the 1200×820 canvas at requested 30fps, preserving nominal 88px and 3× scale. Recording waits for simulation time 4 and holds the endpoint rather than wrapping. Capture dimensions, codec and elapsed wall time are retained in JSON; full-page PNGs provide context without a duplicate encoder. Capture can reduce CI rendering throughput; this fixture is not a game-performance benchmark.
 
 Phaser Float32 matrix rounding is amplified when divided by frame time. CPU drift during a continuous planted contact must remain exactly zero; actual rendered contact drift is bounded by 0.0005 world px per sampled frame and 0.02px/s. Raw measurements are retained before assertions. This is a numerical allowance, not visual motion acceptance. Front/rear view changes and final idle settling remain review items.
+
+## Local branch-continuity correction (22 October, not published)
+
+Physical-leg bend is preserved across art-view changes. Mirror reversal occurs only while free, using an observed old-bend straight frame, then an observed new-bend straight frame, then retraction; 30Hz cannot skip these states. Same-time evaluation reuses the exact immutable result and does not consume landing events twice. Contact epochs increment only on actual new anchors. Source `supportId` may be reassigned during idle settling and is not a landing event; the observed prior physical swing identifies a single completed landing. Ambiguous multi-event intervals conservatively do not create a new contact.
+
+`contactSupport` is authoritative, including `none`. Frozen `RigPose.support` remains legacy cadence metadata and must not be used to claim actual support. Gameplay core, source artwork, body scale and combat are unchanged.
+
+Local verification: 17 gait tests, 133 preserved baseline tests and strict production build pass. Regressions cover exact paused output/state, both adjacent branch-flip lengths >37.95px, no free-output epoch increment, and idle-settle support reassignment. Independent read-only audit verified zero anchor sliding and exact paused-repeat equality at 30/60/120Hz. Native Phaser capture has NOT been rerun for this correction; prior browser results are not acceptance of these changes.
+
+Remaining CPU motion risks: at 60Hz NE is airborne 53.78% of walking frames, SE 62.18%, and the turn route 39.52%. Turn-route maximum physical-knee step is 16.30/9.83/5.54px at 30/60/120Hz, so numerical posture bounds do not prove smooth motion. Walking↔attack/roll/interact transitions and unchanged first-ACTIVE rendered contacts remain an integration gate. Keep the existing gameplay walk unless native motion/transition evidence proves this experiment better.

@@ -49,3 +49,56 @@ test('posture correction is stable at30/120fps, turns and paused immutable sampl
  const freeze=o=>{if(o&&typeof o==='object'){Object.freeze(o);Object.values(o).forEach(freeze);}return o;};freeze(last.state);freeze(last.source);
  constrainProjectedGait(last.state,last.source,last.input,last.position);assert.equal(JSON.stringify(last.state),before);
 });
+test('physical knee branches transfer only while free; repeated turns settle into canonical idle feet',()=>{
+ let switches=0;
+ for(const fps of[30,60,120]){
+  const segments=[];
+  for(let cycle=0;cycle<3;cycle++)for(let i=0;i<8;i++){
+   const angle=i*Math.PI/4;segments.push({velocity:{x:Math.cos(angle)*150,y:Math.sin(angle)*150},frames:15});
+  }
+  segments.push({velocity:{x:0,y:0},frames:fps});
+  const frames=run(segments,1/fps);
+  for(let i=0;i<frames.length;i++){
+   const f=frames[i],g=f.gait,n=g.contacts[g.nearId].planted,r=g.contacts[1-g.nearId].planted;
+   assert.equal(g.contactSupport,n?r?'both':'near':r?'far':'none');
+   for(const side of['near','far'])assert.equal(g.bends[side],g.contacts[g.feet[side].id].bend);
+   const paused=constrainProjectedGait(f.state,f.source,f.input,f.position);
+   assert.deepEqual(paused.sample,g,'same-time reevaluation must return exactly the same output');
+   assert.deepEqual(paused.state,f.state,'same-time reevaluation must not advance state');
+   if(!i)continue;
+   for(const id of[0,1]){
+    const a=frames[i-1].gait.contacts[id],b=g.contacts[id];
+    if(a.epoch!==b.epoch)assert.equal(b.planted,true,'only actual contacts increment epoch');
+    if(a.bend!==b.bend){
+     switches++;assert.equal(b.planted,false,'never flip a planted knee');
+     const length=p=>Math.hypot(p.world.x-p.hip.x,p.world.y-p.hip.y);
+     assert.ok(Math.min(length(a),length(b))>37.95,'bend change must pass the nearly straight plateau');
+    }
+   }
+  }
+  const last=frames.at(-1);assert.equal(last.gait.contactSupport,'both');
+  for(const side of['near','far'])for(const axis of['x','y'])close(last.pose.feet[side][axis],last.reference.feet[side][axis],1e-6);
+ }
+ assert.ok(switches>=12,'exercise actual mirror branch transfers');
+ const turn=run([{velocity:{x:150,y:0},frames:120},{velocity:{x:106.066,y:-106.066},frames:60}],1/120);
+ const before=turn[119],after=turn[120];
+ for(const id of[0,1])if(before.gait.contacts[id].planted&&after.gait.contacts[id].planted){
+  const a=before.gait.contacts[id],b=after.gait.contacts[id];
+  assert.deepEqual(a.ground,b.ground);
+  assert.ok(Math.hypot(a.knee.x-b.knee.x,a.knee.y-b.knee.y)<5,'view change must not invert the planted knee');
+ }
+});
+
+test('idle settle support reassignment never fabricates a landing on the other physical foot',async()=>{
+ const {buildTrace}=await import('../../.gait-build/experiments/gait/routes.js');
+ const frames=buildTrace('turns',60),index=frames.findIndex(f=>Math.abs(f.time-3.2333333333333334)<1e-8);
+ const a=frames[index-1],b=frames[index];
+ assert.equal(b.gait.state.steps,a.gait.state.steps+1);
+ assert.equal(b.gait.state.supportId,0);
+ // Source foot1 just finished and immediately starts another settling swing.
+ // supportId0 is therefore scheduling metadata, NOT a new foot0 contact.
+ assert.equal(a.gait.state.swing.id,1);assert.equal(b.gait.state.swing.id,1);
+ assert.equal(b.gait.contacts[0].planted,false);
+ assert.equal(b.gait.contacts[0].epoch,a.gait.contacts[0].epoch);
+ assert.ok(Math.hypot(b.gait.contacts[0].knee.x-a.gait.contacts[0].knee.x,b.gait.contacts[0].knee.y-a.gait.contacts[0].knee.y)<1);
+});
