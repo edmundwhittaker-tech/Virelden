@@ -23,3 +23,33 @@ The previous published playable slice is retained at `7d6a1a2c5de0395ddbc3c8a27f
 ## Limits / canon
 
 Desktop keyboard/mouse; no audio, touch or multiplayer. One compact prototype, no new levels or systems, no lore changes or private GM information. Ordinary plate and mundane steel only, never true Warplate. Browser-local saves; reload at checkpoint. `?qa=1` visibly selects a separate QA save without reading or erasing normal progress.
+
+
+## Separate enemy art kit — 22 October 2026
+
+Branch `art/enemy-units-v1` adds three enemy art rigs only: a mouth-mask axe
+skeleton, a headless dual-knife skeleton, and the rectangular-shield/trident
+iron giant mini-boss. No game source, enemy AI/spawns/stats, gate, bow archer,
+main branch or deployment is changed. See `ENEMY_ART_KIT.md`.
+
+Authored: 3 unarmed 18-frame transparent body PNG atlases; 3 hand overlays;
+6 separate equipment PNGs; a manifest with timings, ground feet, both hand
+targets, grips and layer order; standalone art renderer and native-game-pixel
+GIF previews. Body scale targets are 88px, 79px without a skull, and 176px.
+
+Locally verified: 54 frame registrations, 108 bounded hand targets, 90 equipment
+grips and 18 exact two-hand axe constraints; visible-fist alpha checks; all PNG
+alpha/dimensions; Chromium preview with all assets, six directions and 90
+100ms captures; no preview page errors. Existing deterministic suite **30/30**
+passed; strict TypeScript and production build passed.
+
+The unchanged game's complete **20/20** real-browser regression tests also passed
+locally in Chromium (2.3 minutes). The independent art preview browser checks are
+separate from those gameplay tests. No claim of CI verification or deployment.
+
+This is a frame-based initial integration kit. Walk has two step extremes plus
+idle passing poses and imperfect generated leg crossing in some views. Three
+authored attack poses are provided; no new hurt/death/shield-bash cycles. Some
+occluded hand targets are explicit anatomical estimates. Previews verify art
+and attachments, not in-game enemy integration. CI and deployment are not
+claimed; the art PR is intentionally left unmerged for Winston.
