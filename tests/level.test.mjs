@@ -27,7 +27,7 @@ test('version one saves migrate earned gear without falsely finishing the larger
  const s=createAdventure();s.currency=88;s.owned.push('hammer');s.levels.hammer=2;s.looted=['west-cache'];s.enemies[2].hp=0;const old=JSON.parse(serialize(s));old.version=1;delete old.gateOpen;delete old.checkpoint;delete old.completed;const restored=restore(JSON.stringify(old));assert.ok(restored);assert.equal(restored.currency,88);assert.equal(restored.levels.hammer,2);assert.equal(restored.enemies[2].hp,0);assert.equal(restored.enemies.at(-1).hp,260);assert.equal(restored.completed,false);assert.equal(restored.gatePhase,'closed');
 });
 test('upper watch exit requires its captain; completion survives reload and optional exploration',()=>{
- const s=createAdventure();s.gatePhase='open';s.position={...FINISH};assert.equal(interact(s),false);s.enemies.find(e=>e.id==='upper-captain').hp=0;assert.equal(interact(s),true);assert.equal(s.completed,true);assert.equal(restore(serialize(s)).completed,true);assert.equal(interact(s),true);
+ const s=createAdventure();s.gatePhase='open';s.position={...FINISH};s.gatePhase='open';assert.equal(interact(s),false);s.enemies.find(e=>e.id==='upper-captain').hp=0;assert.equal(interact(s),true);assert.equal(s.completed,true);assert.equal(restore(serialize(s)).completed,true);assert.equal(interact(s),true);
 });
 
 test('surveyed main route segments are all walkable, not straight lines through walls',()=>{const s=createAdventure();s.gatePhase='open';for(let i=1;i<ROUTE.length;i++){const a=ROUTE[i-1],b=ROUTE[i],steps=Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/2);for(let n=0;n<=steps;n++){const p={x:a.x+(b.x-a.x)*n/steps,y:a.y+(b.y-a.y)*n/steps};assert.ok(adventureCanStand(s,p),JSON.stringify({segment:i,p}));}}});

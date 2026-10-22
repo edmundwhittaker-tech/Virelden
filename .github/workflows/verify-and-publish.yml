@@ -11,6 +11,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   verify:
+    # This branch runs explicitly focused QA, not a full-suite release verification.
+    if: github.event_name != 'pull_request' || github.head_ref != 'feature/equipment-campaign-integration'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

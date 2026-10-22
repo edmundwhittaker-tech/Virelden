@@ -1,0 +1,437 @@
+{
+  "schema": 1,
+  "set": "ordinary-weathered-weapons",
+  "sourcePixelScale": 4,
+  "coordinateContract": {
+    "primaryGripLocal": [
+      0,
+      0
+    ],
+    "axis": "+X",
+    "sourceAngleRadians": 0,
+    "rotation": "pose.weaponAngle about primary grip; local Y scale multiplied by -1 when input.flipped; wholeactor transform once",
+    "runtimeScale": "pose.weaponLength / (axisTip[0] - grip[0])",
+    "tipMeaning": "axisTip is the calibrated source forward endpoint projected onto shaft axis before subpixel packing; contactTip is the actual packed painted extremum and may be off axis",
+    "boundsMeaning": "[left,top,right,bottom], right/bottom exclusive; pixels in individual sprite, not game pixels"
+  },
+  "weapons": {
+    "sword": {
+      "id": "sword",
+      "image": "sprites/sword.webp",
+      "sourceSize": [
+        261,
+        62
+      ],
+      "grip": [
+        40.0,
+        30.716836
+      ],
+      "axisTip": [
+        252.0,
+        30.716836
+      ],
+      "tip": [
+        252.0,
+        30.716836
+      ],
+      "contactTip": [
+        250.5,
+        30.5
+      ],
+      "sourceAngleRadians": 0,
+      "nominalLength": 53,
+      "nominalScale": 0.25,
+      "nominalButtLength": 8,
+      "alphaBounds": [
+        8,
+        8,
+        251,
+        53
+      ],
+      "opaqueBounds": [
+        8,
+        8,
+        251,
+        53
+      ],
+      "sourceCalibration": {
+        "originalSize": [
+          2172,
+          724
+        ],
+        "crop": [
+          50,
+          171,
+          2124,
+          555
+        ],
+        "primaryGrip": [
+          321.8688524590164,
+          364
+        ],
+        "axisTip": [
+          2123,
+          364
+        ],
+        "contactTip": [
+          2123,
+          364.5
+        ],
+        "uniformPixelScale": 0.11770381090207428,
+        "padding": 8,
+        "alphaCleanup": "values <= 1/255 set to zero"
+      },
+      "sourceSha256": "65f3758e77e484f4e977f4a9933c9198384a513e03c87088f4e636a413113f55"
+    },
+    "spear": {
+      "id": "spear",
+      "image": "sprites/spear.webp",
+      "sourceSize": [
+        445,
+        40
+      ],
+      "grip": [
+        64.0,
+        19.628217
+      ],
+      "axisTip": [
+        436.0,
+        19.628217
+      ],
+      "tip": [
+        436.0,
+        19.628217
+      ],
+      "contactTip": [
+        434.5,
+        20.0
+      ],
+      "sourceAngleRadians": 0,
+      "nominalLength": 93,
+      "nominalScale": 0.25,
+      "nominalButtLength": 14,
+      "alphaBounds": [
+        8,
+        8,
+        435,
+        31
+      ],
+      "opaqueBounds": [
+        9,
+        9,
+        434,
+        31
+      ],
+      "sourceCalibration": {
+        "originalSize": [
+          2172,
+          724
+        ],
+        "crop": [
+          36,
+          297,
+          2135,
+          412
+        ],
+        "primaryGrip": [
+          310.50467289719626,
+          354
+        ],
+        "axisTip": [
+          2134,
+          354
+        ],
+        "contactTip": [
+          2134,
+          355.0
+        ],
+        "uniformPixelScale": 0.2040038131553861,
+        "padding": 8,
+        "alphaCleanup": "values <= 1/255 set to zero"
+      },
+      "sourceSha256": "cb626140e23b5c6609bb31a2ac7c5110b63d7e3e645ac5809bb6a125fbf7f0a7"
+    },
+    "hammer": {
+      "id": "hammer",
+      "image": "sprites/hammer.webp",
+      "sourceSize": [
+        233,
+        73
+      ],
+      "grip": [
+        40.0,
+        36.992513
+      ],
+      "axisTip": [
+        224.0,
+        36.992513
+      ],
+      "tip": [
+        224.0,
+        36.992513
+      ],
+      "contactTip": [
+        223.5,
+        37.0
+      ],
+      "sourceAngleRadians": 0,
+      "nominalLength": 46,
+      "nominalScale": 0.25,
+      "nominalButtLength": 8,
+      "alphaBounds": [
+        8,
+        8,
+        224,
+        65
+      ],
+      "opaqueBounds": [
+        8,
+        8,
+        224,
+        64
+      ],
+      "sourceCalibration": {
+        "originalSize": [
+          2048,
+          768
+        ],
+        "crop": [
+          89,
+          138,
+          1960,
+          628
+        ],
+        "primaryGrip": [
+          366.037037037037,
+          389
+        ],
+        "axisTip": [
+          1959,
+          389
+        ],
+        "contactTip": [
+          1959,
+          391.0
+        ],
+        "uniformPixelScale": 0.11550802139037432,
+        "padding": 8,
+        "alphaCleanup": "values <= 1/255 set to zero"
+      },
+      "sourceSha256": "b5992ed9a0464cf699c07726d7c8aabc602bcef9d8db1492c8c25a6a1258fffe"
+    },
+    "axe": {
+      "id": "axe",
+      "image": "sprites/axe.webp",
+      "sourceSize": [
+        289,
+        98
+      ],
+      "grip": [
+        40.0,
+        68.371134
+      ],
+      "axisTip": [
+        280.0,
+        68.371134
+      ],
+      "tip": [
+        280.0,
+        68.371134
+      ],
+      "contactTip": [
+        279.5,
+        68.5
+      ],
+      "sourceAngleRadians": 0,
+      "nominalLength": 60,
+      "nominalScale": 0.25,
+      "nominalButtLength": 8,
+      "alphaBounds": [
+        8,
+        8,
+        280,
+        89
+      ],
+      "opaqueBounds": [
+        8,
+        9,
+        280,
+        88
+      ],
+      "sourceCalibration": {
+        "originalSize": [
+          1774,
+          887
+        ],
+        "crop": [
+          62,
+          199,
+          1712,
+          692
+        ],
+        "primaryGrip": [
+          256.0,
+          565
+        ],
+        "axisTip": [
+          1711,
+          565
+        ],
+        "contactTip": [
+          1711,
+          563.5
+        ],
+        "uniformPixelScale": 0.16494845360824742,
+        "padding": 8,
+        "alphaCleanup": "values <= 1/255 set to zero"
+      },
+      "sourceSha256": "7ee2a5fe1fa80d88f7191a653e87f450309c71a28f2bd14393f3e791543bdac5"
+    },
+    "falchion": {
+      "id": "falchion",
+      "image": "sprites/falchion.webp",
+      "sourceSize": [
+        313,
+        71
+      ],
+      "grip": [
+        40.0,
+        38.771578
+      ],
+      "axisTip": [
+        304.0,
+        38.771578
+      ],
+      "tip": [
+        304.0,
+        38.771578
+      ],
+      "contactTip": [
+        303.5,
+        12.0
+      ],
+      "sourceAngleRadians": 0,
+      "nominalLength": 66,
+      "nominalScale": 0.25,
+      "nominalButtLength": 8,
+      "alphaBounds": [
+        8,
+        8,
+        304,
+        63
+      ],
+      "opaqueBounds": [
+        8,
+        9,
+        304,
+        62
+      ],
+      "sourceCalibration": {
+        "originalSize": [
+          2172,
+          724
+        ],
+        "crop": [
+          44,
+          164,
+          2142,
+          553
+        ],
+        "primaryGrip": [
+          270.7027027027027,
+          382
+        ],
+        "axisTip": [
+          2141,
+          382
+        ],
+        "contactTip": [
+          2141,
+          177.0
+        ],
+        "uniformPixelScale": 0.14115402956604672,
+        "padding": 8,
+        "alphaCleanup": "values <= 1/255 set to zero"
+      },
+      "sourceSha256": "b919beed22d7b2c505a81ec6ec2419ac56b1bb56ff359a7383b49f2f050068a7"
+    },
+    "poleaxe": {
+      "id": "poleaxe",
+      "image": "sprites/poleaxe.webp",
+      "sourceSize": [
+        529,
+        110
+      ],
+      "grip": [
+        80.0,
+        64.026528
+      ],
+      "axisTip": [
+        520.0,
+        64.026528
+      ],
+      "tip": [
+        520.0,
+        64.026528
+      ],
+      "contactTip": [
+        519.5,
+        64.5
+      ],
+      "sourceAngleRadians": 0,
+      "nominalLength": 110,
+      "nominalScale": 0.25,
+      "nominalButtLength": 18,
+      "alphaBounds": [
+        8,
+        8,
+        520,
+        102
+      ],
+      "opaqueBounds": [
+        9,
+        9,
+        520,
+        101
+      ],
+      "sourceCalibration": {
+        "originalSize": [
+          2172,
+          724
+        ],
+        "crop": [
+          30,
+          137,
+          2142,
+          524
+        ],
+        "primaryGrip": [
+          326.859375,
+          368
+        ],
+        "axisTip": [
+          2141,
+          368
+        ],
+        "contactTip": [
+          2141,
+          369.5
+        ],
+        "uniformPixelScale": 0.24253908100426338,
+        "padding": 8,
+        "alphaCleanup": "values <= 1/255 set to zero"
+      },
+      "sourceSha256": "587ce4576f6031911d85be14e4e4cb255cd20aef3580d7b52b92290a7c653b65",
+      "supportGrip": [
+        36.0,
+        64.026528
+      ],
+      "supportGripLocal": [
+        -11,
+        0
+      ],
+      "supportPolicy": "Exactly -11 game px at nominalLength=110; renderer scales source separation with weaponLength. Keep physical poleaxe length nominal unless support socket is rescaled too."
+    }
+  },
+  "packaging": "Optimized WebP runtime files only; raw source paths omitted. sourceSha256 records original generated provenance; sourceCalibration describes measured registration."
+}
