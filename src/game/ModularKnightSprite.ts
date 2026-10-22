@@ -77,6 +77,24 @@ export class ModularKnightSprite {
   this.alpha=alpha;this.root.setAlpha(alpha);this.shadow.setAlpha(alpha*.5);
   if(this.last){const a=this.last.pose.actor;this.root.setRotation(a.angle+angle*Math.PI/180).setScale(a.scaleX*size,a.scaleY*size);}
  }
- snapshot(){const r=this.last;if(!r)return{visible:false};const actor={angle:this.root.rotation,scaleX:this.root.scaleX,scaleY:this.root.scaleY},hand=actorPoint(r.pose.hand,actor),support=actorPoint(r.pose.supportHand,actor);return{texture:'modular-plate',frame:0,walking:r.input.motion==='walk',rig:{phase:r.input.phase??'idle',pose:r.input.motion==='attack'?r.input.phase:r.input.motion,weapon:r.input.weapon??'sword',visible:this.weapon.visible,texture:this.weapon.texture.key,hand:{x:r.input.position.x+hand.x,y:r.input.position.y+hand.y},grip:{x:r.input.position.x+hand.x,y:r.input.position.y+hand.y},angle:r.pose.weaponAngle+this.root.rotation,depth:r.input.position.y+.02,length:r.pose.weaponLength},visible:true,kind:'modular-15-part',equipment:{...this.equipment},view:r.input.view,flipped:r.input.flipped,motion:r.input.motion,phase:r.input.phase,alpha:this.alpha,parts:[...this.images.keys()],layers:[...this.images].map(([id,image])=>({id,texture:image.texture.key,frame:Number(image.frame.name),x:image.x,y:image.y,rotation:image.rotation,scaleX:image.scaleX,scaleY:image.scaleY,visible:image.visible})),interaction:r.pose.interaction?{...r.pose.interaction,requested:{...r.pose.interaction.requested},actual:{...r.pose.interaction.actual}}:undefined,hand:{x:r.input.position.x+hand.x,y:r.input.position.y+hand.y},supportHand:{x:r.input.position.x+support.x,y:r.input.position.y+support.y},foot:{...r.input.position}};}
+ /** Read-only audit of the actual pooled Phaser image transforms, not copied
+  * pose sockets. Source endpoints/grips are registered in the loaded manifests.
+  */
+ private renderedRegistration(){
+  const id=this.last?.input.weapon;if(!id||!this.weapon.visible)return undefined;
+  const point=(image:Phaser.GameObjects.Image,source:readonly number[])=>{
+   const p=image.getWorldTransformMatrix().transformPoint(source[0]-image.displayOriginX,source[1]-image.displayOriginY);
+   return {x:p.x,y:p.y};
+  };
+  const hand=(id:'hand_near'|'hand_far')=>{
+   const image=this.images.get(id);if(!image?.visible)return null;
+   // Match the actual texture/frame, not a pending equipment label.
+   const asset=Object.values(SETS).flatMap(manifest=>Object.values(manifest.parts)).find(asset=>asset.id===id&&asset.texture===image.texture.key&&asset.frame===Number(image.frame.name));
+   return asset?point(image,asset.distal):null;
+  };
+  const asset=WEAPON_ART[id],support='supportGrip' in asset?asset.supportGrip:undefined;
+  return {primaryHand:hand('hand_near'),supportHand:hand('hand_far'),primaryGrip:point(this.weapon,asset.grip),supportGrip:support?point(this.weapon,support):null};
+ }
+ snapshot(){const r=this.last;if(!r)return{visible:false};const actor={angle:this.root.rotation,scaleX:this.root.scaleX,scaleY:this.root.scaleY},hand=actorPoint(r.pose.hand,actor),support=actorPoint(r.pose.supportHand,actor);return{registration:this.renderedRegistration(),texture:'modular-plate',frame:0,walking:r.input.motion==='walk',rig:{phase:r.input.phase??'idle',pose:r.input.motion==='attack'?r.input.phase:r.input.motion,weapon:r.input.weapon??'sword',visible:this.weapon.visible,texture:this.weapon.texture.key,hand:{x:r.input.position.x+hand.x,y:r.input.position.y+hand.y},grip:{x:r.input.position.x+hand.x,y:r.input.position.y+hand.y},angle:r.pose.weaponAngle+this.root.rotation,depth:r.input.position.y+.02,length:r.pose.weaponLength},visible:true,kind:'modular-15-part',equipment:{...this.equipment},view:r.input.view,flipped:r.input.flipped,motion:r.input.motion,phase:r.input.phase,alpha:this.alpha,parts:[...this.images.keys()],layers:[...this.images].map(([id,image])=>({id,texture:image.texture.key,frame:Number(image.frame.name),x:image.x,y:image.y,rotation:image.rotation,scaleX:image.scaleX,scaleY:image.scaleY,visible:image.visible})),interaction:r.pose.interaction?{...r.pose.interaction,requested:{...r.pose.interaction.requested},actual:{...r.pose.interaction.actual}}:undefined,hand:{x:r.input.position.x+hand.x,y:r.input.position.y+hand.y},supportHand:{x:r.input.position.x+support.x,y:r.input.position.y+support.y},foot:{...r.input.position}};}
  destroy(){this.root.destroy(true);this.shadow.destroy();}
 }

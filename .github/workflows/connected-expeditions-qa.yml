@@ -59,3 +59,28 @@ jobs:
             test-results/**/*.json
             test-results/**/*.md
           retention-days: 7
+  rendered-poleaxe-support:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Rules, TypeScript and production build
+        run: npm run check
+      - name: Install native browser
+        run: npx playwright install --with-deps chromium
+      - name: Actual rendered support-hand and weapon image registration
+        run: npx playwright test --config playwright.poleaxe.config.ts --output test-results/poleaxe-browser
+      - name: Keep compact rendered-grip evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: connected-expedition-poleaxe-evidence
+          path: |
+            test-results/**/*.png
+            test-results/**/*.json
+            test-results/**/*.md
+          retention-days: 7
