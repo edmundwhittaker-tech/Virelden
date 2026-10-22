@@ -20,3 +20,5 @@ Physical lengths are sword53, spear93, hammer46, axe60, falchion66 and poleaxe11
 ## Evidence and limits
 
 Authoring alpha/anchor/lossless checks passed6/6. Correctly mirrored centerline max-range raster composites have positive visible contact48/48;46meet the conservative3opaque-pixel threshold. Poleaxe SE/SW exactly at132px reach each has2opaque overlap pixels, not a zero-contact gap. Art was not reshaped to satisfy an arbitrary threshold. These are measured composites, **not browser screenshots**. Actual game-enemy contact and near-arc-edge damage timing still require focused browser QA. Poleaxe remains unequippable until its full two-hand runtime is visually accepted.
+
+Equipment-menu previews use diagonal blade/head-detail crops of these same loaded textures. They are UI-only64×72 canvases; runtime art, physical length, grip, reflection and hit geometry are not changed.

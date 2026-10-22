@@ -3,7 +3,7 @@ import {project,STEP,type Point} from '../core/game.js';
 import {createAdventure,tick,attack,roll,interact,equip,upgrade,retry,equipArmor,train,rest,atCheckpoint,atForge,armory,equipmentContext,WEAPONS,ARCHETYPES,interactionHint,type Adventure,type Archetype} from '../core/adventure.js';
 import {EquipmentPanel,type EquipmentPanelState} from '../ui/EquipmentPanel.js';
 import {ARCHETYPES as BASE_POOLS} from '../core/adventure.js';
-import {loadCampaign,persistCampaign,resetCampaign,saveKeys} from '../core/campaignSave.js';
+import {loadCampaign,persistCampaign,resetCampaign,saveKeys,newerCampaignExists,NEWER_SAVE_NOTICE} from '../core/campaignSave.js';
 import {level,availablePoints,xpRequirement} from '../core/progression.js';
 import {LEVEL_SECTIONS} from '../core/level.js';
 import {WorldView} from './WorldView.js';
@@ -13,12 +13,12 @@ const QA=new URLSearchParams(location.search).get('qa')==='1';
 const SAVE_KEYS=saveKeys(QA);
 declare global{interface Window{vireldenDebug?:()=>Adventure & {screen:Point;camera:Point;keyboardAim:Point;gate:ReturnType<WorldView['gateSnapshot']>;archers:ReturnType<WorldView['archerSnapshot']>;moving:boolean;character:ReturnType<WorldView['characterSnapshot']>;scenery:ReturnType<WorldView['scenerySnapshot']>;paused:boolean;timing:{frames:number;rawDelta:number;fps:number;renderMs:number;updateMs:number}}}}
 export class CourtyardScene extends Phaser.Scene{
-  private equipmentPanel!:EquipmentPanel; private saveBlocked=false; private protectedProgress=false; private assetFailure=false; private saveWarning=''; private loadNotice=''; private state=createAdventure('vanguard'); private keyboardAim:Point={x:1,y:0}; private held=new Set<string>(); private pendingKeys=new Set<string>(); private actions:string[]=[]; private accumulator=0; private view!:WorldView; private moving=false; private facing:Facing='east'; private menu=''; private saveTimer=0;private renderCost=0;private updateCost=0; private lastHud='';
+  private equipmentPanel!:EquipmentPanel; private saveBlocked=false; private protectedProgress=false; private assetFailure=false; private futureProgress=false; private saveWarning=''; private loadNotice=''; private state=createAdventure('vanguard'); private keyboardAim:Point={x:1,y:0}; private held=new Set<string>(); private pendingKeys=new Set<string>(); private actions:string[]=[]; private accumulator=0; private view!:WorldView; private moving=false; private facing:Facing='east'; private menu=''; private saveTimer=0;private renderCost=0;private updateCost=0; private lastHud='';
   preload(){KnightSprite.preload(this);WorldView.preload(this);}
   create(){
     this.saveNotice('Local progress');
     let loaded=false,corrupt=false;
-    try{const result=loadCampaign(localStorage,SAVE_KEYS);if(result.status==='loaded'){this.state=result.state;loaded=true;this.loadNotice=result.notice??'';}else if(result.status==='corrupt'||result.status==='unavailable'){this.saveBlocked=true;corrupt=result.status==='corrupt';this.protectedProgress=corrupt;this.saveWarning=result.notice??'Saving unavailable.';}}
+    try{const result=loadCampaign(localStorage,SAVE_KEYS);if(result.status==='loaded'){this.state=result.state;loaded=true;this.loadNotice=result.notice??'';}else if(result.status==='corrupt'||result.status==='unavailable'||result.status==='future'){this.saveBlocked=true;corrupt=result.status==='corrupt'||result.status==='future';this.futureProgress=result.status==='future';this.protectedProgress=corrupt;this.saveWarning=result.notice??'Saving unavailable.';}}
     catch{this.saveBlocked=true;this.saveWarning='Saving unavailable in this browser. Existing progress has not been erased.';}
     this.view=new WorldView(this);
     if(!this.view.commitEquipment(this.state.equipment)||!this.view.weaponReady(WEAPONS[this.state.equipped])){this.saveBlocked=true;this.saveWarning='Required armor artwork did not load. Progress was not changed. Please reload.';corrupt=true;this.protectedProgress=true;this.assetFailure=true;}
@@ -45,15 +45,17 @@ export class CourtyardScene extends Phaser.Scene{
     const blur=()=>{clear();if(!this.menu&&this.state.hp>0)this.showMenu('pause');this.game.loop.sleep();};
     const focus=()=>{if(!document.hidden){clear();this.game.loop.wake();}};
     const visibility=()=>{if(document.hidden)blur();else focus();};
+    const futurePrefix=SAVE_KEYS.current.slice(0,-3),versionKeys=new Set([SAVE_KEYS.current,SAVE_KEYS.good,`${futurePrefix}-v4`,`${futurePrefix}-v4-good`]);
+    const storageChanged=(event:StorageEvent)=>{try{if((event.key===null||versionKeys.has(event.key))&&newerCampaignExists(localStorage,SAVE_KEYS))this.protectNewerProgress(NEWER_SAVE_NOTICE);}catch{/* Existing storage feedback remains authoritative. */}};
     const click=(event:MouseEvent)=>{if(!this.menu&&event.target===this.game.canvas){this.aimAt(event);this.actions.push('MouseAttack');}};
     const pointer=(event:MouseEvent)=>{if(!this.menu&&event.target===this.game.canvas)this.aimAt(event);};
-    window.addEventListener('keydown',down);window.addEventListener('keyup',up);window.addEventListener('blur',blur);window.addEventListener('focus',focus);document.addEventListener('visibilitychange',visibility);this.game.canvas.addEventListener('click',click);this.game.canvas.addEventListener('mousemove',pointer);
+    window.addEventListener('keydown',down);window.addEventListener('keyup',up);window.addEventListener('blur',blur);window.addEventListener('focus',focus);window.addEventListener('storage',storageChanged);document.addEventListener('visibilitychange',visibility);this.game.canvas.addEventListener('click',click);this.game.canvas.addEventListener('mousemove',pointer);
     const handlers:Record<string,()=>void>={'inventory-button':()=>this.showMenu(this.menu==='inventory'?'':'inventory'),'pause-button':()=>this.showMenu(this.menu?'':'pause'),'help-button':()=>this.showMenu(this.menu==='help'?'':'help')};
     Object.entries(handlers).forEach(([id,fn])=>document.getElementById(id)?.addEventListener('click',fn));
     const panelClick=(event:MouseEvent)=>this.panelAction((event.target as HTMLElement).closest<HTMLButtonElement>('button')?.dataset.action??'');
     document.getElementById('panel')!.addEventListener('click',panelClick);
     if(new URLSearchParams(location.search).get('debug')==='1')window.vireldenDebug=()=>({...structuredClone(this.state),screen:this.screenPosition(),camera:{x:this.cameras.main.scrollX,y:this.cameras.main.scrollY},keyboardAim:{...this.keyboardAim},gate:this.view.gateSnapshot(),archers:this.view.archerSnapshot(),moving:this.moving,character:this.view.characterSnapshot(),scenery:this.view.scenerySnapshot(),paused:!!this.menu,timing:{frames:this.game.loop.frame,rawDelta:this.game.loop.rawDelta,fps:this.game.loop.actualFps,renderMs:this.renderCost,updateMs:this.updateCost}});
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>{this.equipmentPanel.destroy();window.removeEventListener('keydown',down);window.removeEventListener('keyup',up);window.removeEventListener('blur',blur);window.removeEventListener('focus',focus);document.removeEventListener('visibilitychange',visibility);this.game.canvas.removeEventListener('click',click);this.game.canvas.removeEventListener('mousemove',pointer);Object.entries(handlers).forEach(([id,fn])=>document.getElementById(id)?.removeEventListener('click',fn));document.getElementById('panel')!.removeEventListener('click',panelClick);delete window.vireldenDebug;});
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>{this.equipmentPanel.destroy();window.removeEventListener('keydown',down);window.removeEventListener('keyup',up);window.removeEventListener('blur',blur);window.removeEventListener('focus',focus);window.removeEventListener('storage',storageChanged);document.removeEventListener('visibilitychange',visibility);this.game.canvas.removeEventListener('click',click);this.game.canvas.removeEventListener('mousemove',pointer);Object.entries(handlers).forEach(([id,fn])=>document.getElementById(id)?.removeEventListener('click',fn));document.getElementById('panel')!.removeEventListener('click',panelClick);delete window.vireldenDebug;});
     this.game.canvas.tabIndex=0;this.game.canvas.setAttribute('aria-label','Virelden action RPG. Move with WASD, F or J to attack, Space to roll, E to interact.');this.game.canvas.setAttribute('role','img');document.getElementById('loading')!.hidden=true;
     this.saveNotice(this.saveWarning||'Local progress');this.showMenu(corrupt?'corrupt':loaded?'':'start');this.render();
   }
@@ -61,38 +63,41 @@ export class CourtyardScene extends Phaser.Scene{
   private saveNotice(text:string){document.getElementById('save-status')!.textContent=(QA?'QA save · ':'')+[...new Set([this.loadNotice,text].filter(Boolean))].join(' · ');}
   private clearInput(){this.held.clear();this.pendingKeys.clear();this.actions=[];this.accumulator=0;}
   private equipmentSnapshot():EquipmentPanelState{const s=this.state;return {equipment:s.equipment,armory:armory(s),progression:s.progression,base:BASE_POOLS[s.archetype],context:equipmentContext(s),atCheckpoint:atCheckpoint(s),atForge:atForge(s),currency:s.currency,message:[s.message,this.loadNotice,this.saveWarning].filter(Boolean).join(' ')};}
+  private protectNewerProgress(notice:string){this.saveBlocked=true;this.protectedProgress=true;this.futureProgress=true;this.saveWarning=notice;this.saveNotice(notice);this.showMenu('future');}
   private afterEquipmentAction(){this.save();this.equipmentPanel.update(this.equipmentSnapshot());this.render();}
   private save(){
     if(this.saveBlocked){this.saveNotice(this.saveWarning||'Saved progress is protected. Confirm Reset to start over.');return false;}
-    try{const result=persistCampaign(localStorage,SAVE_KEYS,this.state);this.saveWarning=result.ok?'':result.notice;this.saveNotice(result.notice);return result.ok;}catch{this.saveWarning='Saving unavailable · keep this tab open.';this.saveNotice(this.saveWarning);return false;}
+    try{const result=persistCampaign(localStorage,SAVE_KEYS,this.state);if(result.blockedByNewerVersion){this.protectNewerProgress(result.notice);return false;}this.saveWarning=result.ok?'':result.notice;this.saveNotice(result.notice);return result.ok;}catch{this.saveWarning='Saving unavailable · keep this tab open.';this.saveNotice(this.saveWarning);return false;}
   }
   private panelAction(action:string){
     if(action==='reload'){location.reload();return;}
     if(action.startsWith('start:')){this.state=createAdventure(action.slice(6) as Archetype);this.view.commitEquipment(this.state.equipment);this.facing='east';this.keyboardAim={x:1,y:0};this.cameras.main.setScroll(0,0);this.save();this.menu='';this.showMenu('');}
     else if(action==='retry'){retry(this.state);this.save();this.showMenu('');}
     else if(action==='reset')this.showMenu('reset');
-    else if(action==='confirm-reset'){try{if(!resetCampaign(localStorage,SAVE_KEYS))throw Error('Reset unavailable');this.saveBlocked=false;this.protectedProgress=false;this.saveWarning='';this.loadNotice='';this.saveNotice('No expedition saved');this.showMenu('start');}catch{this.saveNotice('Could not erase save · check browser storage permissions');}}
+    else if(action==='confirm-reset'){try{if(newerCampaignExists(localStorage,SAVE_KEYS)){this.protectNewerProgress(NEWER_SAVE_NOTICE);return;}if(!resetCampaign(localStorage,SAVE_KEYS))throw Error('Reset unavailable');this.saveBlocked=false;this.protectedProgress=false;this.saveWarning='';this.loadNotice='';this.saveNotice('No expedition saved');this.showMenu('start');}catch{this.saveNotice('Could not erase save · check browser storage permissions');}}
     else if(action==='resume')this.showMenu('');
     else if(action==='pause')this.showMenu('pause');
   }
   private showMenu(menu:string){
     if(this.assetFailure)menu='assets';
+    else if(this.futureProgress)menu='future';
     else if(this.protectedProgress&&!['corrupt','reset'].includes(menu))menu='corrupt';
-    if(this.menu==='start'&&menu!=='start')return;
-    if(this.state.hp<=0&&menu!== 'start'&&menu!=='reset')menu='death';
+    if(this.menu==='start'&&menu!=='start'&&menu!=='future')return;
+    if(this.state.hp<=0&&!['start','reset','assets','future','corrupt'].includes(menu))menu='death';
     this.menu=menu;this.clearInput();if(menu!=='inventory'&&this.equipmentPanel?.isOpen)this.equipmentPanel.close();
     const overlay=document.getElementById('overlay')!,panel=document.getElementById('panel')!;overlay.hidden=!menu||menu==='inventory';
-    if(menu==='inventory'){this.save();this.equipmentPanel.open(this.equipmentSnapshot());return;}
+    if(menu==='inventory'){this.save();if(this.futureProgress)return;this.equipmentPanel.open(this.equipmentSnapshot());return;}
     if(!menu){if(!document.hidden)this.game.loop.wake();this.game.canvas.focus();return;}
     const close='<div class="panel-actions"><button data-action="resume">Return to game</button></div>';
     if(menu==='start')panel.innerHTML=`<p class="sub">ONE CONTINUOUS EXPEDITION · CHOOSE YOUR LOADOUT</p><h2 id="panel-title">Beneath the Station</h2><p>Beyond the inspected cargo and the bells of passage, old foundations descend into the dark. Find a weapon, return to the forge, and open the monumental station gate, ascend through three further courts, and reach the upper watch.</p><div class="cards">${Object.entries(ARCHETYPES).map(([id,a])=>`<div class="card"><h3>${a.name}</h3><p>${id==='vanguard'?'A resilient close-range fighter. Broad sword cuts punish careless groups.':'A mobile fighter with greater endurance. A precise spear keeps threats at reach.'}</p><p>${a.maxHp} vitality · ${a.maxStamina} stamina<br>Starts with ${WEAPONS[a.weapon].name}</p><button data-action="start:${id}">Choose ${a.name}</button></div>`).join('')}</div><p class="sub">Both begin in ordinary articulated Ward plate. Find separate helmets, chest armor, gauntlets and leg armor. Neither wears true Warplate.</p><p>WASD move · F (or J) attacks in your last movement direction · click attacks toward the cursor · Space rolls · E interacts. Equipment and menus pause the expedition.</p>`;
     else if(menu==='assets')panel.innerHTML='<p class="sub">PROGRESS IS PROTECTED</p><h2 id="panel-title">Required artwork did not load</h2><p>Your expedition has not been changed. Reload to retry the required armor or weapon assets; resetting progress will not fix a missing asset.</p><button data-action="reload">Reload artwork</button>';
+    else if(menu==='future')panel.innerHTML='<p class="sub">NEWER PROGRESS IS PROTECTED</p><h2 id="panel-title">Newer expedition save detected</h2><p>This older game cannot read or reset progress from the newer version. Open the newer game to continue. Your saved expedition has not been changed.</p><button data-action="reload">Reload game</button>';
     else if(menu==='corrupt')panel.innerHTML='<p class="sub">PROGRESS IS PROTECTED</p><h2 id="panel-title">Saved expedition unavailable</h2><p>Saved progress or its required artwork could not be read. It has not been erased. Reload to retry, or explicitly reset this browser’s expedition.</p><button data-action="reset">Review reset options</button>';
     else if(menu==='death')panel.innerHTML='<p class="sub">THE UNDERWORKS ENDURE</p><h2 id="panel-title">Your watch is not over</h2><p>Return to the checkpoint with your equipment, upgrades and discoveries intact. Cleared foes stay defeated; your earned marks remain yours.</p><button data-action="retry">Rise at checkpoint</button>';
     else if(menu==='reset')panel.innerHTML='<h2 id="panel-title">Erase this expedition?</h2><p>This clears this browser’s saved equipment, upgrades, marks and discoveries. Your other games are unaffected.</p><div class="panel-actions"><button data-action="pause">Cancel</button><button class="danger" data-action="confirm-reset">Erase progress and choose again</button></div>';
     else if(menu==='help')panel.innerHTML='<p class="sub">READ THE WINDUP. LEAVE ROOM TO RECOVER.</p><h2 id="panel-title">Controls & survival</h2><div class="help-grid"><p><kbd>WASD / Arrows</kbd> Move & face</p><p><kbd>F / J</kbd> Attack in last movement direction</p><p><kbd>Left click</kbd> Aim & attack toward cursor</p><p><kbd>Space</kbd> Roll in movement direction</p><p><kbd>E</kbd> Use nearby landmark / loot</p><p><kbd>I</kbd> Equipment & upgrades</p><p><kbd>Esc</kbd> Pause / resume</p><p><kbd>H</kbd> This guide</p></div><p>Gold windups show an attack preparing; red enemy tells warn of danger. A roll costs stamina and briefly avoids damage, but cannot be chained without recovery. Rest at the checkpoint to heal; cleared foes stay defeated. Cleared encounters and objectives award XP once. Each level grants one training point: +8 maximum health, +5 maximum stamina or +5 defense. Open Equipment → Training at a checkpoint to choose; Rest explicitly replenishes your new maximum. Swapping armor never heals. Marks buy +1 and +2 upgrades at the forge. Find side caches and open the lower-ward shortcut. Pull the separate STATION GATE lever beside the northern arch; wait for the heavy leaves to fully withdraw. Follow the lamp-lit bends through the ascent and transfer court, rest at its checkpoint, then secure the upper watch exit.</p><p>Progress saves locally after actions and every two seconds. Reload returns to a safe checkpoint, not mid-combat. This prototype has no audio or touch controls.</p>'+close;
     else panel.innerHTML='<p class="sub">EXPEDITION PAUSED</p><h2 id="panel-title">A moment beneath the stone</h2><p>Your progress is stored in this browser. Equipment, upgrades and discoveries persist after death.</p><div class="panel-actions"><button data-action="resume">Continue expedition</button><button class="danger" data-action="reset">Reset saved progress</button></div>';
-    if(!['start','corrupt','assets'].includes(menu))this.save();requestAnimationFrame(()=>panel.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus());
+    if(!['start','corrupt','assets','future'].includes(menu))this.save();requestAnimationFrame(()=>panel.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus());
   }
   update(_time:number,delta:number){
     const updateStart=performance.now();

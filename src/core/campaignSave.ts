@@ -48,23 +48,33 @@ export function readCampaignSave(raw:string):Adventure|null{const result=readVer
 export interface SaveStorage{getItem(key:string):string|null;setItem(key:string,value:string):void;removeItem(key:string):void}
 export interface SaveKeys{readonly current:string;readonly good:string;readonly legacy:string}
 export function saveKeys(qa:boolean):SaveKeys{const prefix=qa?'virelden-underworks-qa':'virelden-underworks';return {current:`${prefix}-v3`,good:`${prefix}-v3-good`,legacy:`${prefix}-v1`};}
-export type CampaignLoad={status:'loaded';state:Adventure;notice:string|null;migrated:boolean;source:'current'|'last-known-good'|'legacy'}|{status:'empty'|'corrupt'|'unavailable';notice:string|null};
+export type CampaignLoad={status:'loaded';state:Adventure;notice:string|null;migrated:boolean;source:'current'|'last-known-good'|'legacy'}|{status:'empty'|'corrupt'|'unavailable'|'future';notice:string|null};
 const isFutureSave=(raw:string|null):boolean=>{if(raw===null)return false;try{const version=JSON.parse(raw)?.version;return Number.isSafeInteger(version)&&version>3;}catch{return false;}};
+export const NEWER_SAVE_NOTICE='A newer game version saved this expedition. Open the newer version; this progress has not been erased.';
+/** Recognize the next schema namespace without attempting to parse or erase it.
+ * Pure readCampaignSave remains available to the newer version's migration codec.
+ */
+export function newerCampaignExists(storage:SaveStorage,keys:SaveKeys,current=storage.getItem(keys.current)):boolean{
+ if(isFutureSave(current)||isFutureSave(storage.getItem(keys.good)))return true;
+ if(!keys.current.endsWith('-v3'))return false;
+ const prefix=keys.current.slice(0,-3);
+ return storage.getItem(`${prefix}-v4`)!==null||storage.getItem(`${prefix}-v4-good`)!==null;
+}
 export function loadCampaign(storage:SaveStorage,keys:SaveKeys):CampaignLoad{
  try{
   const current=storage.getItem(keys.current);
-  if(isFutureSave(current))return {status:'corrupt',notice:'A newer game version saved this expedition. Open the newer version; this progress has not been erased.'};
+  if(newerCampaignExists(storage,keys,current))return {status:'future',notice:NEWER_SAVE_NOTICE};
   const selected=selectProgressionSave([{source:'current',raw:current},{source:'last-known-good',raw:storage.getItem(keys.good)},{source:'legacy',raw:storage.getItem(keys.legacy)}],campaignCodec,CAMPAIGN_REWARDS);
   return selected.status==='loaded'?{status:'loaded',state:materialize(selected.save),notice:selected.notice,migrated:selected.migrated,source:selected.source}:selected;
  }catch{return {status:'unavailable',notice:'Saving unavailable in this browser. Existing progress has not been erased.'};}
 }
 /** Bounded previous-good write, then current write+readback. Failure never clears or writes the legacy key. */
-export function persistCampaign(storage:SaveStorage,keys:SaveKeys,s:Adventure):{ok:boolean;notice:string}{
+export function persistCampaign(storage:SaveStorage,keys:SaveKeys,s:Adventure):{ok:boolean;notice:string;blockedByNewerVersion?:boolean}{
  const raw=prepareCampaignSave(s);if(raw===null)return {ok:false,notice:'Progress could not be validated. Earlier durable progress is unchanged.'};
  let previous:string|null=null,written=false;
  try{
   previous=storage.getItem(keys.current);
-  if(isFutureSave(previous))return {ok:false,notice:'A newer game version saved this expedition. Its progress has not been overwritten.'};
+  if(newerCampaignExists(storage,keys,previous))return {ok:false,notice:NEWER_SAVE_NOTICE,blockedByNewerVersion:true};
   if(previous!==null&&readCampaignSave(previous))storage.setItem(keys.good,previous);
   storage.setItem(keys.current,raw);written=true;
   const readback=storage.getItem(keys.current);
@@ -76,4 +86,4 @@ export function persistCampaign(storage:SaveStorage,keys:SaveKeys,s:Adventure):{
   return {ok:false,notice:'Saving unavailable · keep this tab open. Earlier valid progress is retained.'};
  }
 }
-export function resetCampaign(storage:SaveStorage,keys:SaveKeys):boolean{try{for(const key of [keys.current,keys.good,keys.legacy])storage.removeItem(key);return true;}catch{return false;}}
+export function resetCampaign(storage:SaveStorage,keys:SaveKeys):boolean{try{if(newerCampaignExists(storage,keys))return false;for(const key of [keys.current,keys.good,keys.legacy])storage.removeItem(key);return true;}catch{return false;}}

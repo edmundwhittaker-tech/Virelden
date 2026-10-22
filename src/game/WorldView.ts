@@ -5,7 +5,7 @@ import {ArcherView,drawArrow} from './ArcherView.js';
 import {KnightSprite} from './KnightSprite.js';
 import {ModularKnightSprite} from './ModularKnightSprite.js';
 import {WARD_MANIFEST,DELVER_MANIFEST} from './paintRig.js';
-import {WEAPON_ART_URLS} from './WeaponArt.js';
+import {createWeaponThumbnail} from './WeaponArt.js';
 import {ARMOR,ARMOR_SLOTS,type Equipment,type ArmorItem} from '../core/equipment.js';
 import {WEAPON_CATALOG,type WeaponProfile} from '../core/weaponCatalog.js';
 import {WALLS,LOOT,LOCATIONS,WEAPONS,invulnerable,type Adventure} from '../core/adventure.js';
@@ -205,7 +205,7 @@ export class WorldView{
     context.drawImage(source,asset.frame%4*256+x,Math.floor(asset.frame/4)*256+y,width,height,(64-width*scale)/2,(72-height*scale)/2,width*scale,height*scale);
     const src=canvas.toDataURL();this.thumbnails.set(item.id,src);return {src};
   }
-  weaponThumbnail(item:WeaponProfile){return {src:WEAPON_ART_URLS[item.id]};}
+  weaponThumbnail(item:WeaponProfile){const key=`weapon-preview:${item.id}`,cached=this.thumbnails.get(key);if(cached)return {src:cached};const src=createWeaponThumbnail(this.scene,item.id);if(!src)return null;this.thumbnails.set(key,src);return {src};}
   gateSnapshot(){return this.stationGate.snapshot();}
   archerSnapshot(){return [...this.archers].map(([index,archer])=>({index,...archer.snapshot()}));}
   scenerySnapshot(){return this.occluders.map(o=>({id:o.id,world:{x:o.position.x,y:o.position.y},foot:project(o.position),depth:o.image.depth,width:o.image.displayWidth,height:o.image.displayHeight,originY:o.image.originY,alpha:o.image.alpha,radius:o.radius}));}

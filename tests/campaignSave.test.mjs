@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createAdventure,serialize,interact,LOCATIONS,LOOT,attack,tick,derivedStats,equipArmor,train,retry,roll} from '../.test-build/core/adventure.js';
-import {prepareCampaignSave,readCampaignSave,loadCampaign,persistCampaign,saveKeys} from '../.test-build/core/campaignSave.js';
+import {prepareCampaignSave,readCampaignSave,loadCampaign,persistCampaign,saveKeys,resetCampaign} from '../.test-build/core/campaignSave.js';
 import {grantArmor,ARMOR} from '../.test-build/core/equipment.js';
 const memory=()=>{const values=new Map();return {values,getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value),removeItem:key=>values.delete(key)};};
 const advance=(s,seconds)=>{for(let i=0;i<Math.ceil(seconds*60);i++)tick(s,{x:0,y:0},1/60);};
@@ -52,7 +52,7 @@ test('missing current save with valid previous-good still shows a visible fallba
 });
 
 test('an older game never overwrites an unknown future-version current save with its fallback',()=>{
- const keys=saveKeys(false),storage=memory(),s=createAdventure(),future=JSON.stringify({version:4,newerProgress:'retained'});storage.setItem(keys.current,future);storage.setItem(keys.good,prepareCampaignSave(s));assert.equal(loadCampaign(storage,keys).status,'corrupt');assert.equal(persistCampaign(storage,keys,s).ok,false);assert.equal(storage.getItem(keys.current),future);assert.equal(storage.values.size,2);
+ const keys=saveKeys(false),storage=memory(),s=createAdventure(),future=JSON.stringify({version:4,newerProgress:'retained'});storage.setItem(keys.current,future);storage.setItem(keys.good,prepareCampaignSave(s));assert.equal(loadCampaign(storage,keys).status,'future');assert.equal(persistCampaign(storage,keys,s).ok,false);assert.equal(resetCampaign(storage,keys),false);assert.equal(storage.getItem(keys.current),future);assert.equal(storage.values.size,2);
 });
 
 test('quota failure while reserving the previous-good copy cannot overwrite current progress',()=>{
@@ -61,4 +61,18 @@ test('quota failure while reserving the previous-good copy cannot overwrite curr
 test('all original version-one cache discoveries migrate to usable inventory without reclearing encounters',()=>{
  const s=createAdventure('wayfarer');s.currency=87;s.owned=['spear','hammer','sword'];s.levels.hammer=2;s.looted=LOOT.map(l=>l.id);s.enemies.find(e=>e.id==='captain').hp=0;const legacy={...JSON.parse(serialize(s)),version:1,completed:true};delete legacy.gateOpen;delete legacy.checkpoint;
  const migrated=readCampaignSave(JSON.stringify(legacy));assert.ok(migrated);assert.equal(migrated.completed,false);assert.equal(migrated.currency,87);assert.equal(migrated.levels.hammer,2);assert.equal(migrated.enemies.find(e=>e.id==='captain').hp,0);assert.ok(migrated.owned.includes('axe'));for(const slot of ['helmet','chest','gauntlets','legs'])assert.ok(migrated.equipment.owned.includes(`delver-${slot}`));assert.ok(prepareCampaignSave(migrated));
+});
+
+test('v3 recognizes newer v4 current/backup keys and cannot load, overwrite or erase either',()=>{
+ for(const qa of [false,true])for(const suffix of ['-v4','-v4-good']){const keys=saveKeys(qa),storage=memory(),s=createAdventure(),current=prepareCampaignSave(s);storage.setItem(keys.current,current);storage.setItem(keys.legacy,serialize(s));const futureKey=keys.current.slice(0,-3)+suffix;storage.setItem(futureKey,'unreadable future data');const before=[...storage.values];const loaded=loadCampaign(storage,keys);assert.equal(loaded.status,'future');assert.match(loaded.notice,/newer version/);assert.equal(persistCampaign(storage,keys,s).blockedByNewerVersion,true);assert.equal(resetCampaign(storage,keys),false);assert.deepEqual([...storage.values],before);assert.ok(readCampaignSave(current),'pure full-v3 migration parser remains available');}
+});
+test('future progress appearing in another tab blocks the next older-client write before backup reservation',()=>{
+ const keys=saveKeys(false),storage=memory(),s=createAdventure();persistCampaign(storage,keys,s);assert.equal(loadCampaign(storage,keys).status,'loaded');storage.setItem(keys.current.slice(0,-3)+'-v4','{"version":4}');const before=[...storage.values];s.currency=99;assert.equal(persistCampaign(storage,keys,s).blockedByNewerVersion,true);assert.deepEqual([...storage.values],before);
+});
+test('future namespace guards never inspect or reset the other normal/QA expedition',()=>{
+ for(const qa of [false,true]){const keys=saveKeys(qa),other=saveKeys(!qa),storage=memory(),s=createAdventure();storage.setItem(other.current.slice(0,-3)+'-v4','newer other expedition');assert.equal(persistCampaign(storage,keys,s).ok,true);assert.equal(loadCampaign(storage,keys).status,'loaded');assert.equal(resetCampaign(storage,keys),true);assert.equal(storage.values.size,1);}
+});
+
+test('a future-version previous-good record is protected even when v3 current is valid or missing',()=>{
+ for(const current of [null,prepareCampaignSave(createAdventure())]){const keys=saveKeys(false),storage=memory();if(current)storage.setItem(keys.current,current);storage.setItem(keys.good,'{"version":4,"brokenWorld":null}');const before=[...storage.values];assert.equal(loadCampaign(storage,keys).status,'future');assert.equal(persistCampaign(storage,keys,createAdventure()).blockedByNewerVersion,true);assert.equal(resetCampaign(storage,keys),false);assert.deepEqual([...storage.values],before);}
 });
