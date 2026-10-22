@@ -8,12 +8,12 @@ The ordinary closed-helmet full-plate knight now has three authored attack body 
 
 ## Verification state
 
-- Local complete deterministic suite: **29/29** gameplay, rig and geometry tests passed; strict TypeScript and production build passed.
+- Local complete deterministic suite: **30/30** gameplay, rig and geometry tests passed; strict TypeScript and production build passed.
 - Geometry tests cover prop footprint containment/collision, ground-depth tie rules and connected access to every existing interaction.
 - Browser suite expanded to20 cases, including four-direction attack-phase PNG/JSON capture, earned hammer capture, and real-input foreground/back depth transition.
 - Textured candidate `223f9342cb4561ad4fea1be24d93047c9340a990`: **20/20 real-input browser tests passed** in [CI39707528799](https://github.com/edmundwhittaker-tech/Virelden/actions/runs/39707528799), including all gameplay regressions, four-direction attack-phase captures and real foreground/background depth transitions. The initial spatial-test route ran into a correctly solid beacon; its route was corrected without weakening collision or assertions.
 - Actual in-game screenshots confirm textured exact-geometry walls, a grounded stone vault apron, uniform pillars, and changed attack body/weapon poses. Untraced timing: **58.25 FPS**, **1.52s simulation / 1.51s wall**, sampled **1ms render / 0.3ms update**. This is a CI measurement, not a device-wide guarantee.
-- This is a pre-merge evidence snapshot. A final narrow fix locks body facing to the attack aim while a swing is in progress and uses current aim for idle weapon layering; its real-pointer regression is included. Final exact-commit check and later publication are recorded in [PR #5](https://github.com/edmundwhittaker-tech/Virelden/pull/5) and the Actions run, rather than assumed here.
+- This is a pre-merge evidence snapshot. A final narrow fix locks body facing to the attack aim while a swing is in progress and uses current aim for idle weapon layering; its real-pointer regression is included. That regression also exposed scaled-pointer rounding (east aim Y≈−0.0023) selecting rear artwork; a small near-horizontal facing/layer deadzone now rejects that jitter, with a deterministic test. Final exact-commit check and later publication are recorded in [PR #5](https://github.com/edmundwhittaker-tech/Virelden/pull/5) and the Actions run, rather than assumed here.
 - Local Chromium execution remains restricted by workspace permissions. Browser execution is via GitHub Actions. Local Node24; supported CI Node22. Canvas, normal requestAnimationFrame and no SwiftShader launch flags remain unchanged.
 
 ## Release / rollback
