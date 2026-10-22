@@ -1,0 +1,35 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rendered poleaxe grip registration</title><style>body{margin:0;background:#12181c;color:#e0d9ca;font:14px system-ui}main{width:640px;margin:20px auto}h1{font-size:20px}p{line-height:1.5}canvas{display:block;outline:1px solid #73694e}select{display:block;max-width:100%;margin:12px 0;padding:8px;background:#20292e;color:#e0d9ca;border:1px solid #73694e}small{color:#a9b3b6}</style></head><body><main><h1>Poleaxe — actual rendered grip registration</h1><label for="pose">Rendered poleaxe pose</label><select id="pose"></select><div id="game"></div><p id="status">Loading production armour and poleaxe textures…</p><small>Isolated renderer fixture: no expedition state, saved progress or gameplay capability is changed. The pose selector is the only input.</small></main><script type="module">
+import Phaser from 'phaser';
+import {ModularKnightSprite} from '/src/game/ModularKnightSprite.ts';
+import {WEAPON_ART} from '/src/game/WeaponArt.ts';
+import {WEAPON_CATALOG} from '/src/core/weaponCatalog.ts';
+import {facingForInput} from '/src/core/facing.ts';
+import floorUrl from '/src/assets/environment-v1/slate-court.webp';
+const clean=n=>Math.abs(n)<1e-8?0:n,states=[];
+for(let direction=0;direction<8;direction++)for(const previous of ['east','west']){
+ const aim={x:clean(Math.cos(direction*Math.PI/4)),y:clean(Math.sin(direction*Math.PI/4))},facing=facingForInput(aim,previous);
+ states.push({direction,previous,aim,facing,motion:'idle',phase:undefined,progress:0,label:'carry'});
+ for(const phase of ['windup','active','recovery'])for(const progress of [0,.5,1])states.push({direction,previous,aim,facing,motion:'attack',phase,progress,label:`${phase}-${progress}`});
+}
+const select=document.getElementById('pose');states.forEach((s,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=`aim${s.direction} · previous${s.previous} · ${s.facing} · ${s.label}`;select.append(option);});
+let actor,ready=false,index=0,renderedIndex=-1,gripAlpha;
+class PoleaxeScene extends Phaser.Scene{
+ preload(){ModularKnightSprite.preload(this);this.load.image('poleaxe-floor',floorUrl);}
+ create(){
+  this.add.tileSprite(0,0,640,400,'poleaxe-floor').setOrigin(0).setDepth(-1000).setAlpha(.55);
+  actor=new ModularKnightSprite(this);
+  const asset=WEAPON_ART.poleaxe,source=this.textures.get('ordinary-weapon-poleaxe').getSourceImage(),canvas=document.createElement('canvas');canvas.width=asset.sourceSize[0];canvas.height=asset.sourceSize[1];const context=canvas.getContext('2d');context.drawImage(source,0,0);
+  const alpha=sourcePoint=>{const x=Math.max(0,Math.min(canvas.width-3,Math.round(sourcePoint[0])-1)),y=Math.max(0,Math.min(canvas.height-3,Math.round(sourcePoint[1])-1)),pixels=context.getImageData(x,y,3,3).data;return Math.max(...Array.from({length:9},(_,i)=>pixels[i*4+3]));};
+  gripAlpha={primary:alpha(asset.grip),support:alpha(asset.supportGrip)};
+  this.game.events.on(Phaser.Core.Events.POST_RENDER,()=>{renderedIndex=index;});
+  select.addEventListener('change',()=>{index=Number(select.value);renderedIndex=-1;this.drawPose();});
+  this.drawPose();ready=true;
+ }
+ drawPose(){const s=states[index],w=WEAPON_CATALOG.poleaxe;
+  actor.draw({position:{x:320,y:274},view:s.facing.startsWith('north')?'rear':'front',flipped:s.facing.endsWith('west'),motion:s.motion,time:0,phase:s.phase,progress:s.progress,weapon:'poleaxe',aim:s.aim,weaponMotion:w.motion,weaponHands:w.hands,weaponReach:w.range});actor.effects(0xffffff,0,1,1);
+  document.getElementById('status').textContent=`${s.facing} · ${s.label} · actual primary/support image transforms`;
+ }
+}
+window.poleaxeFixtureSnapshot=()=>{if(!ready)return{ready:false};const s=states[index],snapshot=actor.snapshot();return structuredClone({ready,index,renderedIndex,total:states.length,...s,registration:snapshot.registration,weaponTexture:snapshot.rig.texture,weaponVisible:snapshot.rig.visible,visibleParts:snapshot.layers.filter(p=>p.visible).length,view:snapshot.view,flipped:snapshot.flipped,handLayers:snapshot.layers.filter(p=>p.id==='hand_near'||p.id==='hand_far'),gripAlpha});};
+new Phaser.Game({type:Phaser.CANVAS,parent:'game',width:640,height:400,backgroundColor:'#20262b',banner:false,scene:[PoleaxeScene],fps:{target:60,smoothStep:false},render:{antialias:true,roundPixels:false},audio:{noAudio:true}});
+</script></body></html>

@@ -1,11 +1,13 @@
 import type {RigPartId,RigPose,RigWeapon} from '../core/modularRig.js';
 import wardManifest from '../assets/ward/manifest.json';
 import delverManifest from '../assets/delver/manifest.json';
+import marcherManifest from '../assets/marcher/manifest.json';
 export type ArmorSlot='helmet'|'chest'|'gauntlets'|'legs';
 export interface PartAsset {id:string;slot:ArmorSlot;view:string;texture:string;frame:number;sourceSize:number[];pivot:number[];distal:number[];nominalLength:number;layer:number;alphaBounds:number[]}
 export interface ArmorManifest {set:string;sourcePixelScale:number;parts:Record<string,PartAsset>}
 export const WARD_MANIFEST=wardManifest as ArmorManifest;
 export const DELVER_MANIFEST=delverManifest as ArmorManifest;
+export const MARCHER_MANIFEST=marcherManifest as ArmorManifest;
 export interface DrawOptions{view:'front'|'rear';flipped:boolean;weapon?:RigWeapon;weaponAngle?:number;showBones?:boolean;alpha?:number;overrides?:Partial<Record<RigPartId,{asset:PartAsset;atlas:CanvasImageSource}>>}
 export const WEAPON_LENGTH:Record<RigWeapon,number>={sword:39,spear:57,hammer:32,axe:36,falchion:39,poleaxe:56};
 export function paintWeapon(ctx:CanvasRenderingContext2D,weapon:RigWeapon,hand:{x:number;y:number},angle:number,length=WEAPON_LENGTH[weapon]){

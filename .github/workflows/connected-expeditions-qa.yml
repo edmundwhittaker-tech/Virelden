@@ -1,0 +1,86 @@
+name: Connected expedition QA
+on:
+  push:
+    branches: [qa/connected-expeditions, qa/connected-expeditions-main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: connected-expedition-qa-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  seeded-area-features:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Rules, TypeScript and production build
+        run: npm run check
+      - name: Install native browser
+        run: npx playwright install --with-deps chromium
+      - name: Seeded valid-v4 geometry, props, save and transition features
+        run: npx playwright test --config playwright.expeditions.config.ts
+      - name: Keep compact feature evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: connected-expedition-feature-evidence
+          path: |
+            test-results/**/*.png
+            test-results/**/*.json
+            test-results/**/*.md
+          retention-days: 7
+  unseeded-native-campaign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Rules, TypeScript and production build
+        run: npm run check
+      - name: Install native browser
+        run: npx playwright install --with-deps chromium
+      - name: Earn all three expeditions through real keyboard and mouse input
+        run: npx playwright test --config playwright.campaign.config.ts
+      - name: Keep compact unseeded route evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: connected-expedition-native-route-evidence
+          path: |
+            test-results/**/*.png
+            test-results/**/*.json
+            test-results/**/*.md
+          retention-days: 7
+  rendered-poleaxe-support:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Rules, TypeScript and production build
+        run: npm run check
+      - name: Install native browser
+        run: npx playwright install --with-deps chromium
+      - name: Actual rendered support-hand and weapon image registration
+        run: npx playwright test --config playwright.poleaxe.config.ts --output test-results/poleaxe-browser
+      - name: Keep compact rendered-grip evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: connected-expedition-poleaxe-evidence
+          path: |
+            test-results/**/*.png
+            test-results/**/*.json
+            test-results/**/*.md
+          retention-days: 7

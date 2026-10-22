@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createAdventure,serialize,interact,LOCATIONS,LOOT,attack,tick,derivedStats,equipArmor,train,retry,roll} from '../.test-build/core/adventure.js';
-import {prepareCampaignSave,readCampaignSave,loadCampaign,persistCampaign,saveKeys,resetCampaign} from '../.test-build/core/campaignSave.js';
+import {prepareCampaignSave,readCampaignSave,loadCampaign,persistCampaign,saveKeys,resetCampaign} from '../.test-build/core/legacyCampaignSave.js';
 import {grantArmor,ARMOR} from '../.test-build/core/equipment.js';
 const memory=()=>{const values=new Map();return {values,getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value),removeItem:key=>values.delete(key)};};
 const advance=(s,seconds)=>{for(let i=0;i<Math.ceil(seconds*60);i++)tick(s,{x:0,y:0},1/60);};
