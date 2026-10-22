@@ -1,3 +1,5 @@
+import {facingForInput,type Facing} from './facing.js';
+import {sampleMeleeSweep,weaponTouchesBody} from './meleeContact.js';
 import {archerProjectileOrigin} from './archerRig.js';
 import {STATION_GATE,CHECKPOINTS,FINISH,LEVEL_WALLS} from './level.js';
 import {canStand,move,project,SPAWN,STEP,type Point} from './game.js';
@@ -15,7 +17,7 @@ export const WALLS:{x:number;y:number;width:number;height:number;gate?:boolean}[
 export const LOOT=[{id:'west-cache',position:{x:150,y:420},weapon:'hammer' as WeaponId,currency:35},{id:'north-cache',position:{x:420,y:100},weapon:'spear' as WeaponId,currency:35},{id:'south-cache',position:{x:300,y:540},weapon:'sword' as WeaponId,currency:25},{id:'transfer-cache',position:{x:570,y:-750},weapon:'hammer' as WeaponId,currency:45}];
 export interface Enemy {id:string;kind:'raider'|'watcher'|'captain';position:Point;home:Point;hp:number;maxHp:number;phase:'idle'|'windup'|'recovery'|'stagger';timer:number;aim:Point;reward:number}
 export interface Projectile {position:Point;velocity:Point;life:number}
-export interface Adventure {equipment:Equipment;progression:Progression;archetype:Archetype;position:Point;aim:Point;hp:number;maxHp:number;stamina:number;maxStamina:number;attack:{phase:'idle'|'windup'|'active'|'recovery';timer:number;aim:Point;weapon:WeaponId;hit:string[]};rollTimer:number;rollCooldown:number;rollAim:Point;hurtTimer:number;staminaDelay:number;enemies:Enemy[];projectiles:Projectile[];currency:number;owned:WeaponId[];levels:Record<WeaponId,number>;equipped:WeaponId;checkpoint:Point;looted:string[];shortcut:boolean;completed:boolean;gatePhase:'closed'|'pulling'|'opening'|'open';gateProgress:number;interactionTimer:number;message:string;time:number}
+export interface Adventure {equipment:Equipment;progression:Progression;archetype:Archetype;position:Point;aim:Point;hp:number;maxHp:number;stamina:number;maxStamina:number;attack:{phase:'idle'|'windup'|'active'|'recovery';timer:number;aim:Point;weapon:WeaponId;hit:string[];facing:Facing;contacts:Record<string,number>};rollTimer:number;rollCooldown:number;rollAim:Point;hurtTimer:number;staminaDelay:number;enemies:Enemy[];projectiles:Projectile[];currency:number;owned:WeaponId[];levels:Record<WeaponId,number>;equipped:WeaponId;checkpoint:Point;looted:string[];shortcut:boolean;completed:boolean;gatePhase:'closed'|'pulling'|'opening'|'open';gateProgress:number;interactionTimer:number;message:string;time:number}
 const unit=(p:Point):Point=>{const n=Math.hypot(p.x,p.y);return n?{x:p.x/n,y:p.y/n}:{x:1,y:0};};
 const vector=(a:Point,b:Point):Point=>{const p=project(a),q=project(b);return {x:q.x-p.x,y:q.y-p.y};};
 const distance=(a:Point,b:Point)=>Math.hypot(...Object.values(vector(a,b)));
@@ -35,14 +37,14 @@ function enemies():Enemy[]{return [
  {id:'upper-captain',kind:'captain',position:{x:320,y:-1760},maxHp:260,reward:100},
 ].map(e=>({...e,kind:e.kind as Enemy['kind'],home:{...e.position},hp:e.maxHp,phase:'idle',timer:0,aim:{x:1,y:0}}));}
 export function createAdventure(archetype:Archetype='vanguard'):Adventure{
- const a=ARCHETYPES[archetype];return {equipment:freshEquipment(),progression:freshProgression(),archetype,position:{...SPAWN},aim:{x:1,y:0},hp:a.maxHp,maxHp:a.maxHp,stamina:a.maxStamina,maxStamina:a.maxStamina,attack:{phase:'idle',timer:0,aim:{x:1,y:0},weapon:a.weapon,hit:[]},rollTimer:0,rollCooldown:0,rollAim:{x:1,y:0},hurtTimer:0,staminaDelay:0,enemies:enemies(),projectiles:[],currency:0,owned:[a.weapon],levels:{sword:0,spear:0,hammer:0,axe:0,falchion:0,poleaxe:0},equipped:a.weapon,checkpoint:{...SPAWN},looted:[],shortcut:false,completed:false,gatePhase:'closed',gateProgress:0,interactionTimer:0,message:'Explore the lower ward. Rest at the beacon; recover equipment from the caches.',time:0};
+ const a=ARCHETYPES[archetype];return {equipment:freshEquipment(),progression:freshProgression(),archetype,position:{...SPAWN},aim:{x:1,y:0},hp:a.maxHp,maxHp:a.maxHp,stamina:a.maxStamina,maxStamina:a.maxStamina,attack:{phase:'idle',timer:0,aim:{x:1,y:0},weapon:a.weapon,hit:[],facing:'east',contacts:{}},rollTimer:0,rollCooldown:0,rollAim:{x:1,y:0},hurtTimer:0,staminaDelay:0,enemies:enemies(),projectiles:[],currency:0,owned:[a.weapon],levels:{sword:0,spear:0,hammer:0,axe:0,falchion:0,poleaxe:0},equipped:a.weapon,checkpoint:{...SPAWN},looted:[],shortcut:false,completed:false,gatePhase:'closed',gateProgress:0,interactionTimer:0,message:'Explore the lower ward. Rest at the beacon; recover equipment from the caches.',time:0};
 }
 export const weaponDamage=(s:Adventure,id:WeaponId=s.equipped)=>WEAPONS[id].damage*(1+s.levels[id]*.25);
 export const upgradeCost=(s:Adventure)=>s.levels[s.equipped]===0?30:60;
 export function attack(s:Adventure):boolean{
  if(s.hp<=0||s.gatePhase==='pulling'||s.attack.phase!=='idle'||s.rollTimer>0)return false;
  const w=WEAPONS[s.equipped];if(s.stamina<w.cost){s.message='Not enough stamina. Let it recover.';return false;}
- s.stamina-=w.cost;s.staminaDelay=.7;s.attack={phase:'windup',timer:w.windup,aim:{...s.aim},weapon:s.equipped,hit:[]};return true;
+ s.stamina-=w.cost;s.staminaDelay=.7;s.attack={phase:'windup',timer:w.windup,aim:{...s.aim},weapon:s.equipped,hit:[],facing:facingForInput(s.aim,s.attack.facing),contacts:{}};return true;
 }
 export function roll(s:Adventure,input:Point=s.aim):boolean{
  if(s.hp<=0||s.gatePhase==='pulling'||s.rollCooldown>0||s.rollTimer>0||s.attack.phase!=='idle'||s.stamina<derivedStats(s).rollCost)return false;
@@ -51,12 +53,14 @@ export function roll(s:Adventure,input:Point=s.aim):boolean{
 export const invulnerable=(s:Adventure)=>s.rollTimer>.08&&s.rollTimer<.36;
 function damage(s:Adventure,amount:number){if(s.hp<=0||s.hurtTimer>0||invulnerable(s))return;s.hp=Math.max(0,s.hp-amount*derivedStats(s).damageMultiplier);s.hurtTimer=.45;if(!s.hp){s.message='You fell. Retry at the beacon; equipment and earned currency are retained.';s.attack.phase='idle';s.rollTimer=0;}}
 function clearLine(s:Adventure,a:Point,b:Point):boolean{const count=Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/6);for(let i=1;i<count;i++)if(!adventureCanStand(s,{x:a.x+(b.x-a.x)*i/count,y:a.y+(b.y-a.y)*i/count}))return false;return true;}
-function hitEnemies(s:Adventure){
- const w=WEAPONS[s.attack.weapon],aim=s.attack.aim;
+function hitEnemies(s:Adventure,from:number,to:number){
+ const w=WEAPONS[s.attack.weapon],aim=s.attack.aim,frames=sampleMeleeSweep({weapon:s.attack.weapon,aim,facing:s.attack.facing,from,to});
  for(const e of s.enemies){
   if(e.hp<=0||s.attack.hit.includes(e.id))continue;
   const d=vector(s.position,e.position),local={x:d.x*aim.x+d.y*aim.y,y:-d.x*aim.y+d.y*aim.x};
   if(!clearLine(s,s.position,e.position)||!weaponShapeContains(s.attack.weapon,local))continue;
+  const contact=frames.find(frame=>weaponTouchesBody(frame,d));if(!contact)continue;
+  s.attack.contacts[e.id]=contact.progress;
   const before=e.hp;e.hp=Math.max(0,e.hp-weaponDamage(s,s.attack.weapon));s.attack.hit.push(e.id);
   if(!e.hp){const xpBefore=s.progression.xp;s.progression=awardDefeat(s.progression,`station:${e.id}`,before,e.hp,CAMPAIGN_REWARDS);s.currency+=e.reward;s.message=`${e.kind==='captain'?(e.id==='upper-captain'?'Upper watch captain defeated. Secure the station exit.':'Captain defeated. The lower ward is secured.'):'Enemy defeated.'} +${e.reward} iron marks · +${s.progression.xp-xpBefore} XP. Level ${level(s.progression)} · ${availablePoints(s.progression)} training points.`;}
   else{e.phase='stagger';e.timer=w.stagger;}
@@ -71,7 +75,12 @@ function step(s:Adventure,input:Point,dt:number){
 s.rollCooldown=Math.max(0,s.rollCooldown-dt);s.hurtTimer=Math.max(0,s.hurtTimer-dt);s.staminaDelay=Math.max(0,s.staminaDelay-dt);
  if(!s.staminaDelay&&s.attack.phase==='idle'&&!s.rollTimer)s.stamina=Math.min(s.maxStamina,s.stamina+derivedStats(s).staminaRegen*dt);
  if(s.rollTimer>0){s.position=travel(s,s.position,s.rollAim,dt*2.4);s.rollTimer=Math.max(0,s.rollTimer-dt);}else if(s.attack.phase==='idle'&&s.gatePhase!=='pulling'){s.position=travel(s,s.position,input,dt);if(input.x||input.y)s.aim=unit(input);}
- if(s.attack.phase!=='idle'){s.attack.timer-=dt;if(s.attack.phase==='active')hitEnemies(s);if(s.attack.timer<=0){const w=WEAPONS[s.attack.weapon];if(s.attack.phase==='windup'){s.attack.phase='active';s.attack.timer=w.active;hitEnemies(s);}else if(s.attack.phase==='active'){s.attack.phase='recovery';s.attack.timer=w.recovery;}else s.attack.phase='idle';}}
+ if(s.attack.phase==='idle')s.attack.facing=facingForInput(s.aim,s.attack.facing);
+ if(s.attack.phase!=='idle'){
+  const w=WEAPONS[s.attack.weapon],before=s.attack.timer;s.attack.timer-=dt;
+  if(s.attack.phase==='active')hitEnemies(s,1-before/w.active,1-s.attack.timer/w.active);
+  if(s.attack.timer<=0){if(s.attack.phase==='windup'){s.attack.phase='active';s.attack.timer=w.active;hitEnemies(s,0,0);}else if(s.attack.phase==='active'){s.attack.phase='recovery';s.attack.timer=w.recovery;}else s.attack.phase='idle';}
+ }
  for(const e of s.enemies){if(e.hp<=0)continue;const d=vector(e.position,s.position),range=Math.hypot(d.x,d.y),reach=e.kind==='watcher'?200:e.kind==='captain'?70:52;
  if(e.phase!=='idle'){e.timer-=dt;if(e.timer<=0){if(e.phase==='windup'){if(e.kind==='watcher'){const u=e.aim;s.projectiles.push({position:archerProjectileOrigin(e.position,u),velocity:{x:u.x*160,y:u.y*160},life:2});}else{const u=unit(d);if(clearLine(s,e.position,s.position)&&range<reach+8&&u.x*e.aim.x+u.y*e.aim.y>.1)damage(s,e.kind==='captain'?34:20);}e.phase='recovery';e.timer=e.kind==='captain'?.95:.85;}else e.phase='idle';}continue;}
  // The beacon's immediate radius is a sanctuary. Enemies disengage there.
@@ -121,7 +130,7 @@ export function equip(s:Adventure,weapon:WeaponId,capabilities={supportHand:fals
 export function train(s:Adventure,attribute:Attribute):boolean{
  if(!equipmentContext(s).alive||!equipmentContext(s).idle||s.rollTimer||s.gatePhase==='pulling'){s.message='Stand idle at a checkpoint to train.';return false;}
  const result=spendAttribute(s.progression,attribute,atCheckpoint(s));if(!result.ok){s.message=`Training unavailable: ${result.reason}.`;return false;}
- s.progression=result.next;recalculatePools(s);s.message=`Trained ${attribute}. Use Rest to replenish your new maximum.`;return true;
+ s.progression=result.next;recalculatePools(s);s.message=attribute==='resolve'?'Trained resolve: +5 defense. Health and stamina were not changed.':`Trained ${attribute}. Use Rest to replenish your new maximum.`;return true;
 }
 export function rest(s:Adventure):boolean{if(!atCheckpoint(s)||!equipmentContext(s).alive||!equipmentContext(s).idle||s.rollTimer||s.gatePhase==='pulling')return false;return interact(s);}
 export function upgrade(s:Adventure):boolean{

@@ -32,10 +32,10 @@ export function isWeaponId(value: unknown): value is WeaponId {
 /** Point in aim-local projected pixels, x forward/y lateral. Shape is shared by collision and trail authoring. */
 export function weaponShapeContains(id: WeaponId, point: {readonly x: number; readonly y: number}): boolean {
  if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return false;
- const w = WEAPON_CATALOG[id];
- if (w.shape.kind === 'sector') return Math.hypot(point.x, point.y) <= w.range && Math.abs(Math.atan2(point.y, point.x)) <= w.shape.halfAngle;
+ const w = WEAPON_CATALOG[id],epsilon=1e-8; // Project/unproject roundoff, not gameplay reach padding.
+ if (w.shape.kind === 'sector') return Math.hypot(point.x, point.y) <= w.range+epsilon && Math.abs(Math.atan2(point.y, point.x)) <= w.shape.halfAngle+epsilon;
  const x = Math.max(w.shape.start, Math.min(w.range - w.shape.radius, point.x));
- return Math.hypot(point.x - x, point.y) <= w.shape.radius;
+ return Math.hypot(point.x - x, point.y) <= w.shape.radius+epsilon;
 }
 export interface Armory {
  readonly schema: 1; readonly owned: readonly WeaponId[]; readonly equipped: WeaponId;

@@ -9,6 +9,8 @@ export interface RigPose {interaction?:{requested:RigPoint;actual:RigPoint;error
 const clamp=(v:number,a:number,b:number)=>Math.max(a,Math.min(b,v));
 const finite=(v:number,fallback=0)=>Number.isFinite(v)?v:fallback;
 const lerp=(a:number,b:number,t:number)=>a+(b-a)*t;
+const angleLerp=(a:number,b:number,t:number)=>a+Math.atan2(Math.sin(b-a),Math.cos(b-a))*t;
+const smooth=(t:number)=>{t=clamp(t,0,1);return t*t*(3-2*t);};
 const plus=(a:RigPoint,b:RigPoint):RigPoint=>({x:a.x+b.x,y:a.y+b.y});
 /** End target is projected into the chain's reachable annulus; no segment stretching. */
 export function twoBone(start:RigPoint,target:RigPoint,a:number,b:number,bend:1|-1=1):{joint:RigPoint;end:RigPoint}{
@@ -23,8 +25,9 @@ export function evaluateRig(input:RigInput):RigPose {
  const cycle=time*Math.PI*2*1.6,swing=walking?Math.sin(cycle):0;
  const bob=walking?-Math.abs(Math.sin(cycle))*1.1:0;
  const attack=input.motion==='attack',phase=input.phase??'windup',weapon=input.weapon??'sword';
- const drive=attack?(phase==='windup'?p*.6:phase==='active'?1-p*.15:.85*(1-p)):0;
- let weaponAngle=weapon==='spear'||weapon==='poleaxe'?-.25:.9;
+ const drive=attack?(phase==='windup'?p:phase==='active'?1-p*.15:.85*(1-p)):0;
+ const carry=weapon==='spear'||weapon==='poleaxe'?-.25:.9,hands=input.weaponHands??(weapon==='poleaxe'?2:1);
+ let weaponAngle=carry;
  const rear=input.view==='rear';
  const lean=attack?drive*2.3:0;
  let pelvis={x:lean*.3,y:-40+bob},neck={x:lean,y:-71+bob};
@@ -49,33 +52,46 @@ export function evaluateRig(input:RigInput):RigPose {
  const hipNear=plus(pelvis,rear?{x:6,y:0}:{x:-5,y:0}),hipFar=plus(pelvis,rear?{x:-5,y:-3}:{x:6,y:-3});
  const feet={near:{x:(rear?7:-5)+swing*6,y:-4-Math.max(0,swing)*4},far:{x:(rear?-5:7)-swing*6,y:-8-Math.max(0,-swing)*4}};
  let nearTarget={x:(rear?14:-14)-swing*5,y:-40+bob},farTarget={x:(rear?-12:12)+swing*5,y:-44+bob};
- let gripDirection:RigPoint|undefined;
+ let gripDirection:RigPoint|undefined,gripBlend=1;
+ const idleNear={...nearTarget},idleFar={...farTarget};
+ if(!attack&&hands===2&&!interacting){const u={x:Math.cos(carry),y:Math.sin(carry)},centre={x:0,y:-58+bob};gripDirection=u;nearTarget=plus(centre,{x:u.x*2,y:u.y*2});farTarget=plus(centre,{x:-u.x*9,y:-u.y*9});}
+
  if(attack){
   const defaults:Record<RigWeapon,RigWeaponMotion>={
    sword:{kind:'cut',startAngle:-1.05,endAngle:1.05},spear:{kind:'thrust',startAngle:0,endAngle:0},
    hammer:{kind:'overhead',startAngle:-1.85,endAngle:.4},axe:{kind:'cut',startAngle:-.72,endAngle:.72},
    falchion:{kind:'cut',startAngle:-1.38,endAngle:1.38},poleaxe:{kind:'hook',startAngle:-.5,endAngle:.3},
   };
-  const motion=input.weaponMotion??defaults[weapon],hands=input.weaponHands??(weapon==='poleaxe'?2:1);
+  const motion=input.weaponMotion??defaults[weapon];
   const raw=input.aim??{x:input.flipped?-1:1,y:0};
   const ax=finite(raw.x)*(input.flipped?-1:1),ay=finite(raw.y),n=Math.hypot(ax,ay);
   const aim=n>1e-8?Math.atan2(ay,ax):0;
   const start=finite(motion.startAngle),end=finite(motion.endAngle),mid=motion.kind==='overhead'||motion.kind==='hook'?0:(start+end)/2;
-  const carry=weapon==='spear'||weapon==='poleaxe'?-.25:.9;
-  const windup=aim+start-(motion.kind==='cut'?.6:0);
-  // Contact exists on FIRST active tick. Renderer and body consume this same axis.
-  weaponAngle=motion.kind==='thrust'?aim:phase==='windup'?lerp(carry,windup,p):phase==='active'?aim+lerp(mid,end,p):lerp(aim+end,carry,p);
+  const windup=aim+start,launch=smooth((p-.65)/.35);
+  // Overhead/hook descent and thrust extension visibly approach contact during
+  // the last windup portion; FIRSTACTIVE remains the same centered impact.
+  const prepared=angleLerp(carry,windup,Math.min(1,p/.65));
+  const woundAngle=motion.kind==='cut'?angleLerp(carry,windup,p):angleLerp(prepared,aim,launch);
+  // Cuts traverse the complete active arc; overhead/thrust retain centered impact.
+  // Core contact and renderer consume this same axis and registered hand.
+  weaponAngle=motion.kind==='thrust'?(phase==='windup'?angleLerp(carry,aim,smooth(p/.4)):phase==='recovery'?angleLerp(aim,carry,p):aim):phase==='windup'?woundAngle:phase==='active'?aim+lerp(motion.kind==='cut'?start:mid,end,p):angleLerp(aim+end,carry,p);
   const u={x:Math.cos(weaponAngle),y:Math.sin(weaponAngle)};
   if(hands===2){
-   const push=phase==='windup'?lerp(0,-2,p):phase==='active'?lerp(2,1,p):lerp(1,0,p);
+   const push=phase==='windup'?(p<=.65?lerp(0,-2,p/.65):lerp(-2,2,launch)):phase==='active'?lerp(2,1,p):lerp(1,0,p);
    const centre={x:lean+u.x*push,y:-58+bob+u.y*push};
    // Aim wrists four pixels behind each grip; both hands then share the shaft line.
    gripDirection=u;nearTarget=plus(centre,{x:u.x*2,y:u.y*2});farTarget=plus(centre,{x:-u.x*9,y:-u.y*9});
   }else{
-   const reach=motion.kind==='thrust'?(phase==='windup'?lerp(15,10,p):phase==='active'?lerp(23,21,p):lerp(21,15,p)):23;
+   const reach=motion.kind==='thrust'?(phase==='windup'?(p<=.65?lerp(15,10,p/.65):lerp(10,23,launch)):phase==='active'?lerp(23,21,p):lerp(21,15,p)):23;
    if(motion.kind==='thrust')gripDirection=u;
    nearTarget=plus(shoulderNear,{x:u.x*reach,y:u.y*reach});
    farTarget=plus(shoulderFar,{x:(rear?-1:1)*(8-drive*3),y:19-drive*3});
+  }
+  if(hands===1){
+   // Approach/release the ordinary carry pose instead of teleporting the wrists.
+   const blend=phase==='windup'?smooth(p/.3):phase==='recovery'?smooth((1-p)/.35):1;
+   nearTarget={x:lerp(idleNear.x,nearTarget.x,blend),y:lerp(idleNear.y,nearTarget.y,blend)};
+   farTarget={x:lerp(idleFar.x,farTarget.x,blend),y:lerp(idleFar.y,farTarget.y,blend)};gripBlend=blend;
   }
  }
  if(requested){
@@ -94,7 +110,7 @@ export function evaluateRig(input:RigInput):RigPose {
   add(`thigh_${side}`,hip,leg.joint);add(`greave_${side}`,leg.joint,leg.end);add(`foot_${side}`,leg.end,plus(leg.end,{x:7,y:rear?-3:3}));
   const arm=side==='near'?nearArm:farArm,shoulder=side==='near'?shoulderNear:shoulderFar;
   add(`upperarm_${side}`,shoulder,arm.joint);add(`forearm_${side}`,arm.joint,arm.end);
-  const angle=gripDirection&&(!interacting||side==='near')?Math.atan2(gripDirection.y,gripDirection.x):Math.atan2(arm.end.y-arm.joint.y,arm.end.x-arm.joint.x);
+  const forearmAngle=Math.atan2(arm.end.y-arm.joint.y,arm.end.x-arm.joint.x),angle=gripDirection&&(!interacting||side==='near')?angleLerp(forearmAngle,Math.atan2(gripDirection.y,gripDirection.x),gripBlend):forearmAngle;
   add(`hand_${side}`,arm.end,plus(arm.end,{x:Math.cos(angle)*4,y:Math.sin(angle)*4}));
  }
  // View-specific shoulders/hips match authored armholes; foot origin and chain lengths remain shared.

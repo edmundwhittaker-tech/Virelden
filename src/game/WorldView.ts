@@ -152,7 +152,7 @@ export class WorldView{
   }
   drawAdventure(s:Adventure,moving:boolean,facing:Facing){
     this.mist.setX(640+Math.sin(s.time*.06)*18);
-    const attackFacing=s.attack.phase==='idle'?facing:facingForInput(s.attack.aim,facing);this.actorFacing=attackFacing;
+    const attackFacing=s.attack.phase==='idle'?facing:s.attack.facing;this.actorFacing=attackFacing;
     const attackState=s.attack,id=attackState.phase==='idle'?s.equipped:attackState.weapon,profile=WEAPON_CATALOG[id];
     const duration=attackState.phase==='windup'?profile.windup:attackState.phase==='active'?profile.active:profile.recovery;
     const progress=attackState.phase==='idle'?0:Math.max(0,Math.min(1,1-attackState.timer/duration));

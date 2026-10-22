@@ -60,6 +60,6 @@ test('quota failure keeps playable changed gear and honest feedback without repl
 });
 
 for(const id of ['hammer','axe'])test(`${id} uses its textured hand-attached weapon through four real attack directions`,async({page})=>{
- test.setTimeout(90_000);await openMigrated(page);await page.keyboard.down('KeyD');await page.waitForTimeout(700);await page.keyboard.up('KeyD');await evidence(page,`modular-${id}-clear-floor`);await menu(page);await weapon(page,id);await close(page);
+ test.setTimeout(90_000);await openMigrated(page);await page.keyboard.down('KeyD');await page.waitForTimeout(700);await page.keyboard.up('KeyD');await menu(page);await weapon(page,id);await close(page);await evidence(page,`modular-${id}-clear-floor`);
  for(const [name,x,y]of [['east',1,0],['west',-1,0],['north',0,-1],['south',0,1]] as const){await expect.poll(async()=>(await state(page)).stamina).toBe((await state(page)).maxStamina);const s=await state(page),box=await page.locator('canvas').boundingBox();await page.mouse.move(box!.x+(s.screen.x+x*140)/1280*box!.width,box!.y+(s.screen.y+y*140)/800*box!.height);const frames=await captureAttack(page,`modular-${id}-${name}`,true);expect(frames.active.state.character.texture).toBe('modular-plate');expect(frames.active.state.attack.weapon).toBe(id);expect(frames.active.state.character.rig.visible).toBe(true);expect(frames.active.state.character.rig.texture).toBe(`ordinary-weapon-${id}`);}
 });
