@@ -10,6 +10,9 @@ import vaultUrl from '../assets/environment-v1/sealed-vault.webp';
 import rubbleUrl from '../assets/environment-v1/fallen-masonry.webp';
 import wallUrl from '../assets/environment-v1/low-wall.webp';
 import mudUrl from '../assets/environment-v1/mud-track.webp';
+import cofferUrl from '../assets/environment-v1/iron-coffer.webp';
+import forgeUrl from '../assets/environment-v1/ember-forge.webp';
+import lanternUrl from '../assets/environment-v1/stone-lantern.webp';
 type Graphics=Phaser.GameObjects.Graphics;
 function poly(g:Graphics,points:Point[],color:number,stroke=0x465052){
   g.fillStyle(color).fillPoints(points,true);
@@ -22,6 +25,7 @@ function corners(x:number,y:number,r:number):Point[]{
 export class WorldView{
   private actor:KnightSprite;
   private mist:Phaser.GameObjects.Image;
+  private coffers:Phaser.GameObjects.Image[]=[];
   private enemies:KnightSprite[]=[];
   private effects:Graphics;
   private gates:Graphics[]=[];
@@ -29,21 +33,13 @@ export class WorldView{
   private enemyPositions:Point[]=[];
   private wallViews:{g:Graphics|Phaser.GameObjects.Image;left:number;right:number;top:number;bottom:number}[]=[];
   private occluders:{image:Phaser.GameObjects.Image;position:Point}[]=[];
-  static preload(scene:Phaser.Scene){for(const [key,url] of Object.entries({'ward-floor':courtUrl,'ward-pillar':pillarUrl,'ward-vault':vaultUrl,'ward-rubble':rubbleUrl,'ward-wall':wallUrl,'ward-mud':mudUrl}))scene.load.image(key,url);}
+  static preload(scene:Phaser.Scene){for(const [key,url] of Object.entries({'ward-floor':courtUrl,'ward-pillar':pillarUrl,'ward-vault':vaultUrl,'ward-rubble':rubbleUrl,'ward-wall':wallUrl,'ward-mud':mudUrl,'ward-coffer':cofferUrl,'ward-forge':forgeUrl,'ward-lantern':lanternUrl}))scene.load.image(key,url);}
   constructor(scene:Phaser.Scene){
     const floor=scene.add.graphics().setDepth(-1000);
     const edges=[{x:0,y:0},{x:SIZE,y:0},{x:SIZE,y:SIZE},{x:0,y:SIZE}].map(project);
     floor.fillStyle(0x000000,.3).fillEllipse(640,480,1120,510);
     poly(floor,[edges[1],edges[2],{x:edges[2].x,y:edges[2].y+22},{x:edges[1].x,y:edges[1].y+22}],0x1b252a);
     poly(floor,[edges[2],edges[3],{x:edges[3].x,y:edges[3].y+22},{x:edges[2].x,y:edges[2].y+22}],0x293439);
-    for(let x=0;x<SIZE;x+=80)for(let y=0;y<SIZE;y+=80){
-      const colors=[0x343e42,0x374145,0x303b40,0x394246,0x323c40];
-      poly(floor,[{x:x+1,y:y+1},{x:x+79,y:y+1},{x:x+79,y:y+79},{x:x+1,y:y+79}].map(project),colors[(x/80*7+y/80*13)%5]);
-      if((x+y)%240===0){
-        const a=project({x:x+12,y:y+5}),b=project({x:x+28,y:y+32}),c=project({x:x+55,y:y+44});
-        floor.lineStyle(1,0x151f24,.6).beginPath().moveTo(a.x,a.y).lineTo(b.x,b.y).lineTo(c.x,c.y).strokePath();
-      }
-    }
     floor.lineStyle(2,0xb39c6c,.4).strokePoints(edges,true);
     floor.lineStyle(1,0xb39c6c,.3).strokePoints(corners(320,320,295),true);
     for(const end of [edges[1],edges[3]]){
@@ -73,8 +69,12 @@ export class WorldView{
     }
     for(const pos of [{x:70,y:230},{x:590,y:190},{x:190,y:580}]){
       const p=project(pos);floor.fillStyle(0xb78c46,.08).fillEllipse(p.x,p.y,110,55);
-      const g=scene.add.graphics().setDepth(p.y);g.fillStyle(0x1d2428).fillRect(p.x-4,p.y-45,8,45);g.fillStyle(0xc4a367).fillRect(p.x-6,p.y-49,12,11);g.fillStyle(0xffd696).fillRect(p.x-2,p.y-47,4,7);
+      scene.add.image(p.x,p.y,'ward-lantern').setOrigin(.5,.92).setDisplaySize(22,55).setDepth(p.y);
     }
+    const beacon=project(LOCATIONS.checkpoint),smith=project(LOCATIONS.smith);
+    scene.add.image(beacon.x+26,beacon.y,'ward-lantern').setOrigin(.5,.92).setDisplaySize(25,65).setDepth(beacon.y);
+    scene.add.image(smith.x,smith.y,'ward-forge').setOrigin(.5,.85).setDisplaySize(60,51).setDepth(smith.y);
+    this.coffers=LOOT.map(loot=>{const p=project(loot.position);return scene.add.image(p.x,p.y,'ward-coffer').setOrigin(.5,.9).setDisplaySize(45,27).setDepth(p.y);});
     const caption=(p:Point,text:string)=>{const q=project(p);return scene.add.text(q.x,q.y+18,text,{fontFamily:'Georgia',fontSize:'12px',color:'#c5b58e',align:'center'}).setOrigin(.5,0).setDepth(1500).setAlpha(.8);};
     caption(LOCATIONS.checkpoint,'CHECKPOINT');caption(LOCATIONS.smith,'FORGE');caption(LOCATIONS.lever,'GATE LEVER');
     const mist=scene.textures.createCanvas('ward-mist',1280,800)!;const ctx=mist.context;
@@ -96,15 +96,14 @@ export class WorldView{
     const actors=[s.position,...s.enemies.filter(e=>e.hp>0).map(e=>e.position)].map(project);
     for(const o of this.occluders){const p=project(o.position);o.image.setAlpha(actors.some(a=>a.y<p.y+20&&a.y>p.y-o.image.displayHeight&&Math.abs(a.x-p.x)<55)?.32:1);}
     for(const w of this.wallViews)w.g.setAlpha(actors.some(a=>a.x>w.left-15&&a.x<w.right+15&&a.y<w.bottom+12&&a.y>w.top)?.4:1);
-    const g=this.effects;g.clear();if(s.hurtTimer>0){const p=project(s.position);g.lineStyle(3,0xd48976,s.hurtTimer/.45).strokeEllipse(p.x,p.y,42,21);}this.gates.forEach(gate=>gate.setVisible(!s.shortcut));
-    const beacon=project(LOCATIONS.checkpoint),smith=project(LOCATIONS.smith),lever=project(LOCATIONS.lever);
-    // A low iron brazier and a dressed stone anvil; no magic portal or Warplate forge.
+    const g=this.effects;g.clear();const playerFoot=project(s.position);g.lineStyle(2,0xc9c3a0,.75).strokeEllipse(playerFoot.x,playerFoot.y+1,39,17);g.fillStyle(0xc9c3a0,.9).fillTriangle(playerFoot.x-3,playerFoot.y+15,playerFoot.x+3,playerFoot.y+15,playerFoot.x,playerFoot.y+10);if(s.hurtTimer>0){const p=project(s.position);g.lineStyle(3,0xd48976,s.hurtTimer/.45).strokeEllipse(p.x,p.y,42,21);}this.gates.forEach(gate=>gate.setVisible(!s.shortcut));
+    const beacon=project(LOCATIONS.checkpoint),lever=project(LOCATIONS.lever);
+    // A mundane lantern marks the safe checkpoint; no magic portal or Warplate forge.
     g.fillStyle(0xad8b4a,.1).fillEllipse(beacon.x,beacon.y,95,42);g.lineStyle(1,0xb39963,.65).strokeEllipse(beacon.x,beacon.y,60,27);
-    g.fillStyle(0x4d5351).fillRect(beacon.x-10,beacon.y-17,20,17);g.fillStyle(0xd5a35e).fillTriangle(beacon.x-7,beacon.y-17,beacon.x,beacon.y-38,beacon.x+6,beacon.y-17);
-    g.fillStyle(0x65716e).fillRect(smith.x-16,smith.y-24,32,10);g.fillStyle(0x3d474a).fillRect(smith.x-6,smith.y-14,12,14);g.lineStyle(3,0xb6aa8c).lineBetween(smith.x-13,smith.y-29,smith.x+12,smith.y-35);
     g.fillStyle(0x62605a).fillRect(lever.x-7,lever.y-17,14,17);g.lineStyle(4,s.shortcut?0x9ba37e:0xb89c6a).lineBetween(lever.x,lever.y-15,lever.x+(s.shortcut?12:-12),lever.y-38);
-    for(const loot of LOOT){const p=project(loot.position),opened=s.looted.includes(loot.id);g.fillStyle(opened?0x303a3b:0x705c41).fillRect(p.x-14,p.y-17,28,17);g.lineStyle(2,opened?0x5d655d:0xc1a36a).strokeRect(p.x-14,p.y-17,28,17);if(!opened){g.lineStyle(1,0xf0d496,.55+.25*Math.sin(s.time*3)).lineBetween(p.x,p.y-23,p.x,p.y-36);g.fillStyle(0xdbc08a).fillRect(p.x-2,p.y-11,4,5);}}
+    LOOT.forEach((loot,i)=>{const p=project(loot.position),opened=s.looted.includes(loot.id);this.coffers[i].setAlpha(opened?.35:1);if(!opened){g.lineStyle(1,0xf0d496,.55+.25*Math.sin(s.time*3)).lineBetween(p.x,p.y-29,p.x,p.y-42);g.lineStyle(1,0xc6a56c,.55).strokeEllipse(p.x,p.y+1,48,20);}});
     s.enemies.forEach((e,i)=>{const p=project(e.position),v=this.enemies[i],dir=facingForInput(e.aim,'west');const previous=this.enemyPositions[i];const walking=!!previous&&Math.hypot(e.position.x-previous.x,e.position.y-previous.y)>.01;this.enemyPositions[i]={...e.position};v.draw(e.position,walking&&e.hp>0,dir);v.effects(e.phase==='stagger'?0xf0c5a0:e.kind==='captain'?0xb49a7d:e.kind==='watcher'?0x849f98:0xa18b84,e.hp<=0?85:0,e.hp<=0?.2:1,e.kind==='captain'?1.15:1);this.labels[i].setPosition(p.x,p.y+28).setText(e.hp>0?(e.kind==='captain'?'ARMOURED CAPTAIN':e.kind==='watcher'?'CROSSBOW LOOKOUT':'RELIC RAIDER'):'');if(e.hp<=0)return;
+      g.lineStyle(1,e.kind==='captain'?0xba795a:e.kind==='watcher'?0x91a6a0:0x9e6c61,.65).strokeEllipse(p.x,p.y+1,e.kind==='captain'?46:36,16);
       g.fillStyle(0x182024).fillRect(p.x-25,p.y-91,50,4);g.fillStyle(0xa46958).fillRect(p.x-25,p.y-91,50*e.hp/e.maxHp,4);
       if(e.phase==='windup'){const angle=Math.atan2(e.aim.y,e.aim.x),range=e.kind==='watcher'?200:e.kind==='captain'?78:60;g.lineStyle(2,0xcf765a,.75);if(e.kind==='watcher')g.lineBetween(p.x,p.y,p.x+e.aim.x*range,p.y+e.aim.y*range);else{g.beginPath().arc(p.x,p.y,range,angle-Math.acos(.1),angle+Math.acos(.1)).strokePath();g.lineBetween(p.x,p.y,p.x+Math.cos(angle)*range,p.y+Math.sin(angle)*range);}}
     });

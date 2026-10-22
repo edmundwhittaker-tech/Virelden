@@ -28,7 +28,7 @@ for(const [keys,direction,texture,flipped] of [
  await expect.poll(async()=>(await state(page)).character.direction).toBe(direction);
  await expect.poll(async()=>(await state(page)).character.walking).toBe(true);
  expect((await state(page)).character).toMatchObject({texture,flipped});
- for(const k of keys)await page.keyboard.up(k);
+ for(const k of [...keys].reverse())await page.keyboard.up(k);
  await expect.poll(async()=>(await state(page)).character.walking).toBe(false);
  expect((await state(page)).character).toMatchObject({direction,texture,frame:0});
 });}
@@ -110,7 +110,10 @@ test('real aimed attacks defeat raider, award marks once and persist the victory
   const s=await state(page),enemy=s.enemies.find(e=>e.id==='raider')!;if(enemy.hp<=0)break;
   expect(s.hp,'player survives raider duel').toBeGreaterThan(0);
   const canvas=await page.locator('canvas').boundingBox();expect(canvas).not.toBeNull();
-  const x=640+(enemy.position.x-enemy.position.y)*.8,y=180+(enemy.position.x+enemy.position.y)*.4;
+  const ex=640+(enemy.position.x-enemy.position.y)*.8,ey=180+(enemy.position.x+enemy.position.y)*.4;
+  const dx=ex-s.screen.x,dy=ey-s.screen.y,length=Math.hypot(dx,dy);
+  // Aim along the target direction beyond the intentional 10px pointer deadzone.
+  const x=s.screen.x+(length?dx/length:1)*120,y=s.screen.y+(length?dy/length:0)*120;
   await page.mouse.move(canvas!.x+x/1280*canvas!.width,canvas!.y+y/800*canvas!.height);await page.keyboard.press('KeyJ');
   await expect.poll(async()=>(await state(page)).attack.phase).not.toBe('idle');
   await expect.poll(async()=>(await state(page)).attack.phase,{timeout:15_000}).toBe('idle');
@@ -122,6 +125,52 @@ test('real aimed attacks defeat raider, award marks once and persist the victory
  await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).enemies.find(e=>e.id==='raider')!.hp).toBe(0);expect((await state(page)).currency).toBe(earned);
 });
 
+test.describe('untraced rendering diagnostic',()=>{
+ test.use({trace:'off',video:'off',screenshot:'off'});
 test('foreground simulation keeps pace independently of compositor frames',async({page})=>{
- await open(page);const before=await state(page),start=Date.now();await page.waitForTimeout(1500);const after=await state(page);const elapsed=(Date.now()-start)/1000;console.log(`Simulation pace: ${(after.time-before.time).toFixed(2)}s / ${elapsed.toFixed(2)}s wall clock`);expect(after.paused).toBe(false);expect(after.time-before.time).toBeGreaterThan(elapsed*.7);expect(after.time-before.time).toBeLessThan(elapsed*1.2);
+ await open(page);const before=await state(page),start=Date.now();await page.waitForTimeout(1500);const after=await state(page);const elapsed=(Date.now()-start)/1000;console.log(JSON.stringify({before:before.timing,after:after.timing}));console.log(`Simulation pace: ${(after.time-before.time).toFixed(2)}s / ${elapsed.toFixed(2)}s wall clock`);expect(after.paused).toBe(false);expect(after.time-before.time).toBeGreaterThan(elapsed*.7);expect(after.time-before.time).toBeLessThan(elapsed*1.2);
+});
+});
+
+test('full exploration earns all weapons, opens shortcut and buys capped +2 upgrade',async({page})=>{
+ test.setTimeout(90_000);await open(page);
+ for(const [target,loot]of [
+  [{x:150,y:420},'west-cache'],[{x:320,y:320},null],
+  [{x:300,y:540},'south-cache'],[{x:320,y:320},null],
+  [{x:420,y:100},'north-cache'],
+ ] as const){await walkTo(page,target);await page.keyboard.press('KeyE');if(loot)await expect.poll(async()=>(await state(page)).looted).toContain(loot);else await expect.poll(async()=>(await state(page)).hp).toBe(140);}
+ expect((await state(page)).currency).toBe(95);expect((await state(page)).owned.sort()).toEqual(['hammer','spear','sword']);
+ await walkTo(page,{x:560,y:400});await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).shortcut).toBe(true);
+ await walkTo(page,{x:260,y:330});await page.keyboard.press('KeyE');await expect(page.getByRole('dialog')).toBeVisible();
+ await page.locator('[data-action="equip:hammer"]').click();await page.locator('[data-action="upgrade"]').click();expect((await state(page)).currency).toBe(65);
+ await page.locator('[data-action="upgrade"]').click();expect((await state(page)).currency).toBe(5);expect((await state(page)).levels.hammer).toBe(2);await expect(page.locator('[data-action="upgrade"]')).toBeDisabled();
+ await page.screenshot({path:'test-results/expedition-full-progression.png',fullPage:true});await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');
+ expect(await state(page)).toMatchObject({shortcut:true,equipped:'hammer',levels:{hammer:2},currency:5});expect((await state(page)).looted.sort()).toEqual(['north-cache','south-cache','west-cache']);
+});
+
+test('very short movement taps are consumed once and do not stick',async({page})=>{
+ await open(page);const before=(await state(page)).screen.x;await page.keyboard.press('KeyA',{delay:5});await expect.poll(async()=>(await state(page)).screen.x).toBeLessThan(before);await page.waitForTimeout(120);const stopped=(await state(page)).position;await page.waitForTimeout(180);expect((await state(page)).position).toEqual(stopped);
+});
+
+test('spear spacing defeats captain and persists the completed expedition',async({page})=>{
+ test.setTimeout(90_000);await open(page,'Wayfarer');await walkTo(page,{x:480,y:340});
+ for(let turn=0;turn<500;turn++){
+  const s=await state(page),captain=s.enemies.find(e=>e.id==='captain')!;if(captain.hp<=0)break;
+  expect(s.hp,'survive by keeping spear distance').toBeGreaterThan(0);
+  if(s.attack.phase!=='idle'){await page.waitForTimeout(70);continue;}
+  const x=640+(captain.position.x-captain.position.y)*.8,y=180+(captain.position.x+captain.position.y)*.4;
+  const dx=x-s.screen.x,dy=y-s.screen.y,distance=Math.hypot(dx,dy);
+  if(distance<92||distance>108){
+   const away=distance<92?-1:1,keys:string[]=[];
+   if(Math.abs(dx)>Math.abs(dy)*.42)keys.push(dx*away>0?'KeyD':'KeyA');
+   if(Math.abs(dy)>Math.abs(dx)*.42)keys.push(dy*away>0?'KeyS':'KeyW');
+   await hold(page,keys,70);
+  }else if(s.stamina>=20){
+   const canvas=await page.locator('canvas').boundingBox();expect(canvas).not.toBeNull();
+   await page.mouse.move(canvas!.x+x/1280*canvas!.width,canvas!.y+y/800*canvas!.height);await page.keyboard.press('KeyJ');await page.waitForTimeout(70);
+  }else await page.waitForTimeout(70);
+ }
+ expect((await state(page)).enemies.find(e=>e.id==='captain')!.hp).toBe(0);expect((await state(page)).completed).toBe(true);expect((await state(page)).currency).toBeGreaterThanOrEqual(80);
+ await expect(page.locator('#objective-text')).toContainText('Expedition complete');await page.screenshot({path:'test-results/expedition-captain-victory.png',fullPage:true});
+ await page.keyboard.press('KeyI');await expect(page.getByRole('dialog')).toBeVisible();await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).completed).toBe(true);expect((await state(page)).enemies.find(e=>e.id==='captain')!.hp).toBe(0);
 });
