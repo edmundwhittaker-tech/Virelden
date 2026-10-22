@@ -26,7 +26,7 @@ export class ModularKnightSprite {
  private last?:{pose:RigPose;input:DrawFrame};
  private alpha=1;
  static preload(scene:Phaser.Scene){preloadWeaponArt(scene);for(const[key,url]of Object.entries(URLS))scene.load.spritesheet(key,url,{frameWidth:256,frameHeight:256});}
- constructor(private scene:Phaser.Scene){
+ constructor(private scene:Phaser.Scene,private readonly evaluate:typeof evaluateRig=evaluateRig){
   this.root=scene.add.container(0,0);this.shadow=scene.add.ellipse(0,0,32,12,0x02070a,.5);
   this.joints=scene.add.graphics().setDepth(0);this.weapon=scene.add.image(0,0,weaponTexture('sword')).setDepth(14).setVisible(false);this.root.add([this.joints,this.weapon]);
   for(const id of Object.keys(WARD_MANIFEST.parts).filter(k=>k.startsWith('front/')).map(k=>k.slice(6)as RigPartId)){
@@ -46,7 +46,7 @@ export class ModularKnightSprite {
   this.equipment={...next};return true;
  }
  draw(input:DrawFrame){
-  const pose=evaluateRig(input),{position}=input;this.last={pose,input};this.alpha=1;
+  const pose=this.evaluate(input),{position}=input;this.last={pose,input};this.alpha=1;
   // Reset every pooled transform first, including one-frame roll/death state.
   this.root.setPosition(position.x,position.y).setDepth(position.y).setRotation(pose.actor.angle).setScale(pose.actor.scaleX,pose.actor.scaleY).setAlpha(1).setVisible(true);
   this.shadow.setPosition(position.x,position.y+1).setDepth(position.y-.1).setAlpha(.5).setVisible(true);
@@ -98,3 +98,4 @@ export class ModularKnightSprite {
  snapshot(){const r=this.last;if(!r)return{visible:false};const actor={angle:this.root.rotation,scaleX:this.root.scaleX,scaleY:this.root.scaleY},hand=actorPoint(r.pose.hand,actor),support=actorPoint(r.pose.supportHand,actor);return{registration:this.renderedRegistration(),texture:'modular-plate',frame:0,walking:r.input.motion==='walk',rig:{phase:r.input.phase??'idle',pose:r.input.motion==='attack'?r.input.phase:r.input.motion,weapon:r.input.weapon??'sword',visible:this.weapon.visible,texture:this.weapon.texture.key,hand:{x:r.input.position.x+hand.x,y:r.input.position.y+hand.y},grip:{x:r.input.position.x+hand.x,y:r.input.position.y+hand.y},angle:r.pose.weaponAngle+this.root.rotation,depth:r.input.position.y+.02,length:r.pose.weaponLength},visible:true,kind:'modular-15-part',equipment:{...this.equipment},view:r.input.view,flipped:r.input.flipped,motion:r.input.motion,phase:r.input.phase,alpha:this.alpha,parts:[...this.images.keys()],layers:[...this.images].map(([id,image])=>({id,texture:image.texture.key,frame:Number(image.frame.name),x:image.x,y:image.y,rotation:image.rotation,scaleX:image.scaleX,scaleY:image.scaleY,visible:image.visible})),interaction:r.pose.interaction?{...r.pose.interaction,requested:{...r.pose.interaction.requested},actual:{...r.pose.interaction.actual}}:undefined,hand:{x:r.input.position.x+hand.x,y:r.input.position.y+hand.y},supportHand:{x:r.input.position.x+support.x,y:r.input.position.y+support.y},foot:{...r.input.position}};}
  destroy(){this.root.destroy(true);this.shadow.destroy();}
 }
+
