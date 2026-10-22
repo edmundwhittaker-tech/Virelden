@@ -1,17 +1,19 @@
+import {SCENERY} from './scenery.js';
 /** 2D ground coordinates, projected only when drawing. */
 export interface Point { x: number; y: number }
 export const SIZE=640, RADIUS=12, SPEED=150, STEP=1/60;
 export const SPAWN: Point={x:320,y:320};
 export const PILLARS=[
-  {x:120,y:120,radius:23,height:110},{x:520,y:120,radius:23,height:130},
-  {x:120,y:520,radius:23,height:90},{x:520,y:520,radius:23,height:105},
+  {x:120,y:120,radius:23,height:128},{x:520,y:120,radius:23,height:128},
+  {x:120,y:520,radius:23,height:128},{x:520,y:520,radius:23,height:128},
 ];
 export function project(p:Point):Point {
   return {x:640+(p.x-p.y)*.8,y:180+(p.x+p.y)*.4};
 }
 export function canStand(p:Point):boolean {
   return p.x>=RADIUS && p.y>=RADIUS && p.x<=SIZE-RADIUS && p.y<=SIZE-RADIUS
-    && PILLARS.every(o=>Math.hypot(p.x-o.x,p.y-o.y)>=o.radius+RADIUS);
+    && PILLARS.every(o=>Math.hypot(p.x-o.x,p.y-o.y)>=o.radius+RADIUS)
+    && SCENERY.every(o=>Math.hypot(p.x-o.x,p.y-o.y)>=o.radius+RADIUS);
 }
 /** Screen-relative input; normalized speed; substeps prevent tunnelling. */
 export function move(position:Point,input:Point,dt:number):Point {

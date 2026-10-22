@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import attackUrl from '../assets/knight-rig/attack-v1.webp';
+import { ATTACK_RIG, attackPose, weaponMotion, type KnightCombat } from '../core/knightRig.js';
 import sideUrl from '../assets/plate-knight-v1.webp';
 import northUrl from '../assets/plate-knight-ne-v1.webp';
 import southUrl from '../assets/plate-knight-se-v1.webp';
@@ -24,8 +26,12 @@ export class KnightSprite {
   private sprite: Phaser.GameObjects.Sprite;
   private shadow: Phaser.GameObjects.Ellipse;
   private direction: Facing = 'east';
+  private weapon: Phaser.GameObjects.Graphics;
+  private rig = {phase:'idle',pose:'idle',weapon:'sword',visible:false,hand:{x:0,y:0},grip:{x:0,y:0},angle:0,depth:0};
+
 
   static preload(scene: Phaser.Scene) {
+    scene.load.spritesheet(ATTACK_RIG.key, attackUrl, {frameWidth:256,frameHeight:256});
     for (const source of Object.values(SOURCES))
       scene.load.spritesheet(source.key, source.url, { frameWidth: 192, frameHeight: 256 });
   }
@@ -37,13 +43,24 @@ export class KnightSprite {
       if (!scene.anims.exists(key))
         scene.anims.create({ key, frames: scene.anims.generateFrameNumbers(source.key, { start: 1, end: 6 }), frameRate: 12, repeat: -1 });
     }
+    this.weapon = scene.add.graphics();
     this.shadow = scene.add.ellipse(0, 0, 36, 15, 0x02070a, .5);
     this.sprite = scene.add.sprite(0, 0, SOURCES.side.key, 0).setOrigin(.5, .93).setScale(.38);
   }
 
-  draw(position: Point, moving: boolean, facing: Facing) {
+  draw(position: Point, moving: boolean, facing: Facing, combat?: KnightCombat) {
     const p = project(position), source = sourceFor(facing), flipped = facing.endsWith('west');
     this.direction = facing;
+    const attacking = !!combat && combat.phase !== 'idle';
+    if(attacking) {
+      const frame=attackPose(facing,combat.phase);
+      this.sprite.stop().setTexture(ATTACK_RIG.key,frame).setPosition(p.x,p.y).setDepth(p.y)
+        .setFlipX(flipped).setOrigin(.5,ATTACK_RIG.ground/256).setScale(ATTACK_RIG.scale);
+      this.shadow.setPosition(p.x,p.y+1).setDepth(p.y-.1);
+      const socket=ATTACK_RIG.hands[frame];
+      this.drawWeapon(combat,{x:(socket.x-128)*ATTACK_RIG.scale*(flipped?-1:1),y:(socket.y-ATTACK_RIG.ground)*ATTACK_RIG.scale},p,flipped,String(frame));
+      return;
+    }
     const changed = this.sprite.texture.key !== source.key;
     const phase = this.sprite.anims.isPlaying ? Math.max(0, (this.sprite.anims.currentFrame?.index ?? 1) - 1) : 0;
     if (changed) this.sprite.stop().setTexture(source.key, 0);
@@ -64,11 +81,51 @@ export class KnightSprite {
     }
     this.shadow.setPosition(p.x, p.y + 1).setDepth(p.y - .1);
     this.sprite.setPosition(p.x + offsetX, p.y).setDepth(p.y).setFlipX(flipped).setOrigin(.5, originY).setScale(scale);
+    // Measured per-frame gauntlet centres; the weapon never floats at the old fixed offset.
+    const frame=Number(this.sprite.frame.name);
+    const hands=source===SOURCES.south?[[72,143],[56,143],[39,143],[47,147],[43,137],[57,137],[34,140],[38,141]]:
+      source===SOURCES.north?[[149,137],[160,132],[171,105],[170,105],[147,143],[146,142],[157,138],[157,141]]:
+      [[138,124],[149,119],[146,117],[151,115],[149,124],[154,124],[145,123],[146,127]];
+    const hand=hands[frame]??hands[0];
+    this.drawWeapon(combat,{x:offsetX+(hand[0]-96)*scale*(flipped?-1:1),y:(hand[1]-originY*256)*scale},p,flipped,'idle');
+
+  }
+
+  private drawWeapon(combat:KnightCombat|undefined, hand:Point, foot:Point, flipped:boolean, pose:string) {
+    const weaponDepth=foot.y+(combat&&combat.aim.y<-.25?-.02:.02);
+    const g=this.weapon;g.clear().setPosition(foot.x,foot.y).setDepth(weaponDepth).setAngle(0).setScale(1).setAlpha(1);
+    if(!combat){this.rig.visible=false;return;}
+    const m=weaponMotion(combat,flipped),u={x:Math.cos(m.angle),y:Math.sin(m.angle)},n={x:-u.y,y:u.x};
+    const pt=(along:number,across=0)=>({x:hand.x+u.x*along+n.x*across,y:hand.y+u.y*along+n.y*across});
+    const line=(a:number,b:number,width:number,color:number)=>{const start=pt(a),end=pt(b);g.lineStyle(width,color,1).lineBetween(start.x,start.y,end.x,end.y);};
+    // Dark outlines and metal edge catch keep weapons readable at the 88px actor scale.
+    line(-7,m.length,5,0x172023);
+    if(combat.weapon==='spear'){
+      line(-11,m.length-9,3,0x75634a);
+      const base=pt(m.length-12),tip=pt(m.length),l={x:base.x+n.x*4,y:base.y+n.y*4},r={x:base.x-n.x*4,y:base.y-n.y*4};
+      g.fillStyle(0xbfc9c8).fillTriangle(tip.x,tip.y,l.x,l.y,r.x,r.y);
+      line(m.length-11,m.length,1,0xebebe1);
+    } else if(combat.weapon==='hammer'){
+      line(-6,m.length-2,3,0x796b54);
+      const a=pt(m.length-4,-7),b=pt(m.length-4,7);
+      g.lineStyle(9,0x1a2427).lineBetween(a.x,a.y,b.x,b.y);
+      g.lineStyle(6,0x98a5a5).lineBetween(a.x,a.y,b.x,b.y);
+      g.lineStyle(2,0xd1d4c9).lineBetween(a.x-1,a.y-1,b.x-1,b.y-1);
+    }else{
+      line(5,m.length-3,4,0x9eafb1);line(6,m.length,1,0xe1e4d9);
+      const a=pt(4,-6),b=pt(4,6);g.lineStyle(3,0x9b8c64).lineBetween(a.x,a.y,b.x,b.y);
+      line(-6,2,3,0x4a4136);
+    }
+    // Small metal gauntlet seam over the grip conceals the join, not an extra limb.
+    g.fillStyle(0x7d8988).fillCircle(hand.x,hand.y,2);
+    const world={x:foot.x+hand.x,y:foot.y+hand.y};
+    this.rig={phase:combat.phase,pose,weapon:combat.weapon,visible:true,hand:{...world},grip:{...world},angle:m.angle,depth:weaponDepth};
   }
 
   effects(tint=0xffffff, angle=0, alpha=1, size=1) {
     this.sprite.setTint(tint).setAngle(angle).setAlpha(alpha);
     this.sprite.setScale(this.sprite.scaleX*size, this.sprite.scaleY*size);
+    this.weapon.setAngle(angle).setAlpha(alpha).setScale(size);
   }
 
   snapshot() {
@@ -78,6 +135,7 @@ export class KnightSprite {
       walking: this.sprite.anims.isPlaying,
       flipped: this.sprite.flipX,
       direction: this.direction,
+      rig: {...this.rig,hand:{...this.rig.hand},grip:{...this.rig.grip}},
     };
   }
 }

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "image": "attack-v1.webp",
+  "layout": {"columns": 3, "rows": 2, "cellWidth": 256, "cellHeight": 256},
+  "registration": {"headX": 128, "groundY": 250, "runtimeScale": 0.44, "visibleBodyHeight": 88},
+  "frames": [
+    {"index": 0, "facing": "south-east", "phase": "windup", "hand": [99,52]},
+    {"index": 1, "facing": "south-east", "phase": "active", "hand": [212,107]},
+    {"index": 2, "facing": "south-east", "phase": "recovery", "hand": [157,153]},
+    {"index": 3, "facing": "north-east", "phase": "windup", "hand": [96,50]},
+    {"index": 4, "facing": "north-east", "phase": "active", "hand": [209,95]},
+    {"index": 5, "facing": "north-east", "phase": "recovery", "hand": [179,138]}
+  ],
+  "mirror": {"south-west": "south-east", "north-west": "north-east"},
+  "sideAttackFallback": {"east": "south-east", "west": "south-west"},
+  "weapons": "Separate code-native steel silhouettes; handle origins exactly equal body hand sockets.",
+  "contact": "First active tick uses contact body pose; no delayed visual strike.",
+  "art": "Built-in imagegen edit from existing front/rear knight references, then mechanical crop/resize/WebP encode. No cloth, capes, exposed face, or baked weapons."
+}

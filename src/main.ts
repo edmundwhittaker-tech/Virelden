@@ -7,7 +7,7 @@ window.addEventListener('error',()=>{
 });
 // Canvas avoids software-WebGL stalls on modest machines; no shader-only effects are used.
 const game=new Phaser.Game({
-  type:Phaser.CANVAS,parent:'game',backgroundColor:'#111b24',banner:false,
+  type:Phaser.CANVAS,parent:'game',backgroundColor:'#050608',banner:false,
   width:1280,height:800,scene:[CourtyardScene],fps:{target:60,smoothStep:false},
   scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
   render:{antialias:true,roundPixels:false},audio:{noAudio:true}
