@@ -11,7 +11,7 @@ export function project(p:Point):Point {
   return {x:640+(p.x-p.y)*.8,y:180+(p.x+p.y)*.4};
 }
 export function canStand(p:Point):boolean {
-  return p.x>=RADIUS && p.y>=RADIUS && p.x<=SIZE-RADIUS && p.y<=SIZE-RADIUS
+  return p.x>=RADIUS && p.y>=-1920+RADIUS && p.x<=SIZE-RADIUS && p.y<=SIZE-RADIUS
     && PILLARS.every(o=>Math.hypot(p.x-o.x,p.y-o.y)>=o.radius+RADIUS)
     && SCENERY.every(o=>Math.hypot(p.x-o.x,p.y-o.y)>=o.radius+RADIUS);
 }

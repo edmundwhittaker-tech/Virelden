@@ -11,7 +11,7 @@ for(const [loadout,weapon] of [['Vanguard','sword'],['Wayfarer','spear']] as con
    await expect.poll(async()=>(await state(page)).stamina).toBe((await state(page)).maxStamina);
    const before=await state(page),box=await page.locator('canvas').boundingBox();expect(box).not.toBeNull();
    await page.mouse.move(box!.x+(before.screen.x+dx*140)/1280*box!.width,box!.y+(before.screen.y+dy*140)/800*box!.height);
-   const frames=await captureAttack(page,`${weapon}-${direction}`);
+   const frames=await captureAttack(page,`${weapon}-${direction}`,true);
    for(const phase of ['windup','active','recovery']){
     expect(frames[phase].state.attack.weapon).toBe(weapon);
     expect(frames[phase].state.attack.aim.x).toBeCloseTo(dx,2);expect(frames[phase].state.attack.aim.y).toBeCloseTo(dy,2);
@@ -23,7 +23,7 @@ for(const [loadout,weapon] of [['Vanguard','sword'],['Wayfarer','spear']] as con
   await expect.poll(async()=>(await state(page)).stamina).toBe((await state(page)).maxStamina);
   const lockStart=await state(page),lockBox=await page.locator('canvas').boundingBox();expect(lockBox).not.toBeNull();
   await page.mouse.move(lockBox!.x+(lockStart.screen.x+140)/1280*lockBox!.width,lockBox!.y+lockStart.screen.y/800*lockBox!.height);
-  await page.keyboard.press('KeyJ');await page.waitForFunction(()=>window.vireldenDebug!().attack.phase==='windup');
+  await page.mouse.down();await page.mouse.up();await page.waitForFunction(()=>window.vireldenDebug!().attack.phase==='windup');
   await page.mouse.move(lockBox!.x+(lockStart.screen.x-140)/1280*lockBox!.width,lockBox!.y+lockStart.screen.y/800*lockBox!.height);
   await page.keyboard.press('Escape');
   await expect.poll(async()=>(await state(page)).paused).toBe(true);

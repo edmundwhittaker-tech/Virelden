@@ -125,11 +125,11 @@ test('real aimed attacks defeat raider, award marks once and persist the victory
   const s=await state(page),enemy=s.enemies.find(e=>e.id==='raider')!;if(enemy.hp<=0)break;
   expect(s.hp,'player survives raider duel').toBeGreaterThan(0);
   const canvas=await page.locator('canvas').boundingBox();expect(canvas).not.toBeNull();
-  const ex=640+(enemy.position.x-enemy.position.y)*.8,ey=180+(enemy.position.x+enemy.position.y)*.4;
+  const ex=640+(enemy.position.x-enemy.position.y)*.8-s.camera.x,ey=180+(enemy.position.x+enemy.position.y)*.4-s.camera.y;
   const dx=ex-s.screen.x,dy=ey-s.screen.y,length=Math.hypot(dx,dy);
   // Aim along the target direction beyond the intentional 10px pointer deadzone.
   const x=s.screen.x+(length?dx/length:1)*120,y=s.screen.y+(length?dy/length:0)*120;
-  await page.mouse.move(canvas!.x+x/1280*canvas!.width,canvas!.y+y/800*canvas!.height);await page.keyboard.press('KeyJ');
+  await page.mouse.click(canvas!.x+x/1280*canvas!.width,canvas!.y+y/800*canvas!.height);
   await expect.poll(async()=>(await state(page)).attack.phase).not.toBe('idle');
   await expect.poll(async()=>(await state(page)).attack.phase,{timeout:15_000}).toBe('idle');
  }
@@ -162,13 +162,13 @@ test('very short movement taps are consumed once and do not stick',async({page})
  await open(page);const before=(await state(page)).screen.x;await page.keyboard.press('KeyA',{delay:5});await expect.poll(async()=>(await state(page)).screen.x).toBeLessThan(before);await page.waitForTimeout(120);const stopped=(await state(page)).position;await page.waitForTimeout(180);expect((await state(page)).position).toEqual(stopped);
 });
 
-test('spear spacing defeats captain and persists the completed expedition',async({page})=>{
+test('spear spacing defeats lower captain and persists victory without premature completion',async({page})=>{
  test.setTimeout(90_000);await open(page,'Wayfarer');await walkTo(page,{x:480,y:340});
  for(let turn=0;turn<500;turn++){
   const s=await state(page),captain=s.enemies.find(e=>e.id==='captain')!;if(captain.hp<=0)break;
   expect(s.hp,'survive by keeping spear distance').toBeGreaterThan(0);
   if(s.attack.phase!=='idle'){await page.waitForTimeout(70);continue;}
-  const x=640+(captain.position.x-captain.position.y)*.8,y=180+(captain.position.x+captain.position.y)*.4;
+  const x=640+(captain.position.x-captain.position.y)*.8-s.camera.x,y=180+(captain.position.x+captain.position.y)*.4-s.camera.y;
   const dx=x-s.screen.x,dy=y-s.screen.y,distance=Math.hypot(dx,dy);
   if(distance<92||distance>108){
    const away=distance<92?-1:1,keys:string[]=[];
@@ -177,10 +177,10 @@ test('spear spacing defeats captain and persists the completed expedition',async
    await hold(page,keys,70);
   }else if(s.stamina>=20){
    const canvas=await page.locator('canvas').boundingBox();expect(canvas).not.toBeNull();
-   await page.mouse.move(canvas!.x+x/1280*canvas!.width,canvas!.y+y/800*canvas!.height);await page.keyboard.press('KeyJ');await page.waitForTimeout(70);
+   await page.mouse.click(canvas!.x+x/1280*canvas!.width,canvas!.y+y/800*canvas!.height);await page.waitForTimeout(70);
   }else await page.waitForTimeout(70);
  }
- expect((await state(page)).enemies.find(e=>e.id==='captain')!.hp).toBe(0);expect((await state(page)).completed).toBe(true);expect((await state(page)).currency).toBeGreaterThanOrEqual(80);
- await expect(page.locator('#objective-text')).toContainText('Expedition complete');await page.screenshot({path:'test-results/expedition-captain-victory.png',fullPage:true});
- await page.keyboard.press('KeyI');await expect(page.getByRole('dialog')).toBeVisible();await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).completed).toBe(true);expect((await state(page)).enemies.find(e=>e.id==='captain')!.hp).toBe(0);
+ expect((await state(page)).enemies.find(e=>e.id==='captain')!.hp).toBe(0);expect((await state(page)).completed).toBe(false);expect((await state(page)).currency).toBeGreaterThanOrEqual(80);
+ await expect(page.locator('#objective-text')).not.toContainText('Expedition complete');await page.screenshot({path:'test-results/expedition-captain-victory.png',fullPage:true});
+ await page.keyboard.press('KeyI');await expect(page.getByRole('dialog')).toBeVisible();await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).completed).toBe(false);expect((await state(page)).enemies.find(e=>e.id==='captain')!.hp).toBe(0);
 });

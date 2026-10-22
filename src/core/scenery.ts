@@ -1,5 +1,7 @@
+import {EXPANDED_SCENERY} from './level.js';
 /** World-space ground registrations shared by collision and rendering. No screen-only props. */
 export const SCENERY = [
+ ...EXPANDED_SCENERY,
  {id:'lever',x:560,y:400,radius:7,art:'lever',width:14,originY:1},
  {id:'west-cache',x:150,y:420,radius:20,art:'ward-coffer',width:45,originY:.9},
  {id:'north-cache',x:420,y:100,radius:20,art:'ward-coffer',width:45,originY:.9},
