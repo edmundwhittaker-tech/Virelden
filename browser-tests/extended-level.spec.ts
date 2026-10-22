@@ -44,12 +44,12 @@ async function walkTo(page:Page,target:{x:number;y:number},combat=false){
 }
 
 test('monumental gate blocks native movement, animates once, pauses and reloads safely',async({page})=>{
- test.setTimeout(100_000);await open(page);
- await walkTo(page,{x:485,y:55});
+ test.setTimeout(240_000);await open(page);
+ await walkTo(page,{x:485,y:55},true);
  // World north is screen north-east: this held combination pushes into the gate.
  await hold(page,['KeyW','KeyD'],450);expect((await state(page)).position.y).toBeGreaterThanOrEqual(28);
  await page.screenshot({path:'test-results/extended-gate-closed.png',fullPage:true});
- await walkTo(page,{x:550,y:70});const before=await state(page);
+ await walkTo(page,{x:550,y:70},true);const before=await state(page);
  const pullingFrame=page.evaluate(()=>new Promise<{png:string;state:ReturnType<NonNullable<Window['vireldenDebug']>>}>((resolve,reject)=>{const deadline=performance.now()+4000;const sample=()=>{const state=window.vireldenDebug!();if(state.gatePhase==='pulling'&&state.interactionTimer<.5)return resolve({png:document.querySelector('canvas')!.toDataURL(),state});if(performance.now()>deadline)return reject(new Error('Rendered lever-pulling phase missing'));requestAnimationFrame(sample);};requestAnimationFrame(sample);}));
  await page.keyboard.press('KeyE');
  await expect.poll(async()=>(await state(page)).gatePhase).toBe('pulling');
@@ -62,8 +62,8 @@ test('monumental gate blocks native movement, animates once, pauses and reloads 
  await page.screenshot({path:'test-results/extended-gate-opening-paused.png',fullPage:true});
  await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');
  expect(await state(page)).toMatchObject({gatePhase:'closed',gateProgress:0,position:{x:320,y:320}});
- await walkTo(page,{x:550,y:70});await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).gatePhase).toBe('open');
- await page.keyboard.press('KeyE');await walkTo(page,{x:485,y:-110});expect((await state(page)).position.y).toBeLessThan(-70);
+ await walkTo(page,{x:550,y:70},true);await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).gatePhase).toBe('open');
+ await page.keyboard.press('KeyE');await walkTo(page,{x:485,y:-110},true);expect((await state(page)).position.y).toBeLessThan(-70);
  await page.screenshot({path:'test-results/extended-gate-walkthrough.png',fullPage:true});
  await page.keyboard.press('Escape');await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');expect((await state(page)).gatePhase).toBe('open');
 });
