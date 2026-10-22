@@ -1,3 +1,5 @@
+> Legacy renderer reference. The active player uses `ModularKnightSprite`, the articulated `modularRig` and `meleeContact` described in `PROGRESSION_CONTRACT.md`. The older sprite/rig remains available for compatibility; its first-active full-sector description below does not define current player contact.
+
 # Small reusable knight attack rig
 
 ## Runtime

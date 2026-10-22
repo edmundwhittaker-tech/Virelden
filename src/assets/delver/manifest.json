@@ -1,0 +1,1158 @@
+{
+  "version": 1,
+  "set": "delver",
+  "views": [
+    "front",
+    "rear"
+  ],
+  "sourcePixelScale": 4,
+  "displayScale": 0.25,
+  "displayHeight": 88,
+  "cellSize": 256,
+  "parts": {
+    "front/helmet": {
+      "id": "helmet",
+      "slot": "helmet",
+      "view": "front",
+      "texture": "delver-front",
+      "frame": 0,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.401,
+        107.668
+      ],
+      "distal": [
+        125.093,
+        39.749
+      ],
+      "nominalLength": 17,
+      "layer": 12,
+      "alphaBounds": [
+        94,
+        36,
+        161,
+        115
+      ],
+      "calibration": {
+        "originalPivot": [
+          500,
+          740
+        ],
+        "originalDistal": [
+          470,
+          124
+        ],
+        "sourceToAtlasScale": 0.11025893085521501
+      }
+    },
+    "front/torso": {
+      "id": "torso",
+      "slot": "chest",
+      "view": "front",
+      "texture": "delver-front",
+      "frame": 1,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.027,
+        64.077
+      ],
+      "distal": [
+        128.027,
+        188.077
+      ],
+      "nominalLength": 31,
+      "layer": 8,
+      "alphaBounds": [
+        61,
+        32,
+        185,
+        196
+      ],
+      "calibration": {
+        "originalPivot": [
+          510,
+          87
+        ],
+        "originalDistal": [
+          510,
+          346
+        ],
+        "sourceToAtlasScale": 0.47876447876447875
+      }
+    },
+    "front/pelvis": {
+      "id": "pelvis",
+      "slot": "legs",
+      "view": "front",
+      "texture": "delver-front",
+      "frame": 2,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.393,
+        63.732
+      ],
+      "distal": [
+        78.793,
+        63.732
+      ],
+      "nominalLength": 12.4,
+      "layer": 7,
+      "alphaBounds": [
+        64,
+        53,
+        148,
+        128
+      ],
+      "calibration": {
+        "originalPivot": [
+          882,
+          121
+        ],
+        "originalDistal": [
+          711,
+          121
+        ],
+        "sourceToAtlasScale": 0.29005847953216374
+      }
+    },
+    "front/upperarm_near": {
+      "id": "upperarm_near",
+      "slot": "chest",
+      "view": "front",
+      "texture": "delver-front",
+      "frame": 3,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.466,
+        64.402
+      ],
+      "distal": [
+        117.237,
+        115.175
+      ],
+      "nominalLength": 13,
+      "layer": 13,
+      "alphaBounds": [
+        96,
+        50,
+        151,
+        129
+      ],
+      "calibration": {
+        "originalPivot": [
+          1110,
+          88
+        ],
+        "originalDistal": [
+          1064,
+          296
+        ],
+        "sourceToAtlasScale": 0.24410186517467267
+      }
+    },
+    "front/upperarm_far": {
+      "id": "upperarm_far",
+      "slot": "chest",
+      "view": "front",
+      "texture": "delver-front",
+      "frame": 4,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        127.62,
+        63.876
+      ],
+      "distal": [
+        144.845,
+        112.94
+      ],
+      "nominalLength": 13,
+      "layer": 1,
+      "alphaBounds": [
+        101,
+        49,
+        162,
+        130
+      ],
+      "calibration": {
+        "originalPivot": [
+          170,
+          405
+        ],
+        "originalDistal": [
+          236,
+          593
+        ],
+        "sourceToAtlasScale": 0.26098051887881774
+      }
+    },
+    "front/forearm_near": {
+      "id": "forearm_near",
+      "slot": "gauntlets",
+      "view": "front",
+      "texture": "delver-front",
+      "frame": 5,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.077,
+        63.694
+      ],
+      "distal": [
+        142.972,
+        109.324
+      ],
+      "nominalLength": 12,
+      "layer": 15,
+      "alphaBounds": [
+        112,
+        54,
+        155,
+        119
+      ],
+      "calibration": {
+        "originalPivot": [
+          470,
+          403
+        ],
+        "originalDistal": [
+          533,
+          596
+        ],
+        "sourceToAtlasScale": 0.23642738564022883
+      }
+    },
+    "front/forearm_far": {
+      "id": "forearm_far",
+      "slot": "gauntlets",
+      "view": "front",
+      "texture": "delver-front",
+      "frame": 6,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.306,
+        63.624
+      ],
+      "distal": [
+        138.901,
+        110.44
+      ],
+      "nominalLength": 12,
+      "layer": 2,
+      "alphaBounds": [
+        115,
+        55,
+        155,
+        120
+      ],
+      "calibration": {
+        "originalPivot": [
+          788,
+          401
+        ],
+        "originalDistal": [
+          831,
+          591
+        ],
+        "sourceToAtlasScale": 0.24640020752381775
+      }
+    },
+    "front/hand_near": {
+      "id": "hand_near",
+      "slot": "gauntlets",
+      "view": "front",
+      "texture": "delver-front",
+      "frame": 7,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        127.977,
+        64.312
+      ],
+      "distal": [
+        134.715,
+        78.825
+      ],
+      "nominalLength": 4,
+      "layer": 16,
+      "alphaBounds": [
+        118,
+        59,
+        143,
+        89
+      ],
+      "calibration": {
+        "originalPivot": [
+          1070,
+          440
+        ],
+        "originalDistal": [
+          1122,
+          552
+        ],
+        "sourceToAtlasScale": 0.1295727096783474
+      }
+    },
+    "front/hand_far": {
+      "id": "hand_far",
+      "slot": "gauntlets",
+      "view": "front",
+      "texture": "delver-front",
+      "frame": 8,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        127.972,
+        64.228
+      ],
+      "distal": [
+        120.586,
+        78.421
+      ],
+      "nominalLength": 4,
+      "layer": 3,
+      "alphaBounds": [
+        109,
+        58,
+        137,
+        90
+      ],
+      "calibration": {
+        "originalPivot": [
+          218,
+          729
+        ],
+        "originalDistal": [
+          167,
+          827
+        ],
+        "sourceToAtlasScale": 0.1448275189378877
+      }
+    },
+    "front/thigh_near": {
+      "id": "thigh_near",
+      "slot": "legs",
+      "view": "front",
+      "texture": "delver-front",
+      "frame": 9,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        127.549,
+        63.586
+      ],
+      "distal": [
+        133.394,
+        135.349
+      ],
+      "nominalLength": 18,
+      "layer": 9,
+      "alphaBounds": [
+        98,
+        48,
+        158,
+        158
+      ],
+      "calibration": {
+        "originalPivot": [
+          497,
+          683
+        ],
+        "originalDistal": [
+          515,
+          904
+        ],
+        "sourceToAtlasScale": 0.3247165878148441
+      }
+    },
+    "front/thigh_far": {
+      "id": "thigh_far",
+      "slot": "legs",
+      "view": "front",
+      "texture": "delver-front",
+      "frame": 10,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.243,
+        63.594
+      ],
+      "distal": [
+        127.919,
+        135.594
+      ],
+      "nominalLength": 18,
+      "layer": 4,
+      "alphaBounds": [
+        101,
+        49,
+        158,
+        159
+      ],
+      "calibration": {
+        "originalPivot": [
+          806,
+          682
+        ],
+        "originalDistal": [
+          805,
+          904
+        ],
+        "sourceToAtlasScale": 0.3243210340131801
+      }
+    },
+    "front/greave_near": {
+      "id": "greave_near",
+      "slot": "legs",
+      "view": "front",
+      "texture": "delver-front",
+      "frame": 11,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.031,
+        64.264
+      ],
+      "distal": [
+        128.761,
+        144.261
+      ],
+      "nominalLength": 20,
+      "layer": 10,
+      "alphaBounds": [
+        101,
+        46,
+        157,
+        158
+      ],
+      "calibration": {
+        "originalPivot": [
+          1101,
+          687
+        ],
+        "originalDistal": [
+          1103,
+          906
+        ],
+        "sourceToAtlasScale": 0.36528157152871604
+      }
+    },
+    "front/greave_far": {
+      "id": "greave_far",
+      "slot": "legs",
+      "view": "front",
+      "texture": "delver-front",
+      "frame": 12,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        127.752,
+        63.781
+      ],
+      "distal": [
+        133.048,
+        143.605
+      ],
+      "nominalLength": 20,
+      "layer": 5,
+      "alphaBounds": [
+        99,
+        46,
+        155,
+        156
+      ],
+      "calibration": {
+        "originalPivot": [
+          177,
+          974
+        ],
+        "originalDistal": [
+          191,
+          1185
+        ],
+        "sourceToAtlasScale": 0.3783150836010126
+      }
+    },
+    "front/foot_near": {
+      "id": "foot_near",
+      "slot": "legs",
+      "view": "front",
+      "texture": "delver-front",
+      "frame": 13,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.351,
+        64.081
+      ],
+      "distal": [
+        156.291,
+        86.782
+      ],
+      "nominalLength": 9,
+      "layer": 11,
+      "alphaBounds": [
+        117,
+        55,
+        160,
+        89
+      ],
+      "calibration": {
+        "originalPivot": [
+          462,
+          1064
+        ],
+        "originalDistal": [
+          622,
+          1194
+        ],
+        "sourceToAtlasScale": 0.17462565002615973
+      }
+    },
+    "front/foot_far": {
+      "id": "foot_far",
+      "slot": "legs",
+      "view": "front",
+      "texture": "delver-front",
+      "frame": 14,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        127.834,
+        64.285
+      ],
+      "distal": [
+        154.96,
+        87.952
+      ],
+      "nominalLength": 9,
+      "layer": 6,
+      "alphaBounds": [
+        116,
+        55,
+        158,
+        91
+      ],
+      "calibration": {
+        "originalPivot": [
+          775,
+          1069
+        ],
+        "originalDistal": [
+          924,
+          1199
+        ],
+        "sourceToAtlasScale": 0.1820574973865983
+      }
+    },
+    "rear/helmet": {
+      "id": "helmet",
+      "slot": "helmet",
+      "view": "rear",
+      "texture": "delver-rear",
+      "frame": 0,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        127.712,
+        108.351
+      ],
+      "distal": [
+        123.348,
+        40.491
+      ],
+      "nominalLength": 17,
+      "layer": 12,
+      "alphaBounds": [
+        94,
+        37,
+        157,
+        116
+      ],
+      "calibration": {
+        "originalPivot": [
+          1320,
+          738
+        ],
+        "originalDistal": [
+          1280,
+          116
+        ],
+        "sourceToAtlasScale": 0.1090993955188253
+      }
+    },
+    "rear/torso": {
+      "id": "torso",
+      "slot": "chest",
+      "view": "rear",
+      "texture": "delver-rear",
+      "frame": 1,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        127.815,
+        64.092
+      ],
+      "distal": [
+        127.815,
+        188.092
+      ],
+      "nominalLength": 31,
+      "layer": 8,
+      "alphaBounds": [
+        62,
+        35,
+        184,
+        197
+      ],
+      "calibration": {
+        "originalPivot": [
+          514,
+          78
+        ],
+        "originalDistal": [
+          514,
+          338
+        ],
+        "sourceToAtlasScale": 0.47692307692307695
+      }
+    },
+    "rear/pelvis": {
+      "id": "pelvis",
+      "slot": "legs",
+      "view": "rear",
+      "texture": "delver-rear",
+      "frame": 2,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.374,
+        64.424
+      ],
+      "distal": [
+        177.971,
+        64.981
+      ],
+      "nominalLength": 12.4,
+      "layer": 7,
+      "alphaBounds": [
+        115,
+        53,
+        191,
+        126
+      ],
+      "calibration": {
+        "originalPivot": [
+          715,
+          128
+        ],
+        "originalDistal": [
+          893,
+          130
+        ],
+        "sourceToAtlasScale": 0.27863409763262026
+      }
+    },
+    "rear/upperarm_near": {
+      "id": "upperarm_near",
+      "slot": "chest",
+      "view": "rear",
+      "texture": "delver-rear",
+      "frame": 3,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        127.76,
+        63.762
+      ],
+      "distal": [
+        128.701,
+        115.754
+      ],
+      "nominalLength": 13,
+      "layer": 13,
+      "alphaBounds": [
+        96,
+        48,
+        146,
+        129
+      ],
+      "calibration": {
+        "originalPivot": [
+          1123,
+          92
+        ],
+        "originalDistal": [
+          1127,
+          313
+        ],
+        "sourceToAtlasScale": 0.23525558668777694
+      }
+    },
+    "rear/upperarm_far": {
+      "id": "upperarm_far",
+      "slot": "chest",
+      "view": "rear",
+      "texture": "delver-rear",
+      "frame": 4,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.436,
+        64.252
+      ],
+      "distal": [
+        143.946,
+        113.885
+      ],
+      "nominalLength": 13,
+      "layer": 1,
+      "alphaBounds": [
+        100,
+        49,
+        160,
+        131
+      ],
+      "calibration": {
+        "originalPivot": [
+          176,
+          408
+        ],
+        "originalDistal": [
+          236,
+          600
+        ],
+        "sourceToAtlasScale": 0.2585049940511539
+      }
+    },
+    "rear/forearm_near": {
+      "id": "forearm_near",
+      "slot": "gauntlets",
+      "view": "rear",
+      "texture": "delver-rear",
+      "frame": 5,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.393,
+        63.74
+      ],
+      "distal": [
+        134.705,
+        111.323
+      ],
+      "nominalLength": 12,
+      "layer": 15,
+      "alphaBounds": [
+        108,
+        55,
+        148,
+        121
+      ],
+      "calibration": {
+        "originalPivot": [
+          500,
+          400
+        ],
+        "originalDistal": [
+          526,
+          596
+        ],
+        "sourceToAtlasScale": 0.2427712711697832
+      }
+    },
+    "rear/forearm_far": {
+      "id": "forearm_far",
+      "slot": "gauntlets",
+      "view": "rear",
+      "texture": "delver-rear",
+      "frame": 6,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.281,
+        63.641
+      ],
+      "distal": [
+        135.45,
+        111.102
+      ],
+      "nominalLength": 12,
+      "layer": 2,
+      "alphaBounds": [
+        109,
+        54,
+        150,
+        120
+      ],
+      "calibration": {
+        "originalPivot": [
+          808,
+          409
+        ],
+        "originalDistal": [
+          837,
+          601
+        ],
+        "sourceToAtlasScale": 0.2471961854832939
+      }
+    },
+    "rear/hand_near": {
+      "id": "hand_near",
+      "slot": "gauntlets",
+      "view": "rear",
+      "texture": "delver-rear",
+      "frame": 7,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        127.988,
+        63.762
+      ],
+      "distal": [
+        133.884,
+        78.636
+      ],
+      "nominalLength": 4,
+      "layer": 16,
+      "alphaBounds": [
+        117,
+        58,
+        142,
+        89
+      ],
+      "calibration": {
+        "originalPivot": [
+          1083,
+          445
+        ],
+        "originalDistal": [
+          1127,
+          556
+        ],
+        "sourceToAtlasScale": 0.1340003423294368
+      }
+    },
+    "rear/hand_far": {
+      "id": "hand_far",
+      "slot": "gauntlets",
+      "view": "rear",
+      "texture": "delver-rear",
+      "frame": 8,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.438,
+        63.856
+      ],
+      "distal": [
+        121.582,
+        78.313
+      ],
+      "nominalLength": 4,
+      "layer": 3,
+      "alphaBounds": [
+        111,
+        57,
+        141,
+        91
+      ],
+      "calibration": {
+        "originalPivot": [
+          201,
+          737
+        ],
+        "originalDistal": [
+          155,
+          834
+        ],
+        "sourceToAtlasScale": 0.14903885850643914
+      }
+    },
+    "rear/thigh_near": {
+      "id": "thigh_near",
+      "slot": "legs",
+      "view": "rear",
+      "texture": "delver-rear",
+      "frame": 9,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        127.68,
+        63.787
+      ],
+      "distal": [
+        134.431,
+        135.469
+      ],
+      "nominalLength": 18,
+      "layer": 9,
+      "alphaBounds": [
+        101,
+        49,
+        160,
+        161
+      ],
+      "calibration": {
+        "originalPivot": [
+          500,
+          687
+        ],
+        "originalDistal": [
+          521,
+          910
+        ],
+        "sourceToAtlasScale": 0.32144779121899325
+      }
+    },
+    "rear/thigh_far": {
+      "id": "thigh_far",
+      "slot": "legs",
+      "view": "rear",
+      "texture": "delver-rear",
+      "frame": 10,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.076,
+        63.522
+      ],
+      "distal": [
+        130.335,
+        135.487
+      ],
+      "nominalLength": 18,
+      "layer": 4,
+      "alphaBounds": [
+        100,
+        49,
+        159,
+        161
+      ],
+      "calibration": {
+        "originalPivot": [
+          806,
+          684
+        ],
+        "originalDistal": [
+          813,
+          907
+        ],
+        "sourceToAtlasScale": 0.3227110041840273
+      }
+    },
+    "rear/greave_near": {
+      "id": "greave_near",
+      "slot": "legs",
+      "view": "rear",
+      "texture": "delver-rear",
+      "frame": 11,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        127.601,
+        63.851
+      ],
+      "distal": [
+        133.202,
+        143.655
+      ],
+      "nominalLength": 20,
+      "layer": 10,
+      "alphaBounds": [
+        101,
+        46,
+        157,
+        158
+      ],
+      "calibration": {
+        "originalPivot": [
+          1100,
+          695
+        ],
+        "originalDistal": [
+          1116,
+          923
+        ],
+        "sourceToAtlasScale": 0.3500164074036546
+      }
+    },
+    "rear/greave_far": {
+      "id": "greave_far",
+      "slot": "legs",
+      "view": "rear",
+      "texture": "delver-rear",
+      "frame": 12,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.343,
+        63.539
+      ],
+      "distal": [
+        134.591,
+        143.295
+      ],
+      "nominalLength": 20,
+      "layer": 5,
+      "alphaBounds": [
+        96,
+        47,
+        156,
+        157
+      ],
+      "calibration": {
+        "originalPivot": [
+          175,
+          970
+        ],
+        "originalDistal": [
+          192,
+          1187
+        ],
+        "sourceToAtlasScale": 0.3675374731453497
+      }
+    },
+    "rear/foot_near": {
+      "id": "foot_near",
+      "slot": "legs",
+      "view": "rear",
+      "texture": "delver-rear",
+      "frame": 13,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.322,
+        63.921
+      ],
+      "distal": [
+        162.778,
+        74.349
+      ],
+      "nominalLength": 9,
+      "layer": 11,
+      "alphaBounds": [
+        112,
+        51,
+        168,
+        88
+      ],
+      "calibration": {
+        "originalPivot": [
+          470,
+          1068
+        ],
+        "originalDistal": [
+          622,
+          1114
+        ],
+        "sourceToAtlasScale": 0.2266887457953343
+      }
+    },
+    "rear/foot_far": {
+      "id": "foot_far",
+      "slot": "legs",
+      "view": "rear",
+      "texture": "delver-rear",
+      "frame": 14,
+      "sourceSize": [
+        256,
+        256
+      ],
+      "pivot": [
+        128.336,
+        63.922
+      ],
+      "distal": [
+        162.89,
+        74.025
+      ],
+      "nominalLength": 9,
+      "layer": 6,
+      "alphaBounds": [
+        115,
+        52,
+        167,
+        84
+      ],
+      "calibration": {
+        "originalPivot": [
+          771,
+          1082
+        ],
+        "originalDistal": [
+          942,
+          1132
+        ],
+        "sourceToAtlasScale": 0.20206551321230776
+      }
+    }
+  },
+  "limitations": [
+    "Two authored three-quarter views; west mirrors source lighting.",
+    "Retains accepted rounded helmet from helmet-source; remaining fourteen parts from the full Delver atlases."
+  ]
+}

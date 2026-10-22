@@ -3,9 +3,14 @@ import {SIZE,PILLARS,project,type Point} from '../core/game.js';
 import {StationGateView} from './StationGateView.js';
 import {ArcherView,drawArrow} from './ArcherView.js';
 import {KnightSprite} from './KnightSprite.js';
+import {ModularKnightSprite} from './ModularKnightSprite.js';
+import {WARD_MANIFEST,DELVER_MANIFEST} from './paintRig.js';
+import {createWeaponThumbnail} from './WeaponArt.js';
+import {ARMOR,ARMOR_SLOTS,type Equipment,type ArmorItem} from '../core/equipment.js';
+import {WEAPON_CATALOG,type WeaponProfile} from '../core/weaponCatalog.js';
 import {WALLS,LOOT,LOCATIONS,WEAPONS,invulnerable,type Adventure} from '../core/adventure.js';
 import {SCENERY,groundDepth} from '../core/scenery.js';
-import {LEVEL_SECTIONS,CHECKPOINTS,FINISH} from '../core/level.js';
+import {LEVEL_SECTIONS,CHECKPOINTS,FINISH,STATION_GATE} from '../core/level.js';
 import {facingForInput} from '../core/facing.js';
 import type {Facing} from '../core/facing.js';
 import courtUrl from '../assets/environment-v1/slate-court.webp';
@@ -23,7 +28,10 @@ function poly(g:Graphics,points:Point[],color:number,stroke=0x465052){
 }
 /** Textured, depth-sorted ward and the preserved directional character renderer. */
 export class WorldView{
-  private actor:KnightSprite;
+  private actor:ModularKnightSprite;
+  private actorFacing:Facing='east';
+  readonly supportHandVerified=false;
+  private thumbnails=new Map<string,string>();
   private stationGate:StationGateView;
   private archers=new Map<number,ArcherView>();
   private mist:Phaser.GameObjects.Image;
@@ -40,7 +48,7 @@ export class WorldView{
   private enemyPositions:Point[]=[];
   private wallViews:{g:Graphics|Phaser.GameObjects.Image;left:number;right:number;top:number;bottom:number}[]=[];
   private occluders:{id:string;image:Phaser.GameObjects.Image;position:Point;radius:number|null}[]=[];
-  static preload(scene:Phaser.Scene){StationGateView.preload(scene);ArcherView.preload(scene);for(const [key,url] of Object.entries({'ward-floor':courtUrl,'ward-masonry':masonryUrl,'ward-pillar':pillarUrl,'ward-rubble':rubbleUrl,'ward-mud':mudUrl,'ward-coffer':cofferUrl,'ward-forge':forgeUrl,'ward-lantern':lanternUrl}))scene.load.image(key,url);}
+  static preload(scene:Phaser.Scene){ModularKnightSprite.preload(scene);StationGateView.preload(scene);ArcherView.preload(scene);for(const [key,url] of Object.entries({'ward-floor':courtUrl,'ward-masonry':masonryUrl,'ward-pillar':pillarUrl,'ward-rubble':rubbleUrl,'ward-mud':mudUrl,'ward-coffer':cofferUrl,'ward-forge':forgeUrl,'ward-lantern':lanternUrl}))scene.load.image(key,url);}
   constructor(scene:Phaser.Scene){
     this.scene=scene;this.stationGate=new StationGateView(scene);
     const floor=scene.add.graphics().setDepth(-1000);
@@ -134,22 +142,27 @@ export class WorldView{
     this.attackEffects=scene.add.graphics();
     this.healthBars=scene.add.graphics().setDepth(1500);
     this.leverView=scene.add.graphics().setDepth(groundDepth(project(LOCATIONS.lever).y,50));
-    this.actor=new KnightSprite(scene);
+    this.actor=new ModularKnightSprite(scene);
     this.enemies=[];
     for(let i=0;i<12;i++){this.enemies.push(new KnightSprite(scene));}
     for(let i=0;i<12;i++)this.labels.push(scene.add.text(0,0,'',{fontFamily:'Georgia',fontSize:'12px',color:'#c1b3a1'}).setOrigin(.5,1).setDepth(1500));
   }
   draw(position:Point,moving:boolean,facing:Facing){
-    this.actor.draw(position,moving,facing);
+    this.actor.draw({position:project(position),view:facing.startsWith('north')?'rear':'front',flipped:facing.endsWith('west'),motion:moving?'walk':'idle',time:0});
   }
   drawAdventure(s:Adventure,moving:boolean,facing:Facing){
     this.mist.setX(640+Math.sin(s.time*.06)*18);
-    const attackFacing=s.attack.phase==='idle'?facing:facingForInput(s.attack.aim,facing);
-    if(s.gatePhase==='pulling')this.actor.drawLeverPull(s.position,attackFacing,1-s.interactionTimer/.8);
-    else this.actor.draw(s.position,moving,attackFacing,{...s.attack,aim:s.attack.phase==='idle'?s.aim:s.attack.aim,weapon:s.attack.phase==='idle'?s.equipped:s.attack.weapon});
+    const attackFacing=s.attack.phase==='idle'?facing:s.attack.facing;this.actorFacing=attackFacing;
+    const attackState=s.attack,id=attackState.phase==='idle'?s.equipped:attackState.weapon,profile=WEAPON_CATALOG[id];
+    const duration=attackState.phase==='windup'?profile.windup:attackState.phase==='active'?profile.active:profile.recovery;
+    const progress=attackState.phase==='idle'?0:Math.max(0,Math.min(1,1-attackState.timer/duration));
+    if(s.gatePhase==='pulling'){
+      const foot=project(s.position),lever=project(STATION_GATE.lever),pull=Math.max(0,Math.min(1,1-s.interactionTimer/STATION_GATE.pullSeconds));
+      this.actor.draw({position:foot,view:'rear',flipped:false,motion:'interact',time:s.time,handTarget:{x:lever.x-13+pull*23-foot.x,y:lever.y-43+pull*13-foot.y}});
+    }else this.actor.draw({position:project(s.position),view:attackFacing.startsWith('north')?'rear':'front',flipped:attackFacing.endsWith('west'),motion:s.rollTimer>0?'roll':attackState.phase!=='idle'?'attack':moving?'walk':'idle',time:s.time,phase:attackState.phase==='idle'?undefined:attackState.phase,progress:s.rollTimer>0?1-s.rollTimer/.38:progress,weapon:id,weaponMotion:profile.motion,weaponHands:profile.hands,weaponReach:profile.range,aim:attackState.phase==='idle'?s.aim:attackState.aim});
     this.stationGate.draw(s);
     const rolling=s.rollTimer>0;
-    this.actor.effects(s.hurtTimer>0?0xf2aaa0:invulnerable(s)?0xb9d9df:0xffffff,rolling?(1-s.rollTimer/.38)*360:0,invulnerable(s)?.6:1,rolling?.72:1);
+    this.actor.effects(s.hurtTimer>0?0xf2aaa0:invulnerable(s)?0xb9d9df:0xffffff,0,invulnerable(s)?.6:1,rolling?.92:1);
     const actors=[s.position,...s.enemies.filter(e=>e.hp>0).map(e=>e.position)].map(project);
     for(const o of this.occluders){const p=project(o.position);o.image.setAlpha(actors.some(a=>a.y<p.y-1&&a.y>p.y-o.image.displayHeight*o.image.originY-12&&Math.abs(a.x-p.x)<o.image.displayWidth*.48+12)?.32:1);}
     for(const w of this.wallViews)w.g.setAlpha(actors.some(a=>a.x>w.left-15&&a.x<w.right+15&&a.y<w.g.depth-1&&a.y>w.top-12)?.4:1);
@@ -168,16 +181,34 @@ export class WorldView{
     this.bolts.forEach(b=>b.clear());
     s.projectiles.forEach((bolt,i)=>{const p=project(bolt.position);const b=this.bolts[i]??(this.bolts[i]=this.scene.add.graphics());b.setDepth(groundDepth(p.y,80));drawArrow(b,bolt);});
     const p=project(s.position),a=s.attack,aim=a.phase==='idle'?s.aim:a.aim,weapon=a.phase==='idle'?s.equipped:a.weapon,w=WEAPONS[weapon],angle=Math.atan2(aim.y,aim.x);
-    // Physical weapon/body rendering lives in the hand-attached KnightSprite rig.
+    // Physical weapon/body rendering uses the same catalog phase in the articulated modular rig.
     // These are only floor telegraphs, deliberately beneath solid geometry.
     const active=a.phase==='active',windup=a.phase==='windup';
     this.attackEffects.clear().setDepth(-996);
-    if(active){this.attackEffects.lineStyle(3,0xe7d6a5,.85);if(weapon==='spear')this.attackEffects.lineBetween(p.x,p.y,p.x+aim.x*w.range,p.y+aim.y*w.range);else if(weapon==='hammer')this.attackEffects.strokeEllipse(p.x,p.y,w.range*2,w.range*2);else this.attackEffects.beginPath().arc(p.x,p.y,w.range,angle-w.arc,angle+w.arc).strokePath();}
-    if(windup){this.attackEffects.lineStyle(1,0xc4a46a,.45).beginPath().arc(p.x,p.y,w.range,angle-w.arc,angle+w.arc).strokePath();}
+    if(active||windup){
+      this.attackEffects.lineStyle(active?3:1,active?0xe7d6a5:0xc4a46a,active?.85:.45);
+      if(w.shape.kind==='sector'){this.attackEffects.beginPath().arc(p.x,p.y,w.range,angle-w.shape.halfAngle,angle+w.shape.halfAngle).strokePath();for(const edge of [-w.shape.halfAngle,w.shape.halfAngle])this.attackEffects.lineBetween(p.x,p.y,p.x+Math.cos(angle+edge)*w.range,p.y+Math.sin(angle+edge)*w.range);}
+      else{const n={x:-aim.y,y:aim.x},start=w.shape.start,end=w.range-w.shape.radius,r=w.shape.radius;const point=(along:number,across:number)=>({x:p.x+aim.x*along+n.x*across,y:p.y+aim.y*along+n.y*across});const x=point(start,-r),y=point(end,-r),z=point(start,r),q=point(end,r);this.attackEffects.lineBetween(x.x,x.y,y.x,y.y).lineBetween(z.x,z.y,q.x,q.y);const t=point(end,0);this.attackEffects.beginPath().arc(t.x,t.y,r,angle-Math.PI/2,angle+Math.PI/2).strokePath();const tail=point(start,0);this.attackEffects.beginPath().arc(tail.x,tail.y,r,angle+Math.PI/2,angle+Math.PI*1.5).strokePath();}
+    }
+
   }
+  armorReady(item:ArmorItem){return this.actor.hasArmorVisual(item);}
+  commitEquipment(equipment:Equipment){return this.actor.setEquipment(Object.fromEntries(ARMOR_SLOTS.map(slot=>[slot,ARMOR[equipment.equipped[slot]].set])) as Parameters<ModularKnightSprite['setEquipment']>[0]);}
+  weaponReady(item:WeaponProfile){return this.actor.hasWeaponVisual(item)&&(item.hands===1||this.supportHandVerified);}
+  armorThumbnail(item:ArmorItem){
+    const cached=this.thumbnails.get(item.id);if(cached)return {src:cached};
+    const manifest=item.set==='ward'?WARD_MANIFEST:item.set==='delver'?DELVER_MANIFEST:null;
+    const part={helmet:'helmet',chest:'torso',gauntlets:'forearm_near',legs:'greave_near'}[item.slot],asset=manifest?.parts[`front/${part}`];
+    if(!asset||!this.armorReady(item))return null;
+    const canvas=document.createElement('canvas');canvas.width=64;canvas.height=72;const context=canvas.getContext('2d');if(!context)return null;
+    const source=this.scene.textures.get(asset.texture).getSourceImage() as HTMLImageElement,[x,y,right,bottom]=asset.alphaBounds,width=right-x,height=bottom-y,scale=Math.min(58/width,66/height);
+    context.drawImage(source,asset.frame%4*256+x,Math.floor(asset.frame/4)*256+y,width,height,(64-width*scale)/2,(72-height*scale)/2,width*scale,height*scale);
+    const src=canvas.toDataURL();this.thumbnails.set(item.id,src);return {src};
+  }
+  weaponThumbnail(item:WeaponProfile){const key=`weapon-preview:${item.id}`,cached=this.thumbnails.get(key);if(cached)return {src:cached};const src=createWeaponThumbnail(this.scene,item.id);if(!src)return null;this.thumbnails.set(key,src);return {src};}
   gateSnapshot(){return this.stationGate.snapshot();}
   archerSnapshot(){return [...this.archers].map(([index,archer])=>({index,...archer.snapshot()}));}
   scenerySnapshot(){return this.occluders.map(o=>({id:o.id,world:{x:o.position.x,y:o.position.y},foot:project(o.position),depth:o.image.depth,width:o.image.displayWidth,height:o.image.displayHeight,originY:o.image.originY,alpha:o.image.alpha,radius:o.radius}));}
-  characterSnapshot(){return this.actor.snapshot();}
+  characterSnapshot(){const snapshot=this.actor.snapshot();return {...snapshot,direction:this.actorFacing,rig:snapshot.rig&&snapshot.motion==='interact'?{...snapshot.rig,phase:'pull',pose:'lever-reach'}:snapshot.rig};}
 }
 

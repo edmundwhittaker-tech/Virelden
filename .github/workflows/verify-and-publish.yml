@@ -23,8 +23,10 @@ jobs:
       - name: Test gameplay rules
         run: npm test
       - name: Type-check and build the game
+        id: build
         run: npm run build
       - name: Install browser for real input tests
+        id: browser
         run: npx playwright install --with-deps chromium
       - name: Browser smoke tests and screenshot
         run: npm run test:browser
@@ -55,9 +57,39 @@ jobs:
           name: virelden-browser-traces
           path: test-results/**/trace.zip
           retention-days: 3
+  equipment-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Type-check exact renderer sources
+        id: types
+        run: npm run typecheck
+      - name: Install browser for component and contact tests
+        id: browser
+        run: npx playwright install --with-deps chromium
+      - name: Equipment component actual keyboard, focus and compact layout tests
+        run: npx playwright test --config playwright.equipment.config.ts --output test-results/equipment-dom
+      - name: Actual Phaser weapon and raider contact matrix
+        if: always() && steps.types.outcome == 'success' && steps.browser.outcome == 'success'
+        run: npx playwright test --config playwright.contact.config.ts --output test-results/contact-browser
+      - name: Keep compact component and actual contact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: virelden-equipment-contact-evidence
+          path: |
+            test-results/**/*.png
+            test-results/**/*.json
+            test-results/**/*.md
+          retention-days: 14
   publish:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    needs: verify
+    needs: [verify, equipment-contracts]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

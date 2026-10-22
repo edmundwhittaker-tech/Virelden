@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Equipment panel isolated interaction fixture</title>
+<style>html,body{margin:0;background:#0b0e12;color:#ddd;font:16px system-ui}canvas{display:block;width:100%;height:100vh}#open{position:fixed;top:12px;left:12px}</style></head>
+<body><canvas id="game" width="1440" height="1000" tabindex="0" aria-label="Game focus target"></canvas><button id="open">Open equipment fixture</button>
+<script type="module">
+import {EquipmentPanel} from '/src/ui/EquipmentPanel.ts';
+import {ARMOR, ARMOR_SLOTS, freshEquipment, grantArmor, STARTER_POOLS, prepareEquip} from '/src/core/equipment.ts';
+import {freshProgression, spendAttribute} from '/src/core/progression.ts';
+import {WEAPON_IDS, freshArmory, grantWeapon, prepareWeaponEquip, prepareWeaponUpgrade} from '/src/core/weaponCatalog.ts';
+let equipment = freshEquipment(); for (const slot of ARMOR_SLOTS) equipment = grantArmor(equipment, `delver-${slot}`);
+let armory = freshArmory('vanguard'); for (const id of WEAPON_IDS) armory = grantWeapon(armory, id);
+let state = {equipment, armory, progression: {...freshProgression(), xp:150}, base:STARTER_POOLS.vanguard,
+ context:{alive:true,idle:true,rolling:false,interacting:false},atCheckpoint:false,atForge:false,currency:90};
+const canvas = document.querySelector('#game');
+const record = {armor:[],weapons:[],training:[],rests:0,close:0,visible:[],messages:[],gameKeys:0};
+window.fixtureRecord = record;
+const assets = {armorReady:()=>true,weaponReady:()=>true,supportHand:true};
+const panel = new EquipmentPanel({host:document.body, assets, armorThumbnail:()=>null,weaponThumbnail:()=>null,returnFocus:()=>canvas,callbacks:{
+ onVisibilityChange:visible=>record.visible.push(visible),onClose:()=>record.close++,onMessage:message=>record.messages.push(message),
+ onEquipArmor:(slot,id)=>{record.armor.push([slot,id]);const result=prepareEquip(state.equipment,slot,id,state.context,state.base,state.progression.attributes,assets.armorReady);if(result.ok){state={...state,equipment:result.next};panel.update(state);return 'Armor changed.';}},
+ onEquipWeapon:id=>{record.weapons.push(id);const result=prepareWeaponEquip(state.armory,id,state.context,{supportHand:true,visualReady:assets.weaponReady});if(result.ok){state={...state,armory:result.next};panel.update(state);return 'Weapon changed.';}},
+ onSpendAttribute:id=>{record.training.push(id);const result=spendAttribute(state.progression,id,state.atCheckpoint);if(result.ok){state={...state,progression:result.next};panel.update(state);return 'Training complete.';}},
+ onRest:()=>{record.rests++;return 'Rest requested.';},
+ onUpgradeWeapon:id=>{const result=prepareWeaponUpgrade(state.armory,state.currency,state.atForge,state.context);if(result.ok){state={...state,armory:result.next,currency:result.currency};panel.update(state);return 'Weapon improved.';}}
+}});
+// This is an isolated test fixture, never imported by gameplay or published as a debug API.
+window.fixtureUpdate = update=>{state={...state,...update};panel.update(state);};
+window.fixtureDestroy = ()=>panel.destroy();
+window.fixtureOpen = ()=>panel.open(state);
+window.addEventListener('keydown',()=>record.gameKeys++);
+document.querySelector('#open').addEventListener('click',()=>panel.open(state));
+</script></body></html>

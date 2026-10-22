@@ -19,7 +19,7 @@ export function attackPose(facing:Facing, phase:KnightCombat['phase']) {
 }
 export function weaponMotion(combat:KnightCombat, flipped:boolean) {
   const phase=combat.phase, w=WEAPONS[combat.weapon];
-  const duration=phase==='windup'?w.windup:phase==='active'?.12:w.recovery;
+  const duration=phase==='windup'?w.windup:phase==='active'?w.active:w.recovery;
   const progress=phase==='idle'?0:Math.max(0,Math.min(1,1-combat.timer/duration));
   // The first ACTIVE sample is contact: damage occurs on that same simulation tick.
   // Independent local weapon profiles share exactly the same body/hand sockets.
