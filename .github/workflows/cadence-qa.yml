@@ -1,0 +1,39 @@
+name: Isolated compact cadence QA
+on:
+  push:
+    branches: ['qa/gait-cadence24-compact-*']
+permissions:
+  contents: read
+concurrency:
+  group: compact-cadence-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  compact-cadence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Preserved and bounded candidate CPU tests
+        run: npm run test:gait && npm run test:cadence && npm test
+      - name: Strict build before native rendering
+        run: npm run build
+      - name: Check encoded-frame timing tool
+        run: ffprobe -version
+      - name: Install supported Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Four compact native routes and separate detail stills
+        run: npm run test:cadence:browser
+      - name: Keep native evidence and CPU measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: virelden-compact-cadence24-evidence
+          path: |
+            .cadence-browser-results/
+            review/cadence-lab/metrics.json
+          retention-days: 7
+          include-hidden-files: true

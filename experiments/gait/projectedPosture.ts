@@ -31,12 +31,12 @@ const THIGH_LO = Math.asin(MIN_THIGH / 18), THIGH_HI = Math.PI - THIGH_LO;
 const STRAIGHT_REACH = 37.9999;
 
 /** Nearest feasible ankle, with fixed bones and the renderer's SAME knee branch. */
-export function projectAnkle(target: RigPoint, hip: RigPoint, bend: 1 | -1, maxX: number, maxReach = MAX_REACH) {
+export function projectAnkle(target: RigPoint, hip: RigPoint, bend: 1 | -1, maxX: number, maxReach = MAX_REACH, minAnkle: number = MIN_ANKLE) {
   const original = twoBone(hip, target, 18, 20, bend);
   const valid = distance(original.end, target) < 1e-6
     && original.joint.y - hip.y >= MIN_THIGH - 1e-7
     && original.end.y - original.joint.y >= MIN_SHIN - 1e-7
-    && target.y - hip.y >= MIN_ANKLE - 1e-7
+    && target.y - hip.y >= minAnkle - 1e-7
     && Math.abs(target.x - hip.x) <= maxX + 1e-7
     && distance(target, hip) <= maxReach + 1e-7;
   if (valid) return { point: { ...target }, correction: 0 };
@@ -44,7 +44,7 @@ export function projectAnkle(target: RigPoint, hip: RigPoint, bend: 1 | -1, maxX
   const requested = { x: target.x - hip.x, y: target.y - hip.y };
   const evaluate = (thighAngle: number) => {
     const knee = { x: 18 * Math.cos(thighAngle), y: 18 * Math.sin(thighAngle) };
-    const shinDrop = Math.max(MIN_SHIN, MIN_ANKLE - knee.y);
+    const shinDrop = Math.max(MIN_SHIN, minAnkle - knee.y);
     if (shinDrop > 20) return undefined;
     const shinLo = Math.asin(shinDrop / 20);
     let lo = Math.max(shinLo, Math.acos(clamp((maxX - knee.x) / 20, -1, 1)));
@@ -88,7 +88,8 @@ export function projectAnkle(target: RigPoint, hip: RigPoint, bend: 1 | -1, maxX
  * shin. Both feet may genuinely be unplanted during the run-like transfer.
  */
 export function constrainProjectedGait(previous: ProjectedPostureState | undefined,
-  source: GaitSample, input: RigInput, position: RigPoint) {
+  source: GaitSample, input: RigInput, position: RigPoint,
+  labOptions: { ankleFloor?: 24 | 28; maxX?: 12 } = {}) {
   const time = source.state.time;
   const reset = !previous || time < previous.time || time - previous.time > .25;
   // Paused evaluation must not consume a landing or advance a transfer twice.
@@ -101,10 +102,10 @@ export function constrainProjectedGait(previous: ProjectedPostureState | undefin
   const desiredBend = (input.flipped ? 1 : -1) as 1 | -1;
   const targetDepth = source.active ? clamp(Math.abs(source.state.direction.y) / .6, 0, 1) : 0;
   const depth = reset ? targetDepth : previous.depth + (targetDepth - previous.depth) * (1 - Math.exp(-dt * 18));
-  const maxX = 20 - depth * 8;
+  const maxX = labOptions.maxX ?? 20 - depth * 8;
   const project = (world: RigPoint, side: Side, bend: 1 | -1, maxReach = MAX_REACH) => {
     const hip = reference.parts[`thigh_${side}`].start;
-    const result = projectAnkle({ x: world.x - position.x, y: world.y - position.y }, hip, bend, maxX, maxReach);
+    const result = projectAnkle({ x: world.x - position.x, y: world.y - position.y }, hip, bend, maxX, maxReach, labOptions.ankleFloor ?? MIN_ANKLE);
     return { point: { x: result.point.x + position.x, y: result.point.y + position.y }, correction: result.correction };
   };
   const sourcePoint = (id: Id) => ({ x: source.state.feet[id].ground.x, y: source.state.feet[id].ground.y - source.state.feet[id].lift });

@@ -1,5 +1,23 @@
 # Project status —22 October2026
 
+## Isolated cadence lab (not activated)
+
+This checkout adds two opt-in foot-scheduling experiments against frozen
+gait tree `d0704ee0dd0c03ce32de42776939ec7041657efc`:150ms landing intervals with
+ankle floor28 or24. Neither changes gameplay or the frozen native fixture default.
+Exact upper-body/socket behavior and planted-contact/branch semantics are retained.
+At60Hz the floor24 candidate reduces sampled NE/SE flight from54.24%/62.71% to
+26.27%/20.34%, but worsens some low-rate reversal/SE joint excursions. It merits
+only a bounded native visual trial, not acceptance.26 new cases,17 preserved gait
+tests,133 gameplay tests and strict build pass locally on Node24.19.0; repository
+Node22 and actual native trial remain unverified at preparation time. A separate
+`cadence.html` compact fixture compares current time-only walk with floor24 in two
+native88px panels; floor28 and the frozen baseline remain explicit query options.
+Its isolated QA workflow must run Node22 tests/build before four native route
+captures, record encoded frame PTS/actual FPS and save separate3× stills. It has no
+Pages or main trigger. No default-walk change or deployment is included. See
+`review/cadence-lab/REPORT.md` and `review/cadence-lab/NATIVE_TRIAL.md`.
+
 ## Playable content and candidate boundaries
 
 The station is one continuous four-section level: Lower Ward, Lamp Ascent, Transfer Court and Upper Watch. It has twelve encounters, four caches, two checkpoints, a shortcut, a monumental operated gate and a marked final exit. This is one level, not four separate levels. Cistern Viaduct and Record Annex remain separate design prototypes; external enemy-kit art is not activated in this equipment candidate.

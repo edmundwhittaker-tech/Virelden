@@ -9,7 +9,9 @@
     "test:browser": "playwright test",
     "check": "npm run test && npm run build",
     "test:gait": "tsc --target ES2022 --module NodeNext --moduleResolution NodeNext --strict --skipLibCheck --outDir .gait-build experiments/gait/worldGait.ts experiments/gait/experimentalPose.ts experiments/gait/routes.ts && node --test experiments/gait/test.mjs experiments/gait/posture.test.mjs",
-    "test:gait:browser": "playwright test --config experiments/gait/playwright.config.ts"
+    "test:gait:browser": "playwright test --config experiments/gait/playwright.config.ts",
+    "test:cadence": "tsc --target ES2022 --module NodeNext --moduleResolution NodeNext --strict --skipLibCheck --outDir .gait-build experiments/gait/cadenceLab.ts && node --test experiments/gait/cadence-lab.test.mjs",
+    "test:cadence:browser": "playwright test --config experiments/gait/playwright.cadence.config.ts"
   },
   "dependencies": { "phaser": "3.90.0" },
   "devDependencies": {
