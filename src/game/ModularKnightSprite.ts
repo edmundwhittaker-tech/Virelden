@@ -21,6 +21,7 @@ export class ModularKnightSprite {
  private shadow:Phaser.GameObjects.Ellipse;
  private joints:Phaser.GameObjects.Graphics;
  private weapon:Phaser.GameObjects.Image;
+ private bones=new Map<RigPartId,Phaser.GameObjects.Container>();
  private images=new Map<RigPartId,Phaser.GameObjects.Image>();
  private equipment:ArmorLoadout={...STARTER};
  private last?:{pose:RigPose;input:DrawFrame};
@@ -30,7 +31,7 @@ export class ModularKnightSprite {
   this.root=scene.add.container(0,0);this.shadow=scene.add.ellipse(0,0,32,12,0x02070a,.5);
   this.joints=scene.add.graphics().setDepth(0);this.weapon=scene.add.image(0,0,weaponTexture('sword')).setDepth(14).setVisible(false);this.root.add([this.joints,this.weapon]);
   for(const id of Object.keys(WARD_MANIFEST.parts).filter(k=>k.startsWith('front/')).map(k=>k.slice(6)as RigPartId)){
-   const image=scene.add.image(0,0,'ward-front',0);this.images.set(id,image);this.root.add(image);
+   const image=scene.add.image(0,0,'ward-front',0),bone=scene.add.container(0,0,[image]);this.images.set(id,image);this.bones.set(id,bone);this.root.add(bone);
   }
  }
  /** Synchronous ready check used by atomic equipment core preflight; no async loading here. */
@@ -59,8 +60,11 @@ export class ModularKnightSprite {
    image.setVisible(false).setAlpha(1).setTint(0xffffff).setRotation(0).setScale(1).setFlip(false,false);
    const slot=WARD_MANIFEST.parts[`${input.view}/${id}`].slot,manifest=SETS[this.equipment[slot]],asset=manifest?.parts[`${input.view}/${id}`];if(!asset)continue;
    const part=pose.parts[id],[px,py]=asset.pivot,[dx,dy]=asset.distal,mir=input.flipped?-1:1;
-   const scale=part.length/Math.hypot(dx-px,dy-py),angle=part.angle-Math.atan2(dy-py,(dx-px)*mir);
-   image.setTexture(asset.texture,asset.frame).setOrigin(px/256,py/256).setPosition(part.start.x,part.start.y).setRotation(angle).setScale(scale*mir,scale).setDepth(part.depth).setVisible(true);
+   const sourceLength=Math.hypot(dx-px,dy-py),axial=part.length/sourceLength,transverse=(part.artSpan??part.length)/sourceLength,sourceAngle=Math.atan2(dy-py,(dx-px)*mir);
+   // Source bone maps onto local+x. Anatomical projection changes the axial
+   // span only; calibrated plate width stays fixed under foreshortening.
+   this.bones.get(id)!.setPosition(part.start.x,part.start.y).setRotation(part.angle).setScale(axial,transverse).setDepth(part.depth).setVisible(true);
+   image.setTexture(asset.texture,asset.frame).setOrigin(px/256,py/256).setPosition(0,0).setRotation(-sourceAngle).setScale(mir,1).setDepth(part.depth).setVisible(true);
   }
   this.drawWeapon(input,pose);this.root.sort('depth');
  }
@@ -80,6 +84,13 @@ export class ModularKnightSprite {
  /** Read-only audit of the actual pooled Phaser image transforms, not copied
   * pose sockets. Source endpoints/grips are registered in the loaded manifests.
   */
+ private renderedPartRegistration(){
+  const point=(image:Phaser.GameObjects.Image,source:readonly number[])=>{const p=image.getWorldTransformMatrix().transformPoint(source[0]-image.displayOriginX,source[1]-image.displayOriginY);return{x:p.x,y:p.y};};
+  return Object.fromEntries([...this.images].map(([id,image])=>{
+   const asset=Object.values(SETS).flatMap(manifest=>Object.values(manifest.parts)).find(asset=>asset.id===id&&asset.texture===image.texture.key&&asset.frame===Number(image.frame.name));
+   return[id,asset&&image.visible?{start:point(image,asset.pivot),end:point(image,asset.distal)}:null];
+  }));
+ }
  private renderedHands(){
   const point=(image:Phaser.GameObjects.Image,source:readonly number[])=>{
    const p=image.getWorldTransformMatrix().transformPoint(source[0]-image.displayOriginX,source[1]-image.displayOriginY);
@@ -102,7 +113,7 @@ export class ModularKnightSprite {
   const asset=WEAPON_ART[id],support='supportGrip' in asset?asset.supportGrip:undefined;
   return {...hands,primaryGrip:point(this.weapon,asset.grip),supportGrip:support?point(this.weapon,support):null};
  }
- snapshot(){const r=this.last;if(!r)return{visible:false};const actor={angle:this.root.rotation,scaleX:this.root.scaleX,scaleY:this.root.scaleY},hand=actorPoint(r.pose.hand,actor),support=actorPoint(r.pose.supportHand,actor);return{renderedHands:this.renderedHands(),registration:this.renderedRegistration(),texture:'modular-plate',frame:0,walking:r.input.motion==='walk',rig:{phase:r.input.phase??'idle',pose:r.input.motion==='attack'?r.input.phase:r.input.motion,weapon:r.input.weapon??'sword',visible:this.weapon.visible,texture:this.weapon.texture.key,hand:{x:r.input.position.x+hand.x,y:r.input.position.y+hand.y},grip:{x:r.input.position.x+hand.x,y:r.input.position.y+hand.y},angle:r.pose.weaponAngle+this.root.rotation,depth:r.input.position.y+.02,length:r.pose.weaponLength},visible:true,kind:'modular-15-part',equipment:{...this.equipment},view:r.input.view,flipped:r.input.flipped,motion:r.input.motion,phase:r.input.phase,alpha:this.alpha,parts:[...this.images.keys()],layers:[...this.images].map(([id,image])=>({id,texture:image.texture.key,frame:Number(image.frame.name),x:image.x,y:image.y,rotation:image.rotation,scaleX:image.scaleX,scaleY:image.scaleY,visible:image.visible})),interaction:r.pose.interaction?{...r.pose.interaction,requested:{...r.pose.interaction.requested},actual:{...r.pose.interaction.actual}}:undefined,hand:{x:r.input.position.x+hand.x,y:r.input.position.y+hand.y},supportHand:{x:r.input.position.x+support.x,y:r.input.position.y+support.y},foot:{...r.input.position}};}
+ snapshot(){const r=this.last;if(!r)return{visible:false};const actor={angle:this.root.rotation,scaleX:this.root.scaleX,scaleY:this.root.scaleY},hand=actorPoint(r.pose.hand,actor),support=actorPoint(r.pose.supportHand,actor);return{renderedParts:this.renderedPartRegistration(),renderedHands:this.renderedHands(),registration:this.renderedRegistration(),texture:'modular-plate',frame:0,walking:r.input.motion==='walk',rig:{phase:r.input.phase??'idle',pose:r.input.motion==='attack'?r.input.phase:r.input.motion,weapon:r.input.weapon??'sword',visible:this.weapon.visible,texture:this.weapon.texture.key,hand:{x:r.input.position.x+hand.x,y:r.input.position.y+hand.y},grip:{x:r.input.position.x+hand.x,y:r.input.position.y+hand.y},angle:r.pose.weaponAngle+this.root.rotation,depth:r.input.position.y+.02,length:r.pose.weaponLength},visible:true,kind:'modular-15-part',equipment:{...this.equipment},view:r.input.view,flipped:r.input.flipped,motion:r.input.motion,phase:r.input.phase,alpha:this.alpha,parts:[...this.images.keys()],layers:[...this.images].map(([id,image])=>({id,texture:image.texture.key,frame:Number(image.frame.name),x:this.bones.get(id)!.x,y:this.bones.get(id)!.y,rotation:this.bones.get(id)!.rotation+image.rotation,scaleX:this.bones.get(id)!.scaleX*image.scaleX,scaleY:this.bones.get(id)!.scaleY*image.scaleY,sourceRotation:image.rotation,boneRotation:this.bones.get(id)!.rotation,visible:image.visible})),interaction:r.pose.interaction?{...r.pose.interaction,requested:{...r.pose.interaction.requested},actual:{...r.pose.interaction.actual}}:undefined,hand:{x:r.input.position.x+hand.x,y:r.input.position.y+hand.y},supportHand:{x:r.input.position.x+support.x,y:r.input.position.y+support.y},foot:{...r.input.position}};}
  destroy(){this.root.destroy(true);this.shadow.destroy();}
 }
 

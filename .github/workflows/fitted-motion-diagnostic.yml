@@ -1,0 +1,37 @@
+name: Fitted motion comparison (not release acceptance)
+on:
+  push:
+    branches: [qa/fitted-projected-motion-2026-10-22]
+permissions:
+  contents: read
+jobs:
+  native-compact-motion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run build
+      - name: Pure projected geometry (not art acceptance)
+        run: node --experimental-strip-types --test experiments/projected-fit/projectedLocomotion.test.mjs
+      - run: npx playwright install --with-deps chromium
+      - name: Revalidate neutral and real lever image transforms
+        run: npx playwright test --config playwright.neutral-fit.config.ts
+      - name: Revalidate all poleaxe primary/support image grips
+        run: npx playwright test --config playwright.poleaxe.config.ts
+      - name: Actual compact Canvas motion and encoded frame cadence
+        run: npx playwright test --config playwright.fit-motion.config.ts
+      - name: Preserve native motion evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fitted-motion-native-evidence
+          path: |
+            test-results/fit-motion
+            test-results/neutral-fit
+            test-results/fitted-lever
+            test-results/poleaxe-support
+          retention-days: 7
