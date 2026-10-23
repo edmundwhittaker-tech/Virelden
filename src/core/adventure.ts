@@ -10,7 +10,7 @@ import {STATION_GATE,CHECKPOINTS,FINISH,LEVEL_WALLS} from './level.js';
 import {canStand,move,project,SPAWN,STEP,type Point} from './game.js';
 export type Archetype='vanguard'|'wayfarer';
 export type {WeaponId} from './weaponCatalog.js';
-import {WEAPON_CATALOG, WEAPON_IDS, weaponShapeContains, prepareWeaponEquip, prepareWeaponUpgrade, type WeaponId, type Armory, type WeaponProfile} from './weaponCatalog.js';
+import {WEAPON_CATALOG, WEAPON_IDS, weaponShapeContains, prepareWeaponEquip, prepareWeaponUpgrade, upgradedDamage, type WeaponId, type Armory, type WeaponProfile} from './weaponCatalog.js';
 import {freshEquipment, equipmentStats, clampPools, prepareEquip, grantArmor, ARMOR, type Equipment, type ArmorSlot, type ArmorId, type ArmorItem} from './equipment.js';
 import {freshProgression, awardDefeat, awardReward, spendAttribute, availablePoints, level, type Progression, type Attribute} from './progression.js';
 import {CAMPAIGN_REWARDS} from './rewardCatalog.js';
@@ -49,7 +49,8 @@ function enemies():Enemy[]{return [
 export function createAdventure(archetype:Archetype='vanguard'):Adventure{
  const a=ARCHETYPES[archetype];return {playerMotion:createPlayerMotion(SPAWN),leverAlignment:null,areaId:'station',areas:freshAreaRecords(),arrivalGrace:0,shortcutAnimation:null,equipment:freshEquipment(),progression:freshProgression(),archetype,position:{...SPAWN},aim:{x:1,y:0},hp:a.maxHp,maxHp:a.maxHp,stamina:a.maxStamina,maxStamina:a.maxStamina,attack:{phase:'idle',timer:0,aim:{x:1,y:0},weapon:a.weapon,hit:[],facing:'east',contacts:{}},rollTimer:0,rollCooldown:0,rollAim:{x:1,y:0},hurtTimer:0,staminaDelay:0,enemies:enemies(),projectiles:[],currency:0,owned:[a.weapon],levels:{sword:0,spear:0,hammer:0,axe:0,falchion:0,poleaxe:0},equipped:a.weapon,checkpoint:{...SPAWN},looted:[],shortcut:false,completed:false,gatePhase:'closed',gateProgress:0,interactionTimer:0,message:'Explore the lower ward. Rest at the beacon; recover equipment from the caches.',time:0};
 }
-export const weaponDamage=(s:Adventure,id:WeaponId=s.equipped)=>WEAPONS[id].damage*(1+s.levels[id]*.25);
+/** Combat and the equipment panel must consume the same effective damage. */
+export const weaponDamage=(s:Adventure,id:WeaponId=s.equipped)=>upgradedDamage(armory(s),id);
 export const upgradeCost=(s:Adventure)=>s.levels[s.equipped]===0?30:60;
 export function attack(s:Adventure):boolean{
  if(s.hp<=0||isInteracting(s)||s.attack.phase!=='idle'||s.rollTimer>0)return false;
@@ -149,7 +150,7 @@ export function train(s:Adventure,attribute:Attribute):boolean{
 export function rest(s:Adventure):boolean{if(!atCheckpoint(s)||!equipmentContext(s).alive||!equipmentContext(s).idle||s.rollTimer||isInteracting(s))return false;return interact(s);}
 export function upgrade(s:Adventure):boolean{
  const result=prepareWeaponUpgrade(armory(s),s.currency,atForge(s),equipmentContext(s));if(!result.ok){s.message=`Upgrade unavailable: ${result.reason}.`;return false;}
- s.currency=result.currency;s.levels={...result.next.levels};s.message=`${WEAPONS[s.equipped].name} upgraded to +${s.levels[s.equipped]}.`;return true;
+ const before=weaponDamage(s);s.currency=result.currency;s.levels={...result.next.levels};s.message=`${WEAPONS[s.equipped].name} upgraded to +${s.levels[s.equipped]}. Damage ${before} → ${weaponDamage(s)}.`;return true;
 }
 export function retry(s:Adventure):boolean{if(s.hp>0)return false;if(s.areaId==='station'&&(s.gatePhase==='pulling'||s.gatePhase==='opening')){s.gatePhase='closed';s.gateProgress=0;s.interactionTimer=0;}s.leverAlignment=null;s.shortcutAnimation=null;s.arrivalGrace=1.5;s.position={...s.checkpoint};s.playerMotion=createPlayerMotion(s.position,s.attack.facing,'checkpoint-respawn');s.hp=s.maxHp;s.stamina=s.maxStamina;s.rollTimer=0;s.rollCooldown=0;s.hurtTimer=1;s.projectiles=[];s.attack.phase='idle';for(const e of s.enemies){if(e.hp>0){e.hp=e.maxHp;e.position={...e.home};e.phase='idle';e.timer=0;}}s.message='Returned to the beacon. Equipment, cleared foes and iron marks retained.';return true;}
 /** Save only durable progression; resume safely at the checkpoint, never mid-swing. */

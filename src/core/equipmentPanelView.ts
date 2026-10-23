@@ -70,8 +70,12 @@ export function armorCandidate(state: EquipmentPanelState, assets: EquipmentPane
 export function weaponCandidate(state: EquipmentPanelState, assets: EquipmentPanelAssets, id: WeaponId) {
  const item = WEAPON_CATALOG[id];
  const result = prepareWeaponEquip(state.armory, id, state.context, {supportHand: assets.supportHand, visualReady: assets.weaponReady});
+ const equipped = state.armory.equipped, target = `${WEAPON_CATALOG[equipped].name} +${state.armory.levels[equipped]}`;
+ const upgradeAction: ActionAvailability = id === equipped ? availability(prepareWeaponUpgrade(state.armory, state.currency, state.atForge, state.context)) :
+  {enabled: false, reason: `Equip ${item.name} before improving it. ${target} is still equipped; no marks will be spent on it from this selection.`};
  return {item, owned: state.armory.owned.includes(id), equipped: state.armory.equipped === id,
-  upgrade: state.armory.levels[id], damage: upgradedDamage(state.armory, id), action: availability(result)};
+  upgrade: state.armory.levels[id], damage: upgradedDamage(state.armory, id),
+  upgradeDamage: upgradedDamage(state.armory, id) - item.damage, upgradeAction, action: availability(result)};
 }
 export function buildEquipmentPanelModel(state: EquipmentPanelState, assets: EquipmentPanelAssets) {
  const visibleArmor = new Set([...state.equipment.owned, ...(state.discoveredArmor ?? [])]);
@@ -79,6 +83,8 @@ export function buildEquipmentPanelModel(state: EquipmentPanelState, assets: Equ
  const requirement = xpRequirement(state.progression);
  const points = availablePoints(state.progression);
  const upgradeResult = prepareWeaponUpgrade(state.armory, state.currency, state.atForge, state.context);
+ const cost = nextUpgradeCost(state.armory);
+ const nextArmory = {...state.armory, levels: {...state.armory.levels, [state.armory.equipped]: state.armory.levels[state.armory.equipped] + 1}};
  return {
   stats: equipmentStats(state.equipment, state.base, state.progression.attributes),
   slots: ARMOR_SLOTS.map(slot => ({slot, equipped: ARMOR[state.equipment.equipped[slot]],
@@ -89,7 +95,8 @@ export function buildEquipmentPanelModel(state: EquipmentPanelState, assets: Equ
     action: availability(!state.context.alive||!state.context.idle||state.context.rolling||state.context.interacting?{ok:false,reason:'busy'}:spendAttribute(state.progression, id, state.atCheckpoint))}))},
   rest: {enabled: state.atCheckpoint && state.context.alive && state.context.idle && !state.context.rolling && !state.context.interacting,
    reason: !state.atCheckpoint ? EQUIPMENT_REASONS['not-at-checkpoint'] : !state.context.alive || !state.context.idle || state.context.rolling || state.context.interacting ? EQUIPMENT_REASONS.busy : null} satisfies ActionAvailability,
-  upgrade: {cost: nextUpgradeCost(state.armory), action: availability(upgradeResult)},
+  // Preview remains useful away from the forge or without enough marks; it never spends or grants anything.
+  upgrade: {cost, damage: upgradedDamage(state.armory), nextDamage: cost === null ? null : upgradedDamage(nextArmory), action: availability(upgradeResult)},
  };
 }
 export type EquipmentPanelModel = ReturnType<typeof buildEquipmentPanelModel>;

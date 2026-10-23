@@ -127,7 +127,7 @@ test('native expedition traverses four populated sections, rests and earns upper
  // Exercise the real controlled panel; a missing control must fail promptly, not consume the route budget.
  const beforeForge=await state(page);expect(beforeForge.equipped).toBe('spear');expect(beforeForge.currency).toBeGreaterThanOrEqual(30);
  await page.getByRole('button',{name:'Weapons',exact:true}).click({timeout:5_000});
- await page.getByRole('button',{name:'Improve for 30 marks',exact:true}).click({timeout:5_000});
+ await page.locator('[data-focus="upgrade-weapon"]').click({timeout:5_000});
  await expect.poll(async()=>(await state(page)).levels.spear).toBe(1);expect((await state(page)).currency).toBe(beforeForge.currency-30);
  await page.keyboard.press('Escape');await expect.poll(async()=>(await state(page)).paused).toBe(false);
  await walkTo(page,{x:320,y:320});await page.keyboard.press('KeyE');
