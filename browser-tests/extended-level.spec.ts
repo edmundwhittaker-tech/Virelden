@@ -1,4 +1,5 @@
 import {movementKeys,spearSpacing,retreatBlocked} from './native-steering';
+import {moveForFrames} from '../tests/browser/native-action-frame';
 import {test,expect,type Page} from '@playwright/test';
 import {mkdir,writeFile} from 'node:fs/promises';
 const state=(page:Page)=>page.evaluate(()=>window.vireldenDebug!());
@@ -45,11 +46,22 @@ async function walkTo(page:Page,target:{x:number;y:number},combat=false){
 
 /** Reach the legal operating side through actual keys, not the solid lever prop. */
 async function approachGate(page:Page){
- const {adventureCanStand}=await import('../src/core/adventure');const {STATION_GATE}=await import('../src/core/level');
+ const {adventureCanStand,interactionHint}=await import('../src/core/adventure');const {STATION_GATE}=await import('../src/core/level');
  const approach={x:560,y:115},initial=await state(page);
  expect(adventureCanStand(initial,approach),'operating-side route target is collision-valid').toBe(true);
  await walkTo(page,approach,true);
  await expect.poll(async()=>{const s=await state(page);return s.attack.phase==='idle'&&s.rollTimer===0;}).toBe(true);
+ // Grid corners are deliberately coarse. Refine using real one-render movement
+ // pulses until the game's own interaction hint confirms genuine reach.
+ let eligible=false;
+ for(let i=0;i<40;i++){
+  const s=await state(page),p=s.position,to=STATION_GATE.stance;
+  const clear=Array.from({length:65},(_,j)=>adventureCanStand(s,{x:p.x+(to.x-p.x)*j/64,y:p.y+(to.y-p.y)*j/64})).every(Boolean);
+  if(interactionHint(s)==='E · Pull station gate lever'&&clear){eligible=true;break;}
+  const x=approach.x-p.x,y=approach.y-p.y;
+  await moveForFrames(page,movementKeys((x-y)*.8,(x+y)*.4),1);
+ }
+ expect(eligible,'real native fine approach reaches the actual lever interaction radius').toBe(true);
  const arrived=await state(page),from=arrived.position,to=STATION_GATE.stance;
  const points=Array.from({length:65},(_,i)=>({x:from.x+(to.x-from.x)*i/64,y:from.y+(to.y-from.y)*i/64}));
  expect(points.every(p=>adventureCanStand(arrived,p)),'actual native arrival has a clear visible alignment to the operating stance').toBe(true);
@@ -66,7 +78,7 @@ test('monumental gate blocks native movement, animates once, pauses and reloads 
  await writeFile('test-results/extended-gate-operating-approach.png',Buffer.from(approachPNG.split(',')[1],'base64'));
  const pullingFrame=page.evaluate(()=>new Promise<{png:string;state:ReturnType<NonNullable<Window['vireldenDebug']>>;samples:{time:number;phase:string;position:{x:number;y:number}}[]}>((resolve,reject)=>{const deadline=performance.now()+4000,samples:{time:number;phase:string;position:{x:number;y:number}}[]=[];const sample=()=>{const state=window.vireldenDebug!();samples.push({time:state.time,phase:state.gatePhase,position:{...state.position}});if(state.gatePhase==='pulling'&&state.interactionTimer<.5)return resolve({png:document.querySelector('canvas')!.toDataURL(),state,samples});if(performance.now()>deadline)return reject(new Error('Rendered lever-pulling phase missing'));requestAnimationFrame(sample);};requestAnimationFrame(sample);}));
  await page.keyboard.press('KeyE');
- await expect.poll(async()=>(await state(page)).gatePhase).toBe('pulling');
+ await expect.poll(async()=>(await state(page)).gatePhase,{intervals:[16,33,50],timeout:5_000}).toBe('pulling');
  const pull=await state(page);expect(pull.gate.width).toBe(520);expect(pull.gate.architectureScale).toBe(before.gate.architectureScale);await hold(page,['KeyS'],100);expect((await state(page)).position).toEqual(pull.position);
  const pulledFrame=await pullingFrame;await writeFile('test-results/extended-gate-pull-phase.png',Buffer.from(pulledFrame.png.split(',')[1],'base64'));await writeFile('test-results/extended-gate-pull-phase.json',JSON.stringify(pulledFrame.state,null,2));
  const planted=pulledFrame.samples.filter(s=>s.phase==='pulling');expect(planted.length).toBeGreaterThan(1);
@@ -89,17 +101,17 @@ test('monumental gate blocks native movement, animates once, pauses and reloads 
 
 const combatMetrics=new WeakMap<Page,{attackInputs:number;damagingSamples:number;observedDamage:number;hp:Map<string,number>}>();
 async function clearThreats(page:Page){
- const {adventureCanStand}=await import('../src/core/adventure');let stuckRetreat=false;
+ const {adventureCanStand,derivedStats}=await import('../src/core/adventure');let stuckRetreat=false;
  for(let turn=0;turn<650;turn++){
   const s=await state(page);expect(s.hp,'survive native spear combat').toBeGreaterThan(0);
   let metrics=combatMetrics.get(page);if(!metrics){metrics={attackInputs:0,damagingSamples:0,observedDamage:0,hp:new Map()};combatMetrics.set(page,metrics);}for(const e of s.enemies){const prior=metrics.hp.get(e.id);if(prior!==undefined&&e.hp<prior){metrics.damagingSamples++;metrics.observedDamage+=prior-e.hp;}metrics.hp.set(e.id,e.hp);}
   const visible=s.enemies.filter(e=>e.hp>0).map(e=>({e,dx:(e.position.x-s.position.x-e.position.y+s.position.y)*.8,dy:(e.position.x-s.position.x+e.position.y-s.position.y)*.4})).filter(t=>Math.hypot(t.dx,t.dy)<220&&Array.from({length:19},(_,i)=>{const f=(i+1)/20;return adventureCanStand(s,{x:s.position.x+(t.e.position.x-s.position.x)*f,y:s.position.y+(t.e.position.y-s.position.y)*f});}).every(Boolean)).sort((a,b)=>Math.hypot(a.dx,a.dy)-Math.hypot(b.dx,b.dy));
   if(!visible.length)return;const t=visible[0],distance=Math.hypot(t.dx,t.dy);
-  if(s.attack.phase!=='idle'){await page.waitForTimeout(65);continue;}
+  if(s.attack.phase!=='idle'||s.rollTimer>0){await page.waitForTimeout(65);continue;}
   // Close through a fired arrow with the real roll iframe; far-away circling never reaches spear range.
   const imminent=t.e.kind!=='watcher'&&t.e.phase==='windup'&&t.e.timer<.3&&distance<(t.e.kind==='captain'?88:68);
   const incoming=s.projectiles.some(p=>Math.hypot((p.position.x-s.position.x-p.position.y+s.position.y)*.8,(p.position.x-s.position.x+p.position.y-s.position.y)*.4)<55);
-  if((imminent||incoming)&&s.stamina>=28&&s.rollCooldown===0&&s.rollTimer===0){const keys=t.e.kind==='watcher'?movementKeys(t.dx,t.dy):[Math.abs(t.dx)>Math.abs(t.dy)?(t.dy>=0?'KeyW':'KeyS'):(t.dx>=0?'KeyA':'KeyD')];for(const k of keys)await page.keyboard.down(k);await page.keyboard.press('Space');await page.waitForTimeout(100);for(const k of keys)await page.keyboard.up(k);continue;}
+  if((imminent||incoming)&&s.stamina>=derivedStats(s).rollCost&&s.rollCooldown===0&&s.rollTimer===0){const keys=t.e.kind==='watcher'?movementKeys(t.dx,t.dy):[Math.abs(t.dx)>Math.abs(t.dy)?(t.dy>=0?'KeyW':'KeyS'):(t.dx>=0?'KeyA':'KeyD')];for(const k of keys)await page.keyboard.down(k);await page.keyboard.press('Space');await page.waitForTimeout(100);for(const k of keys)await page.keyboard.up(k);continue;}
   const spacing=spearSpacing(distance,stuckRetreat);
   if(spacing){const before={...s.position},keys=movementKeys(t.dx,t.dy,spacing);await hold(page,keys,65);const after=(await state(page)).position;stuckRetreat=retreatBlocked(distance,before,after);}
   else if(s.stamina>=20){metrics.attackInputs++;const box=await page.locator('canvas').boundingBox();expect(box).not.toBeNull();await page.mouse.click(box!.x+(s.screen.x+t.dx)/1280*box!.width,box!.y+(s.screen.y+t.dy)/800*box!.height);await page.waitForTimeout(65);}else await page.waitForTimeout(65);

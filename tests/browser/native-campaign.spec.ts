@@ -156,7 +156,27 @@ async function completeAnnex(page:Page){
  for(const id of ['shutter-sentry','corner-raider','gallery-lookout','records-guard'])await clearEncounter(page,id);await areaLoot(page,'store-cache');
  // Fight the stair guard from the SOUTHERN coffer stance (>305px from keeper),
  // never from its home beside the keeper approach. Native 70–90px spear spacing keeps this guarded find useful.
- const mainFind=area.loot.find((l:any)=>l.id==='keeper-cache');if((await state(page)).enemies.find((e:any)=>e.id==='stair-guard').hp>0){await walkTo(page,mainFind.stance);await clearThreats(page);expect((await state(page)).enemies.find((e:any)=>e.id==='stair-guard').hp).toBe(0);}
+ const mainFind=area.loot.find((l:any)=>l.id==='keeper-cache');
+ if((await state(page)).enemies.find((e:any)=>e.id==='stair-guard').hp>0){
+  await walkTo(page,mainFind.stance);await clearThreats(page);
+  if((await state(page)).enemies.find((e:any)=>e.id==='stair-guard').hp>0){
+   // A living guard can be on the far side of the solid coffer. No visible threats
+   // is not proof of a clear: physically go around its SOUTH side, away from the keeper.
+   for(const waypoint of [{x:640,y:450},{x:520,y:450},{x:520,y:420}]){
+    await walkTo(page,waypoint,false);
+    const observed=await state(page);expect(observed.hp,'alive during southern guard approach').toBeGreaterThan(0);
+    expect(observed.enemies.find((e:any)=>e.id==='annex-keeper').hp,'keeper stays alive before the guarded find').toBeGreaterThan(0);
+   }
+   const engagement=await state(page),guard=engagement.enemies.find((e:any)=>e.id==='stair-guard');
+   if(guard.hp>0){
+    expect(clearSegment(c,engagement,engagement.position,guard.position),'observed coffer guard engagement is collision-clear').toBe(true);
+    expect(distance(engagement.position,guard.position),'coffer guard enters the existing visible-threat window').toBeLessThan(220);
+    await evidence(page,'annex-coffer-guard-clear-engagement');await clearThreats(page);
+   }
+  }
+  expect((await state(page)).enemies.find((e:any)=>e.id==='stair-guard').hp,'required coffer guard is actually defeated, not merely out of sight').toBe(0);
+  expect((await state(page)).enemies.find((e:any)=>e.id==='annex-keeper').hp,'poleaxe remains available before the keeper is defeated').toBeGreaterThan(0);
+ }
  if(!(await state(page)).looted.includes('keeper-cache')){
   const bossBefore=(await state(page)).enemies.find((e:any)=>e.id==='annex-keeper');expect(bossBefore.hp,'poleaxe is discoverable before final captain is defeated').toBeGreaterThan(0);await areaLoot(page,'keeper-cache');const found=await state(page);expect(found.owned).toContain('poleaxe');expect(found.equipment.owned).toContain('marcher-chest');expect(found.enemies.find((e:any)=>e.id==='annex-keeper').hp).toBeGreaterThan(0);
   await inventory(page);await page.getByRole('button',{name:'Weapons',exact:true}).click({timeout:5_000});await page.locator('[data-focus="weapon-poleaxe"]').click({timeout:5_000});const equipButton=page.getByRole('button',{name:'Equip weapon',exact:true});await expect(equipButton).toBeEnabled();await equipButton.click({timeout:5_000});await closeInventory(page);expect((await state(page)).equipped).toBe('poleaxe');
