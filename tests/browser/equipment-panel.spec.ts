@@ -62,6 +62,40 @@ test('update to busy state disables armor and weapon actions; thumbnail gaps do 
  expect(await page.evaluate(()=>(window as any).fixtureRecord.armor)).toEqual([]);
 });
 
+for(const viewport of [{width:1440,height:1000},{width:900,height:700}]) test(`forge identifies effective damage and prevents spending on an unselected weapon at ${viewport.width}px`, async ({page}) => {
+ await page.setViewportSize(viewport);
+ await page.evaluate(()=>(window as any).fixtureUpdate({atForge:true}));
+ await page.getByRole('button',{name:'Weapons',exact:true}).click();
+ const improve=page.locator('[data-focus="upgrade-weapon"]');
+ await expect(improve).toHaveText('Improve equipped Arming sword to +1 for 30 marks');
+ await expect(page.locator('.equipment-upgrade-preview')).toHaveText('Equipped damage: 30 → 37.5 (+7.5) at +1.');
+ await improve.click();
+ await expect(page.locator('.equipment-detail h3')).toHaveText('Arming sword +1');
+ await expect(page.locator('.equipment-damage-breakdown')).toHaveText('Selected damage: 37.5 = 30 base + 7.5 improvement.');
+ await expect(page.locator('.equipment-upgrade-preview')).toHaveText('Equipped damage: 37.5 → 45 (+7.5) at +2.');
+ await page.locator('[data-focus="weapon-axe"]').click();
+ await expect(improve).toBeDisabled();
+ await expect(page.locator('.equipment-reason')).toContainText('Equip Ward axe before improving it. Arming sword +1 is still equipped; no marks will be spent on it from this selection.');
+ // Even a synthetic click must not invoke the owner for this disabled, mismatched selection.
+ await improve.dispatchEvent('click');
+ expect(await page.evaluate(()=>(window as any).fixtureRecord.upgrades)).toEqual(['sword']);
+ expect(await page.evaluate(()=>(window as any).fixtureRead().currency)).toBe(60);
+ await page.getByRole('button',{name:'Equip weapon',exact:true}).click();
+ await expect(page.locator('.equipment-damage-breakdown')).toHaveText('Selected damage: 40 = 40 base + 0 improvement.');
+ await page.locator('[data-focus="weapon-sword"]').click();
+ await expect(improve).toBeDisabled();
+ await page.getByRole('button',{name:'Equip weapon',exact:true}).click();
+ await improve.focus(); await page.keyboard.press('Enter');
+ await expect(page.locator('.equipment-detail h3')).toHaveText('Arming sword +2');
+ await expect(page.locator('.equipment-damage-breakdown')).toHaveText('Selected damage: 45 = 30 base + 15 improvement.');
+ await expect(page.locator('.equipment-upgrade-preview')).toHaveText('Equipped damage: 45 · maximum improvement (+2).');
+ await expect(improve).toHaveText('Fully improved Arming sword +2'); await expect(improve).toBeDisabled();
+ const current=await page.evaluate(()=>(window as any).fixtureRead());
+ expect(current.currency).toBe(0); expect(current.armory.levels).toMatchObject({sword:2,axe:0});
+ expect(await page.evaluate(()=>(window as any).fixtureRecord.upgrades)).toEqual(['sword','sword']);
+ await page.screenshot({path:`test-results/equipment-weapon-upgrades-${viewport.width}.png`});
+});
+
 for(const viewport of [{width:1440,height:1000},{width:900,height:700}]) {
  test(`panel fits ${viewport.width}×${viewport.height} without page blowout`,async({page})=>{
   await page.setViewportSize(viewport);

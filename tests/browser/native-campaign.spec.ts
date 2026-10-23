@@ -98,7 +98,7 @@ async function closeInventory(page:Page){await pressAction(page,'Escape');await 
 async function forge(page:Page){
  let s=await state(page);if(s.levels.spear>=2||s.currency<(s.levels.spear===0?30:60))return;const c=await core();await walkTo(page,c.LOCATIONS.smith);await inventory(page);await page.getByRole('button',{name:'Weapons',exact:true}).click();await page.locator('[data-focus="weapon-spear"]').click();
  if((await state(page)).equipped!=='spear')await page.getByRole('button',{name:'Equip weapon',exact:true}).click();
- for(let n=0;n<2;n++){s=await state(page);const cost=s.levels.spear===0?30:60;if(s.levels.spear>=2||s.currency<cost)break;const before={level:s.levels.spear,marks:s.currency};await page.getByRole('button',{name:`Improve for ${cost} marks`,exact:true}).click();const after=await state(page);expect(after.levels.spear).toBe(before.level+1);expect(after.currency).toBe(before.marks-cost);}
+ for(let n=0;n<2;n++){s=await state(page);const cost=s.levels.spear===0?30:60;if(s.levels.spear>=2||s.currency<cost)break;const before={level:s.levels.spear,marks:s.currency};await page.locator('[data-focus="upgrade-weapon"]').click();const after=await state(page);expect(after.levels.spear).toBe(before.level+1);expect(after.currency).toBe(before.marks-cost);}
  await closeInventory(page);
 }
 const TRAINING=['vigor','resolve','endurance','vigor','resolve','endurance','resolve','vigor','resolve'] as const;

@@ -12,7 +12,7 @@ let armory = freshArmory('vanguard'); for (const id of WEAPON_IDS) armory = gran
 let state = {equipment, armory, progression: {...freshProgression(), xp:150}, base:STARTER_POOLS.vanguard,
  context:{alive:true,idle:true,rolling:false,interacting:false},atCheckpoint:false,atForge:false,currency:90};
 const canvas = document.querySelector('#game');
-const record = {armor:[],weapons:[],training:[],rests:0,close:0,visible:[],messages:[],gameKeys:0};
+const record = {armor:[],weapons:[],upgrades:[],training:[],rests:0,close:0,visible:[],messages:[],gameKeys:0};
 window.fixtureRecord = record;
 const assets = {armorReady:()=>true,weaponReady:()=>true,supportHand:true};
 const panel = new EquipmentPanel({host:document.body, assets, armorThumbnail:()=>null,weaponThumbnail:()=>null,returnFocus:()=>canvas,callbacks:{
@@ -21,10 +21,11 @@ const panel = new EquipmentPanel({host:document.body, assets, armorThumbnail:()=
  onEquipWeapon:id=>{record.weapons.push(id);const result=prepareWeaponEquip(state.armory,id,state.context,{supportHand:true,visualReady:assets.weaponReady});if(result.ok){state={...state,armory:result.next};panel.update(state);return 'Weapon changed.';}},
  onSpendAttribute:id=>{record.training.push(id);const result=spendAttribute(state.progression,id,state.atCheckpoint);if(result.ok){state={...state,progression:result.next};panel.update(state);return 'Training complete.';}},
  onRest:()=>{record.rests++;return 'Rest requested.';},
- onUpgradeWeapon:id=>{const result=prepareWeaponUpgrade(state.armory,state.currency,state.atForge,state.context);if(result.ok){state={...state,armory:result.next,currency:result.currency};panel.update(state);return 'Weapon improved.';}}
+ onUpgradeWeapon:id=>{record.upgrades.push(id);if(id!==state.armory.equipped)return 'Weapon selection changed.';const result=prepareWeaponUpgrade(state.armory,state.currency,state.atForge,state.context);if(result.ok){state={...state,armory:result.next,currency:result.currency};panel.update(state);return 'Weapon improved.';}}
 }});
 // This is an isolated test fixture, never imported by gameplay or published as a debug API.
 window.fixtureUpdate = update=>{state={...state,...update};panel.update(state);};
+window.fixtureRead = ()=>structuredClone(state);
 window.fixtureDestroy = ()=>panel.destroy();
 window.fixtureOpen = ()=>panel.open(state);
 window.addEventListener('keydown',()=>record.gameKeys++);
