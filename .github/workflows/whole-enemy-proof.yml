@@ -1,0 +1,92 @@
+name: Complete-frame enemy proof
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-enemy-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned dependencies
+        run: npm ci
+      - name: Deterministic rules and strict production build
+        id: build
+        run: npm run check
+      - name: Install native Chromium
+        id: browser
+        run: npx playwright install --with-deps chromium
+      - name: Complete-frame phase, visibility, missing-art and actual-arena proof
+        if: always() && steps.build.outcome == 'success' && steps.browser.outcome == 'success'
+        run: npx playwright test --config playwright.whole-enemies.config.ts --output test-results/whole-enemies-native
+      - name: Existing 144 actual-renderer contact regressions
+        if: always() && steps.build.outcome == 'success' && steps.browser.outcome == 'success'
+        run: npx playwright test --config playwright.contact.config.ts --output test-results/whole-enemies-contact
+      - name: Existing close-overlap miss and reachable spacing hit
+        if: always() && steps.build.outcome == 'success' && steps.browser.outcome == 'success'
+        run: npx playwright test --config playwright.raider-spacing.config.ts --output test-results/whole-enemies-spacing
+      - name: Keep exact native phase, arena and contact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: virelden-complete-frame-enemy-proof
+          path: |
+            test-results/**/*.png
+            test-results/**/*.json
+            test-results/**/*.md
+          retention-days: 7
+  unseeded-three-expedition-campaign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned dependencies
+        run: npm ci
+      - name: Rules, TypeScript and production build
+        run: npm run check
+      - name: Install native Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Existing unseeded three-expedition campaign through ordinary input
+        run: npx playwright test --config playwright.campaign.config.ts --output test-results/combined-unseeded-campaign-runner
+      - name: Preserve genuine route and save evidence including any failed stage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: virelden-combined-unseeded-campaign-proof
+          path: |
+            test-results/combined-unseeded-campaign-runner/
+            test-results/native-campaign/
+          retention-days: 7
+  seeded-area-features:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Rules, TypeScript and production build
+        run: npm run check
+      - name: Install native browser
+        run: npx playwright install --with-deps chromium
+      - name: Seeded valid-v4 geometry, props, save and transition features
+        run: npx playwright test --config playwright.expeditions.config.ts
+      - name: Keep compact feature evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: virelden-combined-seeded-area-proof
+          path: |
+            test-results/**/*.png
+            test-results/**/*.json
+            test-results/**/*.md
+          retention-days: 7

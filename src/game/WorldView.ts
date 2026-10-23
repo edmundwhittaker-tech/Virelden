@@ -4,8 +4,8 @@ import Phaser from 'phaser';
 import {SIZE,PILLARS,project,type Point} from '../core/game.js';
 import {StationGateView} from './StationGateView.js';
 import {ArcherView,drawArrow} from './ArcherView.js';
-import {KnightSprite} from './KnightSprite.js';
-import {ModularKnightSprite} from './ModularKnightSprite.js';
+import {WholeEnemySprite} from './WholeEnemySprite.js';
+import {WholeCharacterPlayerSprite} from './WholeCharacterPlayerSprite.js';
 import {WARD_MANIFEST,DELVER_MANIFEST,MARCHER_MANIFEST} from './paintRig.js';
 import {createWeaponThumbnail} from './WeaponArt.js';
 import {ARMOR,ARMOR_SLOTS,type Equipment,type ArmorItem} from '../core/equipment.js';
@@ -31,7 +31,7 @@ function poly(g:Graphics,points:Point[],color:number,stroke=0x465052){
 }
 /** Textured, depth-sorted ward and the preserved directional character renderer. */
 export class WorldView{
-  private actor:ModularKnightSprite;
+  private actor:WholeCharacterPlayerSprite;
   private activeArea:AreaId='station';
   private stationObjects:Phaser.GameObjects.GameObject[]=[];
   private stationVisibility=new Map<Phaser.GameObjects.GameObject,boolean>();
@@ -46,7 +46,7 @@ export class WorldView{
   private archers=new Map<number,ArcherView>();
   private mist:Phaser.GameObjects.Image;
   private coffers:Phaser.GameObjects.Image[]=[];
-  private enemies:KnightSprite[]=[];
+  private enemies:WholeEnemySprite[]=[];
   private effects:Graphics;
   private attackEffects:Graphics;
   private healthBars:Graphics;
@@ -58,7 +58,7 @@ export class WorldView{
   private enemyPositions:Point[]=[];
   private wallViews:{g:Graphics|Phaser.GameObjects.Image;left:number;right:number;top:number;bottom:number}[]=[];
   private occluders:{id:string;image:Phaser.GameObjects.Image;position:Point;radius:number|null}[]=[];
-  static preload(scene:Phaser.Scene){ExpeditionWorldView.preload(scene);ModularKnightSprite.preload(scene);StationGateView.preload(scene);ArcherView.preload(scene);for(const [key,url] of Object.entries({'ward-floor':courtUrl,'ward-masonry':masonryUrl,'ward-pillar':pillarUrl,'ward-rubble':rubbleUrl,'ward-mud':mudUrl,'ward-coffer':cofferUrl,'ward-forge':forgeUrl,'ward-lantern':lanternUrl}))scene.load.image(key,url);}
+  static preload(scene:Phaser.Scene){WholeEnemySprite.preload(scene);ExpeditionWorldView.preload(scene);WholeCharacterPlayerSprite.preload(scene);StationGateView.preload(scene);ArcherView.preload(scene);for(const [key,url] of Object.entries({'ward-floor':courtUrl,'ward-masonry':masonryUrl,'ward-pillar':pillarUrl,'ward-rubble':rubbleUrl,'ward-mud':mudUrl,'ward-coffer':cofferUrl,'ward-forge':forgeUrl,'ward-lantern':lanternUrl}))scene.load.image(key,url);}
   constructor(scene:Phaser.Scene){
     this.scene=scene;const staticStart=scene.children.list.length;this.stationGate=new StationGateView(scene);
     const floor=scene.add.graphics().setDepth(-1000);
@@ -154,7 +154,7 @@ export class WorldView{
     this.attackEffects=scene.add.graphics();
     this.healthBars=scene.add.graphics().setDepth(1500);
     this.leverView=scene.add.graphics().setDepth(groundDepth(project(LOCATIONS.lever).y,50));
-    this.actor=new ModularKnightSprite(scene);
+    this.actor=new WholeCharacterPlayerSprite(scene);
     // Enemy pools grow to the active catalog, not a station-only fixed actor count.
   }
   draw(position:Point,moving:boolean,facing:Facing){
@@ -181,9 +181,9 @@ export class WorldView{
     this.leverView.setVisible(s.areaId==='station');this.leverView.clear().fillStyle(0x62605a).fillRect(lever.x-7,lever.y-17,14,17);this.leverView.lineStyle(4,s.shortcut?0x9ba37e:0xb89c6a).lineBetween(lever.x,lever.y-15,lever.x+(s.shortcut?12:-12),lever.y-38);
     if(s.areaId==='station')LOOT.forEach((loot,i)=>{const p=project(loot.position),opened=s.looted.includes(loot.id);this.coffers[i]?.setAlpha(opened?.35:1);if(!opened){g.lineStyle(1,0xf0d496,.55+.25*Math.sin(s.time*3)).lineBetween(p.x,p.y-29,p.x,p.y-42);g.lineStyle(1,0xc6a56c,.55).strokeEllipse(p.x,p.y+1,48,20);}});
     this.healthBars.clear();
-    s.enemies.forEach((e,i)=>{const p=project(e.position),v=this.enemies[i],dir=facingForInput(e.aim,'west');const previous=this.enemyPositions[i];const walking=!!previous&&Math.hypot(e.position.x-previous.x,e.position.y-previous.y)>.01;this.enemyPositions[i]={...e.position};if(e.kind==='watcher'){let archer=this.archers.get(i);if(!archer){const start=this.scene.children.list.length;archer=new ArcherView(this.scene);this.archers.set(i,archer);this.archerObjects.set(i,this.scene.children.list.slice(start));}archer.draw(e,walking);v.draw(e.position,false,dir);v.effects(0xffffff,0,0);}else v.draw(e.position,walking&&e.hp>0,dir);if(e.kind!=='watcher')v.effects(e.phase==='stagger'?0xf0c5a0:e.kind==='captain'?0xb49a7d:0xa18b84,e.hp<=0?85:0,e.hp<=0?.2:1,e.kind==='captain'?1.15:1);this.labels[i].setPosition(p.x,p.y+28).setText(e.hp>0?(e.kind==='captain'?'ARMOURED CAPTAIN':e.kind==='watcher'?'BOW LOOKOUT':'RELIC RAIDER'):'');if(e.hp<=0)return;
+    s.enemies.forEach((e,i)=>{const p=project(e.position),v=this.enemies[i];const previous=this.enemyPositions[i];const walking=!!previous&&Math.hypot(e.position.x-previous.x,e.position.y-previous.y)>.01;this.enemyPositions[i]={...e.position};if(e.kind==='watcher'){let archer=this.archers.get(i);if(!archer){const start=this.scene.children.list.length;archer=new ArcherView(this.scene);this.archers.set(i,archer);this.archerObjects.set(i,this.scene.children.list.slice(start));}archer.draw(e,walking);v.setVisible(false);}else{v.setVisible(true);v.draw(e,walking,s.time,s.areaId);}this.labels[i].setPosition(p.x,p.y+28).setText(e.hp>0?(e.kind==='captain'?'ARMOURED CAPTAIN':e.kind==='watcher'?'BOW LOOKOUT':'RELIC RAIDER'):'');if(e.hp<=0)return;
       g.lineStyle(1,e.kind==='captain'?0xba795a:e.kind==='watcher'?0x91a6a0:0x9e6c61,.65).strokeEllipse(p.x,p.y+1,e.kind==='captain'?46:36,16);
-      this.healthBars.fillStyle(0x182024).fillRect(p.x-25,p.y-91,50,4);this.healthBars.fillStyle(0xa46958).fillRect(p.x-25,p.y-91,50*e.hp/e.maxHp,4);
+      const barY=p.y-(e.kind==='watcher'?91:v.humanHeight+3);this.healthBars.fillStyle(0x182024).fillRect(p.x-25,barY,50,4);this.healthBars.fillStyle(0xa46958).fillRect(p.x-25,barY,50*e.hp/e.maxHp,4);
       if(e.phase==='windup'){const angle=Math.atan2(e.aim.y,e.aim.x),range=e.kind==='watcher'?(s.areaId==='station'?200:180):e.kind==='captain'?78:60;g.lineStyle(2,0xcf765a,.75);if(e.kind==='watcher')g.lineBetween(p.x,p.y,p.x+e.aim.x*range,p.y+e.aim.y*range);else{g.beginPath().arc(p.x,p.y,range,angle-Math.acos(.1),angle+Math.acos(.1)).strokePath();g.lineBetween(p.x,p.y,p.x+Math.cos(angle)*range,p.y+Math.sin(angle)*range);}}
     });
     this.bolts.forEach(b=>b.clear());
@@ -201,7 +201,7 @@ export class WorldView{
 
   }
   private ensureEnemyPool(count:number){
-    while(this.enemies.length<count){const start=this.scene.children.list.length;this.enemies.push(new KnightSprite(this.scene));this.enemyObjects.push(this.scene.children.list.slice(start));this.labels.push(this.scene.add.text(0,0,'',{fontFamily:'Georgia',fontSize:'12px',color:'#c1b3a1'}).setOrigin(.5,1).setDepth(1500));}
+    while(this.enemies.length<count){const start=this.scene.children.list.length;this.enemies.push(new WholeEnemySprite(this.scene));this.enemyObjects.push(this.scene.children.list.slice(start));this.labels.push(this.scene.add.text(0,0,'',{fontFamily:'Georgia',fontSize:'12px',color:'#c1b3a1'}).setOrigin(.5,1).setDepth(1500));}
   }
   private selectArea(s:Adventure){
     if(s.areaId===this.activeArea)return;this.activeArea=s.areaId;this.enemyPositions=[];
@@ -209,10 +209,10 @@ export class WorldView{
     for(const [id,view] of this.expeditionViews)view.setVisible(id===s.areaId);
     if(s.areaId!=='station'&&!this.expeditionViews.has(s.areaId))this.expeditionViews.set(s.areaId,new ExpeditionWorldView(this.scene,s.areaId));
   }
-  enemyViewSnapshot(){return this.enemies.map((_,index)=>({index,id:this.enemyState[index]?.id??null,hp:this.enemyState[index]?.hp??null,knightVisible:this.enemyObjects[index].some(object=>(object as Phaser.GameObjects.Image).visible&&(object as Phaser.GameObjects.Image).alpha>0),archerVisible:this.archerObjects.get(index)?.some(object=>(object as Phaser.GameObjects.Image).visible)??false,labelVisible:this.labels[index].visible}));}
-  expeditionSnapshot(){return this.activeArea==='station'?{areaId:'station',enemySlots:this.enemies.length,activeEnemyViews:this.enemyObjects.filter(objects=>(objects[0] as Phaser.GameObjects.Image)?.visible).length}:this.expeditionViews.get(this.activeArea)?.snapshot();}
+  enemyViewSnapshot(){return this.enemies.map((_,index)=>({index,id:this.enemyState[index]?.id??null,hp:this.enemyState[index]?.hp??null,knightVisible:this.enemyObjects[index].some(object=>(object as Phaser.GameObjects.Image).visible&&(object as Phaser.GameObjects.Image).alpha>0),archerVisible:this.archerObjects.get(index)?.some(object=>(object as Phaser.GameObjects.Image).visible)??false,labelVisible:this.labels[index].visible,body:this.enemies[index].snapshot()}));}
+  expeditionSnapshot(){return this.activeArea==='station'?{areaId:'station',enemySlots:this.enemies.length,activeEnemyViews:this.enemyObjects.filter((objects,index)=>objects.some(object=>(object as Phaser.GameObjects.Image).visible)||(this.archerObjects.get(index)?.some(object=>(object as Phaser.GameObjects.Image).visible)??false)).length}:this.expeditionViews.get(this.activeArea)?.snapshot();}
   armorReady(item:ArmorItem){return this.actor.hasArmorVisual(item);}
-  commitEquipment(equipment:Equipment){return this.actor.setEquipment(Object.fromEntries(ARMOR_SLOTS.map(slot=>[slot,ARMOR[equipment.equipped[slot]].set])) as Parameters<ModularKnightSprite['setEquipment']>[0]);}
+  commitEquipment(equipment:Equipment){return this.actor.setEquipment(Object.fromEntries(ARMOR_SLOTS.map(slot=>[slot,ARMOR[equipment.equipped[slot]].set])) as Parameters<WholeCharacterPlayerSprite['setEquipment']>[0]);}
   weaponReady(item:WeaponProfile){return this.actor.hasWeaponVisual(item)&&(item.hands===1||this.supportHandVerified);}
   armorThumbnail(item:ArmorItem){
     const cached=this.thumbnails.get(item.id);if(cached)return {src:cached};

@@ -1,0 +1,107 @@
+{
+  "sourceRepository": "edmundwhittaker-tech/Virelden",
+  "sourceCommit": "88339ff21808d812b46607ab50643764990dfc06",
+  "sourceRoot": "src/assets/enemies-v1",
+  "sourceFiles": [
+    {
+      "name": "axe.png",
+      "bytes": 10589,
+      "sha256": "e4b0a2dbd85155abab2fd885e1257879961b63bb56c1ad6e94e4ad408009e471"
+    },
+    {
+      "name": "headless_skeleton-body.png",
+      "bytes": 419141,
+      "sha256": "bb366034ecb470bab6ab98970ac0dbdcef499e96826c7cbaed65e59090267e91"
+    },
+    {
+      "name": "headless_skeleton-hands.png",
+      "bytes": 18189,
+      "sha256": "ff25da6edc1ce8f02ec8d5eb7b66b2cd06ae7f2faf61cef4c24f1a4a9cc495fe"
+    },
+    {
+      "name": "iron_giant-body.png",
+      "bytes": 589243,
+      "sha256": "5bae98d92e758a4ba224e32bf110828b9dea31655d14ccf94894efc577656db4"
+    },
+    {
+      "name": "knife.png",
+      "bytes": 1073,
+      "sha256": "619212df6be8b48b1c62d5a5cbaf4ad1d362193f4d7e664569c1b79d4353bf8e"
+    },
+    {
+      "name": "manifest.json",
+      "bytes": 126930,
+      "sha256": "e90365ea8d4d10c6d9995e7484b8680f64f88dcea834ff09ca4842c53079c0dc"
+    },
+    {
+      "name": "maw_skeleton-body.png",
+      "bytes": 530036,
+      "sha256": "830365b81aa253f9792da2f7806528a97bb3f0d93b4d58f87498c083d394f25b"
+    },
+    {
+      "name": "maw_skeleton-hands.png",
+      "bytes": 20064,
+      "sha256": "7a2fbf696acc857a141241f5af3d24b2b793c1b818ac5ce4d46e8cefefe63930"
+    }
+  ],
+  "operation": "Static offline composition of supplied complete-body poses. Skeletons retain their recorded equipment and hands layers; the iron giant uses only the original body cell, without equipment or hands overlays.",
+  "layerSelection": {
+    "maw_skeleton": [
+      "body",
+      "axe",
+      "hands-overlay"
+    ],
+    "headless_skeleton": [
+      "body",
+      "two-knives",
+      "hands-overlay"
+    ],
+    "iron_giant": [
+      "body"
+    ]
+  },
+  "generatedArtwork": false,
+  "runtimeAssembly": false,
+  "outputFrameSize": [
+    448,
+    384
+  ],
+  "sourceBodyOffset": [
+    32,
+    52
+  ],
+  "fixedFoot": {
+    "x": 160,
+    "y": 352
+  },
+  "preClippingAlphaValidation": {
+    "method": "Transform all four source-alpha-bbox corners before creating the destination canvas; separately translate body/hands crop alpha bounds. Assert every conservative layer bound has at least two pixels of export padding.",
+    "byEnemy": {
+      "maw_skeleton": {
+        "frames": 18,
+        "layers": 54,
+        "minimumPaddingPixels": 27.008111337332025
+      },
+      "headless_skeleton": {
+        "frames": 18,
+        "layers": 72,
+        "minimumPaddingPixels": 30
+      },
+      "iron_giant": {
+        "frames": 18,
+        "layers": 18,
+        "minimumPaddingPixels": 30
+      }
+    },
+    "detailedAudit": "qa-local/enemy-bake/pixel-evidence.json, sheets[].frames[].preClippingLayerAlphaBounds"
+  },
+  "tool": "tools/art/bake-complete-enemies.py",
+  "resampling": "Pillow bicubic premultiplied RGBA for equipment transforms only; body/hands copied without resizing.",
+  "limits": [
+    "Six existing complete-body poses per view, not a newly painted animation cycle.",
+    "No authored hurt, fall, death, roll or shield-bash drawings.",
+    "Walk uses two step extremes with idle as a passing pose; no interpolated body rig.",
+    "Skeleton equipment was composited offline from supplied transform/layer records; runtime draws one frame.",
+    "The iron giant intentionally uses only its supplied basic body; no shield, weapon or hands overlay is added."
+  ]
+}

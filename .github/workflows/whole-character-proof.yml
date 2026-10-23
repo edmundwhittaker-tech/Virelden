@@ -1,0 +1,56 @@
+name: Whole-character staged player proof
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-transition-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Actual production loadout and equipment transition captures
+        run: npx playwright test browser-tests/whole-character-player.spec.ts --output test-results/whole-character-native
+      - name: Actual Phaser mirrored root and effect attachment matrix
+        if: always()
+        run: npx playwright test --config playwright.whole-character.config.ts --output test-results/whole-character-transform
+      - name: Keep native player proof evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: virelden-whole-character-player-proof
+          path: |
+            test-results/**/*.png
+            test-results/**/*.json
+          retention-days: 7
+  native-gate-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Actual production gate approach, pull, release and resumed walk
+        run: npx playwright test browser-tests/extended-level.spec.ts --grep 'monumental gate blocks native movement' --output test-results/whole-character-gate
+      - name: Keep native gate transition evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: virelden-whole-character-gate-proof
+          path: |
+            test-results/**/*.png
+            test-results/**/*.json
+          retention-days: 7

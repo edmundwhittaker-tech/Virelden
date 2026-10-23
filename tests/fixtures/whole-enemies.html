@@ -1,0 +1,50 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Complete enemy sprites — isolated native fixture</title><style>body{margin:0;background:#171d21;color:#ded6c4;font:14px system-ui}h1,p{margin:12px}canvas{max-width:100%;height:auto;display:block}</style></head><body><h1>Complete enemy sprites — isolated fixture</h1><p id="status">Loading. Gallery: arrows rotate all authored phase samples. Arena starts paused: P begin/pause, WASD move, F attack, Space roll. No saves are read or written.</p><div id="game"></div><script type="module">
+import Phaser from 'phaser';
+import {WholeEnemySprite} from '/src/game/WholeEnemySprite.ts';
+import {WorldView} from '/src/game/WorldView.ts';
+import {createAdventure,tick,attack,roll,adventureCanStand} from '/src/core/adventure.ts';
+import {project,STEP} from '/src/core/game.ts';
+import {facingForInput} from '/src/core/facing.ts';
+const q=new URLSearchParams(location.search),arena=q.get('mode')==='arena',appearance=['maw_skeleton','headless_skeleton','iron_giant','pale_shepherd_keeper'].includes(q.get('appearance'))?q.get('appearance'):'maw_skeleton';
+const identity={maw_skeleton:'raider',headless_skeleton:'ascent-raider',iron_giant:'upper-captain',pale_shepherd_keeper:'captain'}[appearance],phases=['idle','walk','windup','active','recovery','hurt','death','dead'];
+const world=p=>({x:(p.x-640)/1.6+(p.y-180)/.8,y:(p.y-180)/.8-(p.x-640)/1.6});
+let scene,view,state,keys,ready=false,heading=0,actors=[],samples=[],frames=0,accumulator=0,paused=false,history=[];
+const aim=()=>({x:Math.abs(Math.cos(heading*Math.PI/4))<1e-8?0:Math.cos(heading*Math.PI/4),y:Math.abs(Math.sin(heading*Math.PI/4))<1e-8?0:Math.sin(heading*Math.PI/4)});
+function gallery(){
+ actors.forEach((actor,i)=>{
+  const phase=phases[i],kind=identity==='upper-captain'||identity==='captain'?'captain':'raider',e={id:identity,kind,position:world({x:100+i*270,y:430}),home:{x:0,y:0},hp:100,maxHp:100,phase:'idle',timer:0,aim:aim(),reward:0};
+  actor.draw(e,false,0);let time=1;
+  if(phase==='windup'){e.phase='windup';e.timer=(kind==='captain'?.8:.65)*.6;}
+  if(phase==='active'||phase==='recovery'){e.phase='recovery';e.timer=phase==='active'?(kind==='captain'?.95:.85):.1;}
+  if(phase==='hurt'){e.phase='stagger';e.timer=.15;}
+  if(phase==='death'||phase==='dead'){e.hp=0;actor.draw(e,false,.1);time=phase==='death'?.42:1;}
+  actor.draw(e,phase==='walk',time);samples[i]={requestedPhase:phase,enemy:e,...actor.snapshot()};
+ });
+}
+class Fixture extends Phaser.Scene{
+ preload(){if(arena)WorldView.preload(this);else WholeEnemySprite.preload(this);}
+ create(){scene=this;keys=this.input.keyboard.addKeys('W,A,S,D');
+  if(arena){
+   // Begin the seeded arena paused so native input owns its first simulation step.
+   paused=true;state=createAdventure('wayfarer');if(q.get('fresh')!=='1'){state.gatePhase='open';state.position={x:125,y:-1670};state.enemies.forEach(e=>{if(e.id!=='upper-captain')e.hp=0;});}view=new WorldView(this);
+   this.input.keyboard.on('keydown-F',()=>attack(state));this.input.keyboard.on('keydown-SPACE',()=>roll(state));this.input.keyboard.on('keydown-P',()=>{paused=!paused;});
+   this.input.on('pointermove',pointer=>{const p=project(state.position),x=pointer.worldX-p.x,y=pointer.worldY-p.y,n=Math.hypot(x,y);if(n>5)state.aim={x:x/n,y:y/n};});
+  }else{
+   actors=phases.map((phase,i)=>{this.add.text(i*270+12,18,phase.toUpperCase(),{fontSize:'18px',color:'#d3c49d'}).setDepth(5000);return new WholeEnemySprite(this);});gallery();
+   this.input.keyboard.on('keydown-RIGHT',()=>{heading=(heading+1)%8;gallery();});
+   this.input.keyboard.on('keydown-LEFT',()=>{heading=(heading+7)%8;gallery();});
+  }
+  this.game.canvas.tabIndex=0;this.game.canvas.focus();ready=true;
+ }
+ update(_time,delta){if(!ready)return;frames++;
+  if(arena){
+   const input={x:(keys.D.isDown?1:0)-(keys.A.isDown?1:0),y:(keys.S.isDown?1:0)-(keys.W.isDown?1:0)};
+   if(!paused){accumulator+=Math.min(.1,delta/1000);while(accumulator>=STEP){tick(state,input,STEP);accumulator-=STEP;}}
+   const face=facingForInput(state.aim,'east');view.drawAdventure(state,!!(input.x||input.y),face);const p=project(state.position);this.cameras.main.centerOn(p.x,p.y-100);
+   const foe=state.enemies.find(e=>e.id==='upper-captain');history.push({time:state.time,hero:{...state.position},foe:{...foe.position},phase:foe.phase,heroHp:state.hp,walkable:adventureCanStand(state,foe.position),body:view.enemyViewSnapshot().find(v=>v.id==='upper-captain').body});if(history.length>1800)history.shift();
+  }
+ }
+}
+window.wholeEnemyFixtureSnapshot=()=>ready?structuredClone(arena?{ready,mode:'seeded actual upper-watch encounter; not earned campaign',state,enemyViews:view.enemyViewSnapshot(),world:view.expeditionSnapshot(),scenery:view.scenerySnapshot(),camera:{x:scene.cameras.main.scrollX,y:scene.cameras.main.scrollY},history,frames,paused}:{ready,mode:'authored-state complete-frame matrix, not combat acceptance',appearance,heading,samples,frames}):{ready:false};
+new Phaser.Game({type:Phaser.CANVAS,parent:'game',width:arena?1280:2160,height:arena?800:520,backgroundColor:'#252d30',banner:false,scene:[Fixture],fps:{target:60,smoothStep:false},render:{antialias:true,roundPixels:false},audio:{noAudio:true}});
+</script></body></html>

@@ -2,6 +2,7 @@ import {pressAction,observeAttackPhase,moveForFrames} from './native-action-fram
 import {test,expect,type Page} from '@playwright/test';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {movementKeys,spearSpacing,retreatBlocked} from '../../browser-tests/native-steering';
+import {visibleNativeCombatKeys,NATIVE_ROLL_TRAVEL_PIXELS} from './native-combat-steering.mjs';
 
 /** UNSEEDED campaign acceptance. No imported .spec file, game mutation hook, HP grant,
  * save-progress seed, teleported position or free inventory/upgrade is used anywhere.
@@ -50,11 +51,14 @@ async function clearThreats(page:Page){
   const rollCost=c.derivedStats(s).rollCost;
   if((imminent||incoming)&&s.stamina>=rollCost&&s.rollCooldown===0){
    const options=target.e.kind==='watcher'?[movementKeys(target.x,target.y)]:[movementKeys(-target.y,target.x),movementKeys(target.y,-target.x),movementKeys(-target.x,-target.y)];
-   const keys=options.find(keys=>{const input={x:Number(keys.includes('KeyD'))-Number(keys.includes('KeyA')),y:Number(keys.includes('KeyS'))-Number(keys.includes('KeyW'))},length=Math.hypot(input.x,input.y)||1,sx=input.x/length*45,sy=input.y/length*45;return clearSegment(c,s,s.position,{x:s.position.x+sx/1.6+sy/.8,y:s.position.y+sy/.8-sx/1.6});})??options[0];
-   for(const key of keys)await page.keyboard.down(key);await page.keyboard.press('Space');await page.waitForTimeout(100);for(const key of keys)await page.keyboard.up(key);continue;
+   const keys=visibleNativeCombatKeys({hero:s.position,target:target.e.position,preferred:options,pixels:NATIVE_ROLL_TRAVEL_PIXELS,clearSegment:(a:Point,b:Point)=>clearSegment(c,s,a,b)});
+   if(keys){for(const key of keys)await page.keyboard.down(key);await page.keyboard.press('Space');await page.waitForTimeout(100);for(const key of keys)await page.keyboard.up(key);continue;}
   }
   const spacing=spearSpacing(range,stuckRetreat);
-  if(spacing){const before={...s.position};await hold(page,movementKeys(target.x,target.y,spacing),65);stuckRetreat=retreatBlocked(range,before,(await state(page)).position);}
+  if(spacing){
+   const before={...s.position},keys=visibleNativeCombatKeys({hero:s.position,target:target.e.position,preferred:[movementKeys(target.x,target.y,spacing)],pixels:20,retreat:spacing<0,clearSegment:(a:Point,b:Point)=>clearSegment(c,s,a,b)});
+   if(keys){await hold(page,keys,65);stuckRetreat=retreatBlocked(range,before,(await state(page)).position);}else stuckRetreat=true;
+  }
   else if(s.stamina>=20){
    // Click a point on the same ray inside the canvas, not offscreen enemy feet.
    const box=await page.locator('canvas').boundingBox();expect(box).not.toBeNull();const ray={x:target.x/(range||1)*105,y:target.y/(range||1)*105};metrics.attackInputs++;

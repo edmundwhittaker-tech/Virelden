@@ -3,6 +3,7 @@ import {expeditionCanStand} from './expeditionGeometry.js';
 import {freshAreaRecords,copyAreaProgress,type AreaRecords,type AreaProgress} from './expeditionState.js';
 import {facingForInput,type Facing} from './facing.js';
 import {sampleMeleeSweep,weaponTouchesBody} from './meleeContact.js';
+import {enemyReceivingBody} from './enemyReceivingBody.js';
 import {playerPoseFrame} from './playerPose.js';
 import{createPlayerMotion,advancePlayerMotion,beginPlayerAction,preparePlayerFacingCut,type PlayerMotionState}from'./playerMotion.js';
 import {archerProjectileOrigin} from './archerRig.js';
@@ -70,7 +71,7 @@ function hitEnemies(s:Adventure,from:number,to:number){
   if(e.hp<=0||s.attack.hit.includes(e.id))continue;
   const d=vector(s.position,e.position),local={x:d.x*aim.x+d.y*aim.y,y:-d.x*aim.y+d.y*aim.x};
   if(!clearLine(s,s.position,e.position)||!weaponShapeContains(s.attack.weapon,local))continue;
-  const contact=frames.find(frame=>weaponTouchesBody(frame,d));if(!contact)continue;
+  const contact=frames.find(frame=>weaponTouchesBody(frame,d,enemyReceivingBody(s.areaId,e.id)));if(!contact)continue;
   s.attack.contacts[e.id]=contact.progress;
   const before=e.hp;e.hp=Math.max(0,e.hp-weaponDamage(s,s.attack.weapon));s.attack.hit.push(e.id);
   if(!e.hp){const xpBefore=s.progression.xp;s.progression=awardDefeat(s.progression,`${s.areaId}:${e.id}`,before,e.hp,CAMPAIGN_REWARDS);const marks=grantMarks(s,e.reward);s.message=`${e.kind==='captain'?(e.id==='upper-captain'?'Upper watch captain defeated. Secure the station exit.':(s.areaId==='station'?'Captain defeated. The lower ward is secured.':'Prototype captain defeated. Secure the area marker when ready.')):'Enemy defeated.'} +${markText(marks,e.reward)} · +${s.progression.xp-xpBefore} XP. Level ${level(s.progression)} · ${availablePoints(s.progression)} training points.`;}

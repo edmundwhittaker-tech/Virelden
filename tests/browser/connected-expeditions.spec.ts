@@ -56,7 +56,7 @@ async function openSeeded(page:Page,options:Parameters<typeof seed>[0]){
  },{raw:fixture.raw,token,current:QA,good:QA_GOOD,pending:QA_PENDING});
  await page.goto('/?debug=1&qa=1');await page.waitForFunction(()=>typeof (window as any).vireldenDebug==='function');
  await expect.poll(async()=>(await state(page)).areaId).toBe(options.area);await expect.poll(async()=>(await state(page)).paused).toBe(false);
- await expect.poll(async()=>(await state(page)).character.texture).toBe('modular-plate');await page.locator('canvas').focus();
+ await expect.poll(async()=>(await state(page)).character.texture).toBe('whole-character-approved-front-idle');await page.locator('canvas').focus();
  await expect(page.locator('#save-status')).toContainText('QA save');return fixture;
 }
 async function hold(page:Page,keys:string[],ms:number){try{for(const key of keys)await page.keyboard.down(key);await page.waitForTimeout(ms);}finally{for(const key of keys)await page.keyboard.up(key);}}
@@ -98,7 +98,7 @@ function assertEnemyPool(s:any,count:number){expect(s.enemyViews.length).toBeGre
 function assertCamera(s:any){
  expect(s.screen.x).toBeGreaterThan(55);expect(s.screen.x).toBeLessThan(1225);expect(s.screen.y).toBeGreaterThan(110);expect(s.screen.y).toBeLessThan(740);
  const b=s.expedition.bounds;expect(s.camera.x).toBeGreaterThanOrEqual(b.x-1);expect(s.camera.y).toBeGreaterThanOrEqual(b.y-1);expect(s.camera.x+1280).toBeLessThanOrEqual(b.x+b.width+1);expect(s.camera.y+800).toBeLessThanOrEqual(b.y+b.height+1);
- expect(s.character.texture).toBe('modular-plate');expect(s.character.parts).toHaveLength(15);expect(s.character.foot.x).toBeCloseTo(projection(s.position).x,5);expect(s.character.foot.y).toBeCloseTo(projection(s.position).y,5);
+ expect(s.character.kind).toBe('whole-character-sprite');expect(s.character.parts).toEqual(['whole-character']);expect(s.character.view).toBe(s.character.direction.startsWith('north')?'rear':'front');expect(s.character.frame).toBeGreaterThanOrEqual(0);expect(s.character.frame).toBeLessThan(s.character.walking?8:1);expect(s.character.texture).toBe(`whole-character-approved-${s.character.view}-${s.character.walking?`walk-${s.character.frame+1}`:'idle'}`);expect(s.character.foot.x).toBeCloseTo(projection(s.position).x,5);expect(s.character.foot.y).toBeCloseTo(projection(s.position).y,5);
 }
 test.use({trace:'off'});
 test.afterEach(async({page},info)=>{if(info.status!==info.expectedStatus){try{await evidence(page,`failed-${info.title.replace(/[^a-z0-9]+/gi,'-').slice(0,80)}`);}catch{/* startup errors retain Playwright failure evidence */}}});

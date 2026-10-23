@@ -8,14 +8,13 @@ import {loadCampaign,persistCampaign,resetCampaign,saveKeys} from '../core/campa
 import {level,availablePoints,xpRequirement} from '../core/progression.js';
 import {LEVEL_SECTIONS} from '../core/level.js';
 import {WorldView} from './WorldView.js';
-import {KnightSprite} from './KnightSprite.js';
 import {facingForInput,type Facing} from '../core/facing.js';
 const QA=new URLSearchParams(location.search).get('qa')==='1';
 const SAVE_KEYS=saveKeys(QA);
 declare global{interface Window{vireldenDebug?:()=>Adventure & {screen:Point;camera:Point;keyboardAim:Point;gate:ReturnType<WorldView['gateSnapshot']>;archers:ReturnType<WorldView['archerSnapshot']>;moving:boolean;character:ReturnType<WorldView['characterSnapshot']>;scenery:ReturnType<WorldView['scenerySnapshot']>;paused:boolean;timing:{frames:number;rawDelta:number;fps:number;renderMs:number;updateMs:number}}}}
 export class CourtyardScene extends Phaser.Scene{
   private equipmentPanel!:EquipmentPanel; private saveBlocked=false; private protectedProgress=false; private futureProgress=false; private assetFailure=false; private saveWarning=''; private loadNotice=''; private state=createAdventure('vanguard'); private keyboardAim:Point={x:1,y:0}; private held=new Set<string>(); private pendingKeys=new Set<string>(); private actions:string[]=[]; private accumulator=0; private view!:WorldView; private moving=false; private facing:Facing='east'; private menu=''; private saveTimer=0;private renderCost=0;private updateCost=0; private lastHud='';
-  preload(){KnightSprite.preload(this);WorldView.preload(this);}
+  preload(){WorldView.preload(this);}
   create(){
     this.saveNotice('Local progress');
     let loaded=false,corrupt=false;

@@ -1,0 +1,1835 @@
+{
+  "version": 1,
+  "representation": "offline-composited-complete-body-pose-sprites",
+  "runtimeRigRequired": false,
+  "equipmentBaked": "per-enemy",
+  "equipmentPolicy": "Skeleton gear is statically composited; the iron giant is the supplied basic body only, with no equipment or hands overlays.",
+  "frameSize": [
+    448,
+    384
+  ],
+  "columns": 6,
+  "rows": 3,
+  "frameCount": 18,
+  "foot": {
+    "x": 160,
+    "y": 352
+  },
+  "sourceBodyOffset": [
+    32,
+    52
+  ],
+  "directions": {
+    "authored": [
+      "east",
+      "south-east",
+      "north-east"
+    ],
+    "mirrored": {
+      "west": "east",
+      "south-west": "south-east",
+      "north-west": "north-east"
+    },
+    "northSouth": "Use rear/front view retaining last horizontal side, matching existing knight.",
+    "mirrorRule": "Reflect the whole local rig about the world foot, including sockets/equipment; anatomical hand names stay unchanged.",
+    "limit": "Mirrored west views also mirror lighting and equipment handedness visually; no independent west art."
+  },
+  "enemies": {
+    "maw_skeleton": {
+      "id": "maw_skeleton",
+      "sprite": "maw_skeleton.webp",
+      "runtimeScale": 0.5,
+      "equipmentBaked": true,
+      "idleBodyHeightScreen": 88,
+      "humanReferenceHeightScreen": 88,
+      "animations": {
+        "idle": [
+          {
+            "pose": 0,
+            "durationMs": 1000
+          }
+        ],
+        "walk": [
+          {
+            "pose": 1,
+            "durationMs": 160
+          },
+          {
+            "pose": 0,
+            "durationMs": 104
+          },
+          {
+            "pose": 2,
+            "durationMs": 160
+          },
+          {
+            "pose": 0,
+            "durationMs": 104
+          }
+        ],
+        "attack": [
+          {
+            "pose": 3,
+            "durationMs": 650
+          },
+          {
+            "pose": 4,
+            "durationMs": 140
+          },
+          {
+            "pose": 5,
+            "durationMs": 500
+          }
+        ]
+      },
+      "frames": [
+        {
+          "index": 0,
+          "direction": "east",
+          "pose": "idle",
+          "rect": [
+            0,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            118,
+            177,
+            318,
+            353
+          ],
+          "rgbaSha256": "60a0975352391a89436c15a9d40e59265bf36b57fbc75cb2850a4a3490e50281",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "body",
+            "axe",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 1,
+          "direction": "east",
+          "pose": "step-a",
+          "rect": [
+            448,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            106,
+            178,
+            292,
+            353
+          ],
+          "rgbaSha256": "d4d613e83b8030376f9953d5f1d60f099a8bb9b037b4472cea7a0fe2e8b14ac3",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "body",
+            "axe",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 2,
+          "direction": "east",
+          "pose": "step-b",
+          "rect": [
+            896,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            107,
+            181,
+            289,
+            353
+          ],
+          "rgbaSha256": "de0ede6c5a63eb1d81b2eb8cb7c88c51636e8b963302e941d14b20e627ec8026",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "body",
+            "axe",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 3,
+          "direction": "east",
+          "pose": "windup",
+          "rect": [
+            1344,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            111,
+            30,
+            209,
+            353
+          ],
+          "rgbaSha256": "d9b1059bc25c199c34fce9341e10b6e8d061736ac46ca230a93c19a31b728c70",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "body",
+            "axe",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 4,
+          "direction": "east",
+          "pose": "contact",
+          "rect": [
+            1792,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            101,
+            195,
+            349,
+            356
+          ],
+          "rgbaSha256": "d9596653fc5b1a5c14c643cb409ea172350add3f0ccfb869a2b3507e0bbb14f1",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "body",
+            "axe",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 5,
+          "direction": "east",
+          "pose": "recovery",
+          "rect": [
+            2240,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            110,
+            189,
+            340,
+            353
+          ],
+          "rgbaSha256": "40bbdc24a44c54519ff01ec7bd9b0fbed014394285cc989344d10e6f5402557a",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "body",
+            "axe",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 6,
+          "direction": "south-east",
+          "pose": "idle",
+          "rect": [
+            0,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            109,
+            177,
+            313,
+            353
+          ],
+          "rgbaSha256": "060785c8beee01a64dd11367a715bdf3cdcebc36abf329e583c8e669066accb0",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "body",
+            "axe",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 7,
+          "direction": "south-east",
+          "pose": "step-a",
+          "rect": [
+            448,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            70,
+            174,
+            250,
+            353
+          ],
+          "rgbaSha256": "32f95252591bb62f1911d7357e4e8b6f39eb791641b73e6977395af15c206aac",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "body",
+            "axe",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 8,
+          "direction": "south-east",
+          "pose": "step-b",
+          "rect": [
+            896,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            83,
+            177,
+            271,
+            353
+          ],
+          "rgbaSha256": "384c3254bed6e99890d2f192d3a74e2f06774ccae44daa2645db2411ba663399",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "body",
+            "axe",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 9,
+          "direction": "south-east",
+          "pose": "windup",
+          "rect": [
+            1344,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            102,
+            60,
+            278,
+            353
+          ],
+          "rgbaSha256": "bfb5be960d980ee300ce6a1fbe2627b4ff50a14133feb6c6d565f19079aebef6",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "body",
+            "axe",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 10,
+          "direction": "south-east",
+          "pose": "contact",
+          "rect": [
+            1792,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            95,
+            198,
+            351,
+            353
+          ],
+          "rgbaSha256": "2a66680e3f15c389a7ef56bac430267b4f272d540895d43b7b807cd58c601de6",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "body",
+            "axe",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 11,
+          "direction": "south-east",
+          "pose": "recovery",
+          "rect": [
+            2240,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            106,
+            185,
+            326,
+            353
+          ],
+          "rgbaSha256": "baf5743596c0b86bc5eff59ab715dabba0a164dc34be0e9204081e301597f057",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "body",
+            "axe",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 12,
+          "direction": "north-east",
+          "pose": "idle",
+          "rect": [
+            0,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            64,
+            144,
+            217,
+            353
+          ],
+          "rgbaSha256": "1e26ebbab4a13cdcd8ea604b0ddcc7125d1039fb8f8e61dea63bd4219a51bde3",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "axe",
+            "body",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 13,
+          "direction": "north-east",
+          "pose": "step-a",
+          "rect": [
+            448,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            71,
+            151,
+            233,
+            354
+          ],
+          "rgbaSha256": "7c2e3b8ea52c5d4d5b02447dc08ec41014f50208bfa2be59dd8ce29279e7098a",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "axe",
+            "body",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 14,
+          "direction": "north-east",
+          "pose": "step-b",
+          "rect": [
+            896,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            77,
+            161,
+            240,
+            353
+          ],
+          "rgbaSha256": "05cab37f92a74b8bc2ef38d7dabff66648db60d5b85d925fad7a5269758decf3",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "axe",
+            "body",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 15,
+          "direction": "north-east",
+          "pose": "windup",
+          "rect": [
+            1344,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            102,
+            45,
+            245,
+            353
+          ],
+          "rgbaSha256": "8466c94d1d8d65cf474ede6640d67851385f60ad787f9a4eba5d0045ee78e5fa",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "axe",
+            "body",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 16,
+          "direction": "north-east",
+          "pose": "contact",
+          "rect": [
+            1792,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            131,
+            143,
+            289,
+            353
+          ],
+          "rgbaSha256": "a9b5a523ffff026444e858bdfde5ab34e53cc443453805b6a64c6de45e9547aa",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "axe",
+            "body",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 17,
+          "direction": "north-east",
+          "pose": "recovery",
+          "rect": [
+            2240,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            67,
+            157,
+            226,
+            354
+          ],
+          "rgbaSha256": "54dc3095b7a19cbe332e1d214456d57f2648db369f6d8675e455004b0534e165",
+          "equipmentIncluded": true,
+          "equipment": [
+            "axe"
+          ],
+          "layerOrder": [
+            "axe",
+            "body",
+            "hands-overlay"
+          ]
+        }
+      ]
+    },
+    "headless_skeleton": {
+      "id": "headless_skeleton",
+      "sprite": "headless_skeleton.webp",
+      "runtimeScale": 0.5,
+      "equipmentBaked": true,
+      "idleBodyHeightScreen": 79,
+      "humanReferenceHeightScreen": 88,
+      "animations": {
+        "idle": [
+          {
+            "pose": 0,
+            "durationMs": 1000
+          }
+        ],
+        "walk": [
+          {
+            "pose": 1,
+            "durationMs": 110
+          },
+          {
+            "pose": 0,
+            "durationMs": 71.5
+          },
+          {
+            "pose": 2,
+            "durationMs": 110
+          },
+          {
+            "pose": 0,
+            "durationMs": 71.5
+          }
+        ],
+        "attack": [
+          {
+            "pose": 3,
+            "durationMs": 300
+          },
+          {
+            "pose": 4,
+            "durationMs": 100
+          },
+          {
+            "pose": 5,
+            "durationMs": 250
+          }
+        ]
+      },
+      "frames": [
+        {
+          "index": 0,
+          "direction": "east",
+          "pose": "idle",
+          "rect": [
+            0,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            123,
+            195,
+            234,
+            353
+          ],
+          "rgbaSha256": "26140e83a74786afda79407f2e00fb779632807a7f860cfabb8f1039ab581e0e",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "body",
+            "knife",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 1,
+          "direction": "east",
+          "pose": "step-a",
+          "rect": [
+            448,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            107,
+            197,
+            221,
+            353
+          ],
+          "rgbaSha256": "30f64e58a596db437b4649ca182b79315715adc56272948e6cd6232f15721c13",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "body",
+            "knife",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 2,
+          "direction": "east",
+          "pose": "step-b",
+          "rect": [
+            896,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            107,
+            198,
+            220,
+            353
+          ],
+          "rgbaSha256": "726c56d9fb3379ea9ae7f6136dbc3c28fd08cef21695931e6312b8116428b639",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "body",
+            "knife",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 3,
+          "direction": "east",
+          "pose": "windup",
+          "rect": [
+            1344,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            109,
+            193,
+            226,
+            353
+          ],
+          "rgbaSha256": "b851ede4398e842b36e57fc5773529e2070f77f7151629350fcd8fcd3c31f5e9",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "body",
+            "knife",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 4,
+          "direction": "east",
+          "pose": "contact",
+          "rect": [
+            1792,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            99,
+            207,
+            281,
+            353
+          ],
+          "rgbaSha256": "e8e87a7eda7aae765c0c00a8b5305197654bce6e674078c9aa383527784db903",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "body",
+            "knife",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 5,
+          "direction": "east",
+          "pose": "recovery",
+          "rect": [
+            2240,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            117,
+            195,
+            223,
+            354
+          ],
+          "rgbaSha256": "37c88c1a86a2cfa297b4ae7c7d1f8e9058a34832fbec724db9aeefb07f14b637",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "body",
+            "knife",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 6,
+          "direction": "south-east",
+          "pose": "idle",
+          "rect": [
+            0,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            118,
+            195,
+            232,
+            353
+          ],
+          "rgbaSha256": "9debfd4ddad8a78f5128c9933e14ed194f654c45e57e88b0d7814af62463eda4",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "body",
+            "knife",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 7,
+          "direction": "south-east",
+          "pose": "step-a",
+          "rect": [
+            448,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            89,
+            193,
+            201,
+            353
+          ],
+          "rgbaSha256": "0e2e4813fdb6f4a5e30fe66e57c578bc26d56d28ba08e82613d5e6b386d5b4f1",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "body",
+            "knife",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 8,
+          "direction": "south-east",
+          "pose": "step-b",
+          "rect": [
+            896,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            87,
+            194,
+            203,
+            353
+          ],
+          "rgbaSha256": "16cea7ebb49195de5d5f56943eb0258c6ec915d1c7f021e73cf7e2f75de48bc5",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "body",
+            "knife",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 9,
+          "direction": "south-east",
+          "pose": "windup",
+          "rect": [
+            1344,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            90,
+            190,
+            212,
+            353
+          ],
+          "rgbaSha256": "3b3b2a489981d2e5a729caec32cbc9d76afb20c2ead5a4aa597369a31a4dd3db",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "body",
+            "knife",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 10,
+          "direction": "south-east",
+          "pose": "contact",
+          "rect": [
+            1792,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            97,
+            202,
+            275,
+            353
+          ],
+          "rgbaSha256": "2e812bbd9895cd00a3fafdea6ad685374becf7f0b37257cb03b24d9618c0e774",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "body",
+            "knife",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 11,
+          "direction": "south-east",
+          "pose": "recovery",
+          "rect": [
+            2240,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            146,
+            193,
+            245,
+            353
+          ],
+          "rgbaSha256": "f82db51783c54da7f8977e2e300bf87fd486b0be3ec64149a343274081b69372",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "body",
+            "knife",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 12,
+          "direction": "north-east",
+          "pose": "idle",
+          "rect": [
+            0,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            114,
+            195,
+            215,
+            353
+          ],
+          "rgbaSha256": "0255e27d9361fc420c9703725de5e16076174986a537e8f109f2da7adf1d8e34",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "knife",
+            "body",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 13,
+          "direction": "north-east",
+          "pose": "step-a",
+          "rect": [
+            448,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            122,
+            195,
+            227,
+            353
+          ],
+          "rgbaSha256": "d3321e8a1240cc4eaddc08f182b3132f9ac9335a9c9fd0ca1cf1ba7d3df36d66",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "knife",
+            "body",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 14,
+          "direction": "north-east",
+          "pose": "step-b",
+          "rect": [
+            896,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            116,
+            199,
+            224,
+            353
+          ],
+          "rgbaSha256": "368e226efe70fdeee4acdf9dcdef3ee8aec435bfda9ee9cae3bf101f7f3d6dc9",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "knife",
+            "body",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 15,
+          "direction": "north-east",
+          "pose": "windup",
+          "rect": [
+            1344,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            113,
+            196,
+            216,
+            353
+          ],
+          "rgbaSha256": "306acee2f3bcbfe92f37b01dd86a34470e6ea108bcbf01e6ad48b3aeb089cb92",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "knife",
+            "body",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 16,
+          "direction": "north-east",
+          "pose": "contact",
+          "rect": [
+            1792,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            116,
+            203,
+            291,
+            353
+          ],
+          "rgbaSha256": "843c3b2ad9834641d52eb0981ffea2744b64955573b152be45892106f177c7e6",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "knife",
+            "body",
+            "hands-overlay"
+          ]
+        },
+        {
+          "index": 17,
+          "direction": "north-east",
+          "pose": "recovery",
+          "rect": [
+            2240,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            117,
+            195,
+            222,
+            354
+          ],
+          "rgbaSha256": "e9ebf8deb94a9218c9e1bd74cbe4c8bcc9e1e505692ca2675aeecc8a05b0fcd4",
+          "equipmentIncluded": true,
+          "equipment": [
+            "knife",
+            "knife"
+          ],
+          "layerOrder": [
+            "knife",
+            "knife",
+            "body",
+            "hands-overlay"
+          ]
+        }
+      ]
+    },
+    "iron_giant": {
+      "id": "iron_giant",
+      "sprite": "iron_giant.webp",
+      "runtimeScale": 1,
+      "equipmentBaked": false,
+      "idleBodyHeightScreen": 176,
+      "humanReferenceHeightScreen": 88,
+      "animations": {
+        "idle": [
+          {
+            "pose": 0,
+            "durationMs": 1000
+          }
+        ],
+        "walk": [
+          {
+            "pose": 1,
+            "durationMs": 240
+          },
+          {
+            "pose": 0,
+            "durationMs": 156
+          },
+          {
+            "pose": 2,
+            "durationMs": 240
+          },
+          {
+            "pose": 0,
+            "durationMs": 156
+          }
+        ],
+        "attack": [
+          {
+            "pose": 3,
+            "durationMs": 950
+          },
+          {
+            "pose": 4,
+            "durationMs": 220
+          },
+          {
+            "pose": 5,
+            "durationMs": 850
+          }
+        ]
+      },
+      "frames": [
+        {
+          "index": 0,
+          "direction": "east",
+          "pose": "idle",
+          "rect": [
+            0,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            118,
+            177,
+            201,
+            353
+          ],
+          "rgbaSha256": "0a3ad076af60e71df9878df85bf04e7d300410d324e467639b40d48abdfb0763",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 1,
+          "direction": "east",
+          "pose": "step-a",
+          "rect": [
+            448,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            100,
+            180,
+            214,
+            353
+          ],
+          "rgbaSha256": "a409d543b00038015233848e49a00178f147274deec4bc8a69d8124148a3d432",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 2,
+          "direction": "east",
+          "pose": "step-b",
+          "rect": [
+            896,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            99,
+            180,
+            219,
+            353
+          ],
+          "rgbaSha256": "85033112f4b996a2a11dc504962ab386ffc54d1b9aea4eb1c0711acd631509c5",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 3,
+          "direction": "east",
+          "pose": "windup",
+          "rect": [
+            1344,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            96,
+            178,
+            208,
+            353
+          ],
+          "rgbaSha256": "16eb49560b9555c8b20e5551ded57fef7ff2491f388932f60c8586fa33b14560",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 4,
+          "direction": "east",
+          "pose": "contact",
+          "rect": [
+            1792,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            104,
+            182,
+            246,
+            353
+          ],
+          "rgbaSha256": "abb30af1b416f0d3b3ff5603df3fb6578fd179596ef7d8602e2285afb9f21fdb",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 5,
+          "direction": "east",
+          "pose": "recovery",
+          "rect": [
+            2240,
+            0,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            116,
+            181,
+            206,
+            353
+          ],
+          "rgbaSha256": "cb42dced9630cc902554f1af4407c973ec14d25cb9e990e2b397eecbc35fe783",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 6,
+          "direction": "south-east",
+          "pose": "idle",
+          "rect": [
+            0,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            105,
+            177,
+            208,
+            353
+          ],
+          "rgbaSha256": "7c62d1871d531069879cfb7d5eba328d10ed636375a9bbe2992cbd6471a819bd",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 7,
+          "direction": "south-east",
+          "pose": "step-a",
+          "rect": [
+            448,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            83,
+            177,
+            187,
+            354
+          ],
+          "rgbaSha256": "8b781447e7971e0a225a5539d718cd2f0ad5228465e8b796718a7819be299c20",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 8,
+          "direction": "south-east",
+          "pose": "step-b",
+          "rect": [
+            896,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            64,
+            177,
+            184,
+            353
+          ],
+          "rgbaSha256": "163c6d4530ce71e7a1027f9b8eb5be313fdea54f68e2d95d2397858cca1f9d0f",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 9,
+          "direction": "south-east",
+          "pose": "windup",
+          "rect": [
+            1344,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            144,
+            181,
+            248,
+            353
+          ],
+          "rgbaSha256": "cf8d6709c2552eedae2806411443eae7133d2bc442f4917ee46903efca16d70f",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 10,
+          "direction": "south-east",
+          "pose": "contact",
+          "rect": [
+            1792,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            96,
+            183,
+            227,
+            353
+          ],
+          "rgbaSha256": "524f693195e6f9395c7fd195e05d0a4f0ceb402427a8504c0449840a2fde592e",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 11,
+          "direction": "south-east",
+          "pose": "recovery",
+          "rect": [
+            2240,
+            384,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            110,
+            175,
+            211,
+            353
+          ],
+          "rgbaSha256": "9380d69e137d130a5526f36c72dae884391c53e9b3178c6341549eceeff59dea",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 12,
+          "direction": "north-east",
+          "pose": "idle",
+          "rect": [
+            0,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            112,
+            177,
+            216,
+            353
+          ],
+          "rgbaSha256": "9cc42e1a4180f3976f3761aade41da5366ef6f147a13ba3f02d16b8191c936f4",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 13,
+          "direction": "north-east",
+          "pose": "step-a",
+          "rect": [
+            448,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            101,
+            179,
+            219,
+            353
+          ],
+          "rgbaSha256": "edf802286708e82b80eda58db83ae4643af011173b69bc6d0bda7125dc12ee06",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 14,
+          "direction": "north-east",
+          "pose": "step-b",
+          "rect": [
+            896,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            98,
+            182,
+            222,
+            354
+          ],
+          "rgbaSha256": "53c9517e20979a02d626f7a07f81f24679ca738960c3396e9411e6d0f6bbdb9f",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 15,
+          "direction": "north-east",
+          "pose": "windup",
+          "rect": [
+            1344,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            133,
+            175,
+            244,
+            353
+          ],
+          "rgbaSha256": "ceb67f7f51b3eedda3fade0ebd984fb0cb69b78bd48d1c2216b76aabcb65a4cc",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 16,
+          "direction": "north-east",
+          "pose": "contact",
+          "rect": [
+            1792,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            103,
+            178,
+            251,
+            353
+          ],
+          "rgbaSha256": "420d11c78770597b1870508c7c1996de46530e0d8b143193790377b7d1ceeca9",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        },
+        {
+          "index": 17,
+          "direction": "north-east",
+          "pose": "recovery",
+          "rect": [
+            2240,
+            768,
+            448,
+            384
+          ],
+          "foot": {
+            "x": 160,
+            "y": 352
+          },
+          "alphaBounds": [
+            108,
+            181,
+            213,
+            353
+          ],
+          "rgbaSha256": "7866c59e3b79a0840393d84e001488306b49c25dab221260a58964f444a82630",
+          "equipmentIncluded": false,
+          "equipment": [],
+          "layerOrder": [
+            "body"
+          ]
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Six existing complete-body poses per view, not a newly painted animation cycle.",
+    "No authored hurt, fall, death, roll or shield-bash drawings.",
+    "Walk uses two step extremes with idle as a passing pose; no interpolated body rig.",
+    "Skeleton equipment was composited offline from supplied transform/layer records; runtime draws one frame.",
+    "The iron giant intentionally uses only its supplied basic body; no shield, weapon or hands overlay is added."
+  ],
+  "timingAuthority": "Simulation timers own phases. Damage edge selects contact column4; no animation event changes combat."
+}
