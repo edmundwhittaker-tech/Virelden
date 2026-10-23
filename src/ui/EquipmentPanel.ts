@@ -1,6 +1,6 @@
 import {type ArmorId, type ArmorItem, type ArmorSlot} from '../core/equipment.js';
 import {type Attribute} from '../core/progression.js';
-import {WEAPON_UPGRADE_COSTS, type WeaponId, type WeaponProfile} from '../core/weaponCatalog.js';
+import {WEAPON_UPGRADE_COSTS, WEAPON_UPGRADE_DAMAGE_BONUS, type WeaponId, type WeaponProfile} from '../core/weaponCatalog.js';
 import {buildEquipmentPanelModel, formatDelta, formatStat,
  type ActionAvailability, type EquipmentPanelAssets, type EquipmentPanelModel, type EquipmentPanelState, type StatComparison} from '../core/equipmentPanelView.js';
 import './equipment-panel.css';
@@ -219,21 +219,26 @@ export class EquipmentPanel {
   const candidate = this.model!.weapons.find(candidate => candidate.item.id === this.selectedWeapon)!;
   const equipped = this.model!.weapons.find(candidate => candidate.item.id === this.state!.armory.equipped)!;
   const detail = element('section', 'equipment-detail');
-  detail.append(element('h3', '', candidate.item.name), element('p', '', candidate.item.description));
+  detail.append(element('h3', '', `${candidate.item.name} +${candidate.upgrade}`), element('p', '', candidate.item.description));
   const stats = element('dl', 'equipment-weapon-stats');
   for (const [label, now, next, unit] of [
    ['Damage', equipped.damage, candidate.damage, ''], ['Reach', equipped.item.range, candidate.item.range, 'px'],
    ['Attack cost', equipped.item.cost, candidate.item.cost, 'stamina'],
    ['Windup', equipped.item.windup, candidate.item.windup, 's'], ['Contact', equipped.item.active, candidate.item.active, 's'], ['Recovery', equipped.item.recovery, candidate.item.recovery, 's'],
   ] as const) stats.append(element('dt', '', label), element('dd', '', `${formatStat(now)} → ${formatStat(next)} ${unit}`));
-  detail.append(stats, element('p', 'equipment-muted', `${candidate.item.hands === 2 ? 'Two-handed' : 'One-handed'} · ${candidate.item.motion.kind} · values compare equipped → selected`),
+  detail.append(stats,
+   element('p', 'equipment-damage-breakdown', `Selected damage: ${formatStat(candidate.damage)} = ${formatStat(candidate.item.damage)} base + ${formatStat(candidate.upgradeDamage)} improvement.`),
+   element('p', 'equipment-muted', `${candidate.item.hands === 2 ? 'Two-handed' : 'One-handed'} · ${candidate.item.motion.kind} · values compare equipped ${equipped.item.name} +${equipped.upgrade} → selected ${candidate.item.name} +${candidate.upgrade}`),
    this.action('Equip weapon', 'equip-weapon', candidate.action, () => this.options.callbacks.onEquipWeapon(candidate.item.id)));
   if (this.options.callbacks.onUpgradeWeapon) {
    const upgrade = this.model!.upgrade;
    const forge = element('section', 'equipment-forge');
-   forge.append(element('h4', '', `Improve equipped ${equipped.item.name} +${equipped.upgrade}`),
+   const target = `${equipped.item.name} +${equipped.upgrade}`;
+   forge.append(element('h4', '', `Forge · equipped ${target}`),
+    element('p', 'equipment-upgrade-preview', upgrade.nextDamage === null ? `Equipped damage: ${formatStat(upgrade.damage)} · maximum improvement (+2).` : `Equipped damage: ${formatStat(upgrade.damage)} → ${formatStat(upgrade.nextDamage)} (${formatDelta(upgrade.nextDamage - upgrade.damage)}) at +${equipped.upgrade + 1}.`),
+    element('p', 'equipment-muted', `Each improvement adds ${WEAPON_UPGRADE_DAMAGE_BONUS * 100}% of base damage. Reach, stamina cost and attack timing do not change.`),
     element('p', 'equipment-muted', `${this.state!.currency} iron marks · +1 costs ${WEAPON_UPGRADE_COSTS[0]} · +2 costs ${WEAPON_UPGRADE_COSTS[1]}`),
-    this.action(upgrade.cost === null ? 'Fully improved +2' : `Improve for ${upgrade.cost} marks`, 'upgrade-weapon', upgrade.action, () => this.options.callbacks.onUpgradeWeapon?.(this.state!.armory.equipped)));
+    this.action(upgrade.cost === null ? `Fully improved ${target}` : `Improve equipped ${equipped.item.name} to +${equipped.upgrade + 1} for ${upgrade.cost} marks`, 'upgrade-weapon', candidate.upgradeAction, () => this.options.callbacks.onUpgradeWeapon?.(equipped.item.id)));
    detail.append(forge);
   }
   content.append(candidates, detail); return content;

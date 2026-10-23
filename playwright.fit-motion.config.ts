@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./experiments/projected-fit',testMatch:'native.browser.spec.ts',workers:1,retries:0,timeout:120_000,use:{baseURL:'http://127.0.0.1:4187',viewport:{width:760,height:550},headless:true,trace:'off',video:'off'},outputDir:'test-results/fit-motion',webServer:{command:'npm run dev -- --host 127.0.0.1 --port 4187 --strictPort',url:'http://127.0.0.1:4187',reuseExistingServer:!process.env.CI}});

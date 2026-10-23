@@ -5,7 +5,7 @@ import {createServer} from 'node:http';
 import {chromium} from '@playwright/test';
 import assert from 'node:assert/strict';
 import {sampleFrame} from './lore-sprite-player.mjs';
-const root=path.resolve(fileURLToPath(new URL('../../',import.meta.url))),base=path.join(root,'src/assets/lore-characters-v1');
+const root=path.resolve(fileURLToPath(new URL('../../',import.meta.url))),base=path.join(root,'src/assets/npc-enemy-sprites');
 const index=JSON.parse(await fs.readFile(path.join(base,'manifest.json'),'utf8'));
 for(const c of index.characters){const m=JSON.parse(await fs.readFile(path.join(base,c.manifest),'utf8'));
  for(const [view,d]of Object.entries(m.views)){
@@ -22,7 +22,7 @@ const browser=await chromium.launch({headless:true,args:['--disable-gpu']});
 try{const page=await browser.newPage({viewport:{width:1100,height:650}}),errors=[],requests=[];page.on('pageerror',e=>{errors.push(e.message);console.log('PAGE ERROR',e.message)});page.on('console',m=>{if(m.type()==='error')console.log('BROWSER',m.text())});page.on('request',r=>requests.push(r.url()));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});
  await page.goto(`http://127.0.0.1:${server.address().port}/docs/lore-character-preview.html`);
  await page.waitForFunction(()=>window.spritePreview?.ready).catch(async e=>{console.log('ERRORS',errors);console.log('STATE',await page.evaluate(()=>({text:document.body.innerText,resources:performance.getEntriesByType('resource').map(r=>r.name)})));await page.screenshot({path:'/workspace/scratch/ef5638e82cc3/lore-preview-error.png'});throw e;});
- for(const direction of ['south-east','south-west','north-east','north-west'])for(const animation of ['idle','walk','attack','hurt','death','dead','guard','interact']){
+ for(const direction of ['south-east','south-west','north-east','north-west'])for(const animation of ['idle','walk','attack','hurt','death','dead']){
   await page.evaluate(({animation,direction})=>window.spritePreview.set(animation,direction,300),{animation,direction});await page.waitForTimeout(35);
   const frames=await page.evaluate(()=>window.spritePreview.actors.map(a=>({frame:a.sprite.frame.name,origin:a.sprite.originX,flip:a.sprite.flipX})));
   assert.equal(frames.length,4);assert.ok(frames.every(a=>Number.isInteger(a.frame)));
@@ -33,5 +33,5 @@ try{const page=await browser.newPage({viewport:{width:1100,height:650}}),errors=
   await page.locator('#stage canvas').screenshot({path:path.join(base,'previews',name+'.png')});
  }
  assert.ok(!requests.some(u=>/body-|hands-|equipment\/|__work|rig\.mjs/.test(u)),'Runtime preview loaded modular art');
- assert.deepEqual(errors,[]);console.log('Sprite-only Phaser preview: all 32 animation/facing combinations, first-contact frame, loops and held death passed; no body-part/equipment/rig loads.');
+ assert.deepEqual(errors,[]);console.log('Sprite-only Phaser preview: all 24 animation/facing combinations, first-contact frame, loops and held death passed; no body-part/equipment/rig loads.');
 }finally{await browser.close();await new Promise(r=>server.close(r));}

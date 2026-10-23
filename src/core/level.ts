@@ -5,7 +5,7 @@ export const LEVEL_SECTIONS=[
  {id:'transfer',name:'Transfer Court',x:0,y:-1280,width:640,height:640},
  {id:'watch',name:'Upper Watch',x:0,y:-1920,width:640,height:640},
 ] as const;
-export const STATION_GATE={x:485,y:0,left:425,right:545,lever:{x:550,y:70},stance:{x:557,y:126.1},pullSeconds:.8,openSeconds:2.2};
+export const STATION_GATE={x:485,y:0,left:425,right:545,lever:{x:550,y:70},stance:{x:562,y:121.1},pullSeconds:.8,openSeconds:2.2};
 export const CHECKPOINTS=[{x:320,y:320},{x:480,y:-1000}] as const;
 export const FINISH={x:320,y:-1840};
 export const LEVEL_WALLS=[
@@ -43,3 +43,4 @@ export const EXPANDED_SCENERY=[
  {id:'watch-lamp',x:580,y:-1420,radius:8,art:'ward-lantern',width:22,originY:.92},
  {id:'watch-rubble',x:570,y:-1790,radius:32,art:'ward-rubble',width:80,originY:.82},
 ] as const;
+

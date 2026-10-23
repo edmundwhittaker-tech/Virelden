@@ -63,11 +63,13 @@ export function prepareWeaponEquip(armory: Armory, id: unknown, context: Equipme
 }
 export const MAX_WEAPON_UPGRADE = 2;
 export const WEAPON_UPGRADE_COSTS = Object.freeze([30, 60] as const);
+/** Each level adds this fraction of the original damage, never compounded. */
+export const WEAPON_UPGRADE_DAMAGE_BONUS = .25;
 export function nextUpgradeCost(armory: Armory): number | null {
  return WEAPON_UPGRADE_COSTS[armory.levels[armory.equipped]] ?? null;
 }
 export function upgradedDamage(armory: Armory, id: WeaponId = armory.equipped): number {
- return WEAPON_CATALOG[id].damage * (1 + armory.levels[id] * .25);
+ return WEAPON_CATALOG[id].damage * (1 + armory.levels[id] * WEAPON_UPGRADE_DAMAGE_BONUS);
 }
 export type UpgradeResult = {ok: true; next: Armory; currency: number; cost: number} | {ok: false; reason: 'busy' | 'not-at-forge' | 'invalid-currency' | 'upgrade-cap' | 'insufficient-marks'};
 export function prepareWeaponUpgrade(armory: Armory, currency: number, atForge: boolean, context: EquipmentContext): UpgradeResult {

@@ -1,0 +1,128 @@
+{
+  "version": 2,
+  "characters": [
+    {
+      "id": "valdren_warplate_bearer",
+      "name": "Valdren Warplate Bearer",
+      "action": "slash",
+      "timing": [
+        480,
+        180,
+        440
+      ],
+      "walkMs": 650,
+      "views": {
+        "front": {
+          "source": "valdren_warplate_bearer-front.webp",
+          "headToGroundPx": null,
+          "overrides": {
+            "15": {
+              "source": "valdren_warplate_bearer-front-contact.webp",
+              "standingEquivalentPx": 1378,
+              "ground": [
+                640,
+                1175
+              ]
+            }
+          },
+          "rootXs": [
+            140,
+            392,
+            644,
+            896
+          ]
+        },
+        "rear": {
+          "source": "valdren_warplate_bearer-rear.webp",
+          "headToGroundPx": null,
+          "rootXs": [
+            128,
+            384,
+            640,
+            896
+          ]
+        }
+      }
+    },
+    {
+      "id": "harbinger_road_knight",
+      "name": "Harbinger Road-Knight",
+      "action": "mace-strike",
+      "timing": [
+        650,
+        180,
+        540
+      ],
+      "walkMs": 760,
+      "views": {
+        "front": {
+          "source": "harbinger_road_knight-front.webp",
+          "headToGroundPx": null,
+          "sourceIndexMap": {
+            "18": 19,
+            "19": 0
+          },
+          "rootXs": [
+            151,
+            405,
+            650,
+            900
+          ]
+        },
+        "rear": {
+          "source": "harbinger_road_knight-rear.webp",
+          "headToGroundPx": null,
+          "sourceIndexMap": {
+            "18": 19,
+            "19": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "eryndor_magister",
+      "name": "Eryndor Magister",
+      "action": "cast",
+      "timing": [
+        850,
+        200,
+        600
+      ],
+      "walkMs": 740,
+      "views": {
+        "front": {
+          "source": "eryndor_magister-front.webp",
+          "headToGroundPx": null
+        },
+        "rear": {
+          "source": "eryndor_magister-rear.webp",
+          "headToGroundPx": null
+        }
+      }
+    },
+    {
+      "id": "pale_shepherd_keeper",
+      "name": "Keeper of the Pale Shepherd",
+      "action": "invoke",
+      "timing": [
+        950,
+        240,
+        700
+      ],
+      "walkMs": 850,
+      "views": {
+        "front": {
+          "source": "pale_shepherd_keeper-front.webp",
+          "headToGroundPx": null
+        },
+        "rear": {
+          "source": "pale_shepherd_keeper-rear.webp",
+          "headToGroundPx": null,
+          "sourceIndexMap": {
+            "13": 14
+          }
+        }
+      }
+    }
+  ]
+}

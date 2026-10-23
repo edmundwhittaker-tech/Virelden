@@ -1,5 +1,14 @@
 # Project status — 22 October 2026
 
+## NPC/enemy sprite art — 23 October owner correction
+
+The four approved lore characters have been rebuilt as whole-character sprite artwork in `src/assets/npc-enemy-sprites/`: Valdren Warplate Bearer, Harbinger Road-Knight, Eryndor Magister and Keeper of the Pale Shepherd. Each has front/rear sheets with 24 frame cells, approximately 88px human height, idle/walk/attack-or-cast/hurt/death, and all equipment included. The previous modular/cutout source atlases, separate armour/body/equipment exports and rig-baking tools are removed from this art branch. See [sprite handoff](LORE_CHARACTER_SPRITES.md) and [development preview](lore-character-preview.html).
+
+The source art consists of complete character poses. Packing only crops/resizes/registers those figures; it uses no rig, bones or body-part assembly. The sprite-only preview and adapter use one sheet frame per character. Manifests record timings, fixed foot anchors, view mirroring and a single baked layer; equipment attachments are disabled. This is an unmerged art proposal, with no gameplay, main-player rig/equipment, save, gate, archer or production entrypoint changes. No deployment or new-enemy encounter acceptance is claimed.
+
+Locally verified for this replacement: all 192 frame cells have real alpha, nonempty pixels, no frame-edge clipping, valid timings and fixed foot metadata. Sprite-only Phaser checks passed all 24 animation/facing combinations for all four characters, exact selected frames, mirrored foot origins, first-active contact, looping and held death, with no part/equipment/rig loads. Game-size GIFs and Phaser captures were inspected. All 210 rule tests, strict TypeScript/production build and 34 existing native browser cases passed (9.6 minutes). CI/deployment and in-level acceptance of the new characters are not claimed.
+
+
 ## Published game
 
 The verified released reference is main [`a932dc5`](https://github.com/edmundwhittaker-tech/Virelden/commit/a932dc5e561fe21b54b7b1e49679e97e6eca11c5), playable at **https://edmundwhittaker-tech.github.io/Virelden/**. Earlier working releases, including `f080674`, remain in ordinary Git history for rollback.
@@ -19,12 +28,10 @@ Save v4 stores per-area durable progress and shared equipment, upgrades, marks, 
 - **Publication:** [Main publish run](https://github.com/edmundwhittaker-tech/Virelden/actions/runs/39763095556) passed on `a932dc5`. All 34 live files returned HTTP 200 and matched the accepted CI output byte-for-byte (3,675,163 bytes). Public smoke verified authentic earned QA-save migration, UI, input and reload; it was **not** a complete campaign replay on the public URL. Native browser evidence was produced in GitHub Actions with Canvas and normal requestAnimationFrame, without SwiftShader.
 
 All local places, gear and adversaries are prototype adaptations, not additions to official Virelden lore. No private campaign material or starter true Warplate is introduced. Single-player desktop keyboard/mouse; the published release has **no audio**, touch, multiplayer or account service.
+## Weapon-upgrade clarity fix — isolated local verification, 23 October
 
-
-## Four approved lore characters — art branch, 23 October follow-up
-
-Authored on `art/lore-character-kit-v1`, based on main `18e7257`: Valdren Warplate Bearer, Harbinger Road-Knight, Eryndor Magister and Keeper of the Pale Shepherd. See [sprite handoff](LORE_CHARACTER_SPRITES.md) and the standalone [development preview](lore-character-preview.html). Each uses complete body-and-equipment sprite sheets: 63 frames × two authored views, plus mirroring, at approximately 88 screen pixels human height. All 504 frames have timings, fixed foot anchors, both hand attachments, equipment grips and layer metadata. Separate transparent body/hand sheets and equipment remain optional. No enemy runtime rig or modular armour is required; the player's rig is untouched.
-
-Locally verified: all full/optional frames are nonempty with transparent backgrounds/spare cells, no edge clipping, fixed foot anchors and matching grip coordinates. Sprite-only Phaser Canvas preview passed all 32 animation/facing combinations, first-active-frame sampling, looping and held death; it fetches no body parts, equipment images or rig. Front/rear game-size GIFs and Phaser screenshots were inspected. Rule tests and strict TypeScript/production build passed. All 34 existing native browser regression cases passed locally in 9.1 minutes, including the station expedition (12 foes, zero deaths). This is a regression check of existing gameplay, not acceptance of the new enemies in encounters.
-
-These are art candidates, not new official lore, starter Warplate, AI, collision or spell mechanics. No gameplay files, save formats, player armour or published entrypoints change. No CI/public deployment or in-level enemy acceptance is claimed by local artifact checks. Offline lossless source art and production scripts are preserved outside the game asset-loading path.
+- The unmodified source snapshot applies the existing +25% base damage per level correctly for all six weapons, including real `attack`/`tick` melee contacts after v4 save/reload. Its equipment model also contains the effective damage. No core damage or save failure was reproduced; this does not establish the state of an older public tab.
+- The panel allowed inspecting one weapon while the forge still improved a different equipped weapon. The authored fix retains the equipped-weapon rule but disables spending for that mismatched selection, names the target and level, shows base plus improvement damage and previews the next damage. The purchase message reports the actual damage change. Reach, stamina cost, attack timings, movement and balance are unchanged; combat and presentation now share the catalog damage helper.
+- **Locally passed:** 210 rule tests and strict TypeScript/production build. New rules cover all six weapons at +0/+1/+2 through the real contact path, exact mark spending, armor and weapon changes, v4 reload, and the selected/equipped spending guard. Local Node was 24.19.0, rather than the repository's pinned 22.x CI runtime.
+- **Prepared, not executed locally:** eight isolated equipment DOM cases (including upgrade/selection checks at 1440px and 900px), and enhanced earned native exploration assertions for previews, purchases, equipment changes and reload. Test discovery succeeds; it is not browser execution or screenshot verification. Native local browser execution was previously denied and was not retried.
+- **Not CI verified or deployed:** this isolated patch has not been pushed, merged or published. The separately owned character release is not altered by this investigation.

@@ -1,0 +1,25 @@
+> Integration checkpoint: on `qa/player-rig-integration-2026-10-22` the canonical directional model/adapter are now in `src/core/playerGait*.ts` and consumed by the candidate player controller. This document below records the earlier east-only controls. Those exact-head native clips do not validate the later directional/controller integration. The live game is unchanged; see `docs/PLAYER_RIG_INTEGRATION.md` for current limits.
+
+# Authored east jog — isolated, not release-ready
+
+Candidate after root rejected both fitted/original global-sine movement and the first physically planted projection for visible float/kicking/crouch. This is an authored east/sword game-pose study, not an Elden Ring timing measurement or a production controller.
+
+- Same fitted15-part armour skeleton and fixed18/20px leg /10.5+10.5px arm chains. No input/collision/actor-root changes.
+- Resolved travel distance drives a54px full cycle; at150px/s a half-cycle is180ms. This duration alone is not the change: contact/passing foot curves,2.5px body weight transfer,1.2px maximum pickup, connected hip/arm ownership and a restrained one-hand offhand response are authored together.
+-24px visible supporting-foot return versus27px root travel intentionally leaves~3px stylized slip per half-cycle. This is exposed, not perfect foot locking.
+- Stop moves the airborne foot, then replaces the other foot, then relaxes body height; final pose is the exact approved evaluator neutral across every part. No leftover crouch/knee tuck.
+- Two-hand carry keeps both actual shaft grips unchanged. Attacks, rolls, other facings, reversal/restart during settling, six-weapon native action transitions, player target provider and actual gameplay integration remain absent/unaccepted.
+
+Existing projection and fitted/original-motion variants remain as controls. Native capture preserves720×300 at actual88px actor scale and uses ffprobe encoded PTS, with no inserted frames. The single authored east comparison must be reviewed before other directions are added.
+
+## Slower comparison
+
+The relaxed variant uses72px full-cycle travel (~4.17footfalls/s at150px/s) with one-third-cycle supporting contact:24px root travel and24px visible foot return (~160ms), rather than merely dragging the compact trajectory slower. Its remaining low-lift swing creates brief airborne intervals. The compact54px variant remains as a control (~5.56footfalls/s, exposed~3px slip per contact); direct compact/relaxed and both versus fitted/original-motion captures are retained. Neither cadence is approved merely because contact or encoded FPS tests pass.
+
+Long capture:3s of unchanged150px/s resolved travel (450px, several steady cycles), then explicit stop and exact neutral. The camera follows that root identically in both panels; the source terrain128px opaque interior patch is tiled and scrolled by exactly the recorded camera offset, keeping textured ground under both actors. Each actual image-pivot audit subtracts this camera offset explicitly. This is an isolated tracking-camera fixture, not gameplay input/collision/turn acceptance.
+
+Stop regression found in read-only review: a both-airborne stop originally froze the other raised boot while replacing the first. Local follow-up lets that visible sole descend before being treated as support and explicitly reports `support: none` during real flight. Grounded-foot assertions now check baseline/contact, not only unchanged coordinates. This is still game-pose landing logic, not a biomechanical flight simulation.
+
+Launch regression: fading a phase-front support foot in from neutral caused12–15px initial support slide. Local correction enters at neutral-X mid-stance, immediately authors that supporting-foot return, and blends only the airborne pickup/body weight. Tests now audit actual world ankle displacement across the first claimed stance (compact<1.6px, relaxed<0.001px), in addition to later steady-state claims.
+
+QA-only follow-up: use the same pinned Chromium via normal Playwright browser installation with host validation intact; no browser version/security flag/local-lane change. Capture and actual source-pivot/neutral assertions occur before ffmpeg system installation; an early artifact is explicitly labelled encoding-audit-pending. A separate mandatory ffprobe PTS gate must then verify every clip (>25fps, >100frames, no encoded gap over75ms) before overall workflow success. The final artifact binds each unchanged WebM SHA256 to measured PTS and all geometry. Early artifacts or screenshot/pure tests alone never establish motion acceptance.

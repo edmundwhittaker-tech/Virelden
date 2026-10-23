@@ -11,7 +11,7 @@ async function open(page:Page,loadout='Vanguard'){
  await expect.poll(async()=>(await state(page)).paused).toBe(false);
 }
 async function chooseWeapon(page:Page,id:string){await page.getByRole('button',{name:'Weapons',exact:true}).click();await page.locator(`[data-focus="weapon-${id}"]`).click();await page.getByRole('button',{name:'Equip weapon',exact:true}).click();}
-async function improve(page:Page,cost:number){await page.getByRole('button',{name:'Weapons',exact:true}).click();await page.getByRole('button',{name:`Improve for ${cost} marks`,exact:true}).click();}
+async function improve(page:Page,cost:number){await page.getByRole('button',{name:'Weapons',exact:true}).click();const action=page.locator('[data-focus="upgrade-weapon"]');await expect(action).toHaveText(new RegExp(`for ${cost} marks$`));await action.click();}
 async function hold(page:Page,keys:string[],ms=160){for(const k of keys)await page.keyboard.down(k);await page.waitForTimeout(ms);for(const k of keys)await page.keyboard.up(k);}
 test('boots with loadout choice, full-plate knight and no runtime errors',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await open(page);
@@ -183,10 +183,17 @@ test('full exploration earns all weapons, opens shortcut and buys capped +2 upgr
  expect((await state(page)).currency).toBe(95);expect((await state(page)).owned.sort()).toEqual(['hammer','spear','sword']);
  await walkTo(page,{x:560,y:400});await page.keyboard.press('KeyE');await expect.poll(async()=>(await state(page)).shortcut).toBe(true);
  await walkTo(page,{x:260,y:330});await page.keyboard.press('KeyE');await expect(page.getByRole('dialog')).toBeVisible();
- await chooseWeapon(page,'hammer');await improve(page,30);expect((await state(page)).currency).toBe(65);
- await improve(page,60);expect((await state(page)).currency).toBe(5);expect((await state(page)).levels.hammer).toBe(2);await expect(page.getByRole('button',{name:'Fully improved +2',exact:true})).toBeDisabled();
+ await chooseWeapon(page,'hammer');await expect(page.locator('.equipment-upgrade-preview')).toHaveText('Equipped damage: 52 → 65 (+13) at +1.');
+ await improve(page,30);expect((await state(page)).currency).toBe(65);
+ await expect(page.locator('.equipment-detail h3')).toHaveText('War hammer +1');await expect(page.locator('.equipment-damage-breakdown')).toHaveText('Selected damage: 65 = 52 base + 13 improvement.');
+ await page.locator('[data-focus="weapon-sword"]').click();await expect(page.locator('[data-focus="upgrade-weapon"]')).toBeDisabled();expect((await state(page)).currency).toBe(65);
+ await chooseWeapon(page,'sword');await expect(page.locator('.equipment-damage-breakdown')).toHaveText('Selected damage: 30 = 30 base + 0 improvement.');
+ await chooseWeapon(page,'hammer');await expect(page.locator('.equipment-upgrade-preview')).toHaveText('Equipped damage: 65 → 78 (+13) at +2.');
+ await improve(page,60);expect((await state(page)).currency).toBe(5);expect((await state(page)).levels.hammer).toBe(2);await expect(page.locator('[data-focus="upgrade-weapon"]')).toBeDisabled();
+ await expect(page.locator('.equipment-damage-breakdown')).toHaveText('Selected damage: 78 = 52 base + 26 improvement.');
  await page.screenshot({path:'test-results/expedition-full-progression.png',fullPage:true});await page.reload();await page.waitForFunction(()=>typeof window.vireldenDebug==='function');
  expect(await state(page)).toMatchObject({shortcut:true,equipped:'hammer',levels:{hammer:2},currency:5});expect((await state(page)).looted.sort()).toEqual(['north-cache','south-cache','west-cache']);
+ await page.keyboard.press('KeyI');await page.getByRole('button',{name:'Weapons',exact:true}).click();await expect(page.locator('.equipment-detail h3')).toHaveText('War hammer +2');await expect(page.locator('.equipment-damage-breakdown')).toHaveText('Selected damage: 78 = 52 base + 26 improvement.');
 });
 
 test('very short movement taps are consumed once and do not stick',async({page})=>{

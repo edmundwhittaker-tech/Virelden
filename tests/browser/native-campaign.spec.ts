@@ -98,7 +98,7 @@ async function closeInventory(page:Page){await pressAction(page,'Escape');await 
 async function forge(page:Page){
  let s=await state(page);if(s.levels.spear>=2||s.currency<(s.levels.spear===0?30:60))return;const c=await core();await walkTo(page,c.LOCATIONS.smith);await inventory(page);await page.getByRole('button',{name:'Weapons',exact:true}).click();await page.locator('[data-focus="weapon-spear"]').click();
  if((await state(page)).equipped!=='spear')await page.getByRole('button',{name:'Equip weapon',exact:true}).click();
- for(let n=0;n<2;n++){s=await state(page);const cost=s.levels.spear===0?30:60;if(s.levels.spear>=2||s.currency<cost)break;const before={level:s.levels.spear,marks:s.currency};await page.getByRole('button',{name:`Improve for ${cost} marks`,exact:true}).click();const after=await state(page);expect(after.levels.spear).toBe(before.level+1);expect(after.currency).toBe(before.marks-cost);}
+ for(let n=0;n<2;n++){s=await state(page);const cost=s.levels.spear===0?30:60;if(s.levels.spear>=2||s.currency<cost)break;const before={level:s.levels.spear,marks:s.currency};await page.locator('[data-focus="upgrade-weapon"]').click();const after=await state(page);expect(after.levels.spear).toBe(before.level+1);expect(after.currency).toBe(before.marks-cost);}
  await closeInventory(page);
 }
 const TRAINING=['vigor','resolve','endurance','vigor','resolve','endurance','resolve','vigor','resolve'] as const;
@@ -129,7 +129,15 @@ async function completeStation(page:Page){
  for(const id of ['west-cache','north-cache','south-cache'])if(!(await state(page)).looted.includes(id)){await stationLoot(page,id);await forge(page);await restAndTrain(page,c.LOCATIONS.checkpoint);}
  for(const id of ['raider','watcher','captain'])await clearEncounter(page,id);
  if(!(await state(page)).shortcut){await useLandmark(page,c.LOCATIONS.lever);await expect.poll(async()=>(await state(page)).shortcut).toBe(true);}
- if((await state(page)).gatePhase!=='open'){await forge(page);await restAndTrain(page,c.LOCATIONS.checkpoint);await useLandmark(page,c.STATION_GATE.lever,{x:550,y:105});await expect.poll(async()=>(await state(page)).gatePhase,{timeout:8_000}).toBe('open');expect((await state(page)).gate.width).toBe(520);await checkpointEvidence(page,'station-monumental-gate-open');}
+ if((await state(page)).gatePhase!=='open'){
+  await forge(page);await restAndTrain(page,c.LOCATIONS.checkpoint);
+  const operatingApproach={x:560,y:115},before=await state(page);
+  expect(c.adventureCanStand(before,operatingApproach),'native route targets the clear operating side, not the solid column').toBe(true);
+  expect(clearSegment(c,before,operatingApproach,c.STATION_GATE.stance),'visible operating approach remains collision-clear').toBe(true);
+  await useLandmark(page,c.STATION_GATE.lever,operatingApproach);
+  await expect.poll(async()=>(await state(page)).gatePhase,{timeout:8_000}).toBe('open');
+  expect((await state(page)).gate.width).toBe(520);await checkpointEvidence(page,'station-monumental-gate-open');
+ }
  for(const id of ['ascent-raider','ascent-watcher','ascent-guard','transfer-raider','transfer-watcher'])await clearEncounter(page,id);
  await stationLoot(page,'transfer-cache');await restAndTrain(page,c.CHECKPOINTS[1]);
  for(const id of ['transfer-guard','watch-raider','watch-watcher','upper-captain'])await clearEncounter(page,id);
@@ -148,7 +156,27 @@ async function completeAnnex(page:Page){
  for(const id of ['shutter-sentry','corner-raider','gallery-lookout','records-guard'])await clearEncounter(page,id);await areaLoot(page,'store-cache');
  // Fight the stair guard from the SOUTHERN coffer stance (>305px from keeper),
  // never from its home beside the keeper approach. Native 70–90px spear spacing keeps this guarded find useful.
- const mainFind=area.loot.find((l:any)=>l.id==='keeper-cache');if((await state(page)).enemies.find((e:any)=>e.id==='stair-guard').hp>0){await walkTo(page,mainFind.stance);await clearThreats(page);expect((await state(page)).enemies.find((e:any)=>e.id==='stair-guard').hp).toBe(0);}
+ const mainFind=area.loot.find((l:any)=>l.id==='keeper-cache');
+ if((await state(page)).enemies.find((e:any)=>e.id==='stair-guard').hp>0){
+  await walkTo(page,mainFind.stance);await clearThreats(page);
+  if((await state(page)).enemies.find((e:any)=>e.id==='stair-guard').hp>0){
+   // A living guard can be on the far side of the solid coffer. No visible threats
+   // is not proof of a clear: physically go around its SOUTH side, away from the keeper.
+   for(const waypoint of [{x:640,y:450},{x:520,y:450},{x:520,y:420}]){
+    await walkTo(page,waypoint,false);
+    const observed=await state(page);expect(observed.hp,'alive during southern guard approach').toBeGreaterThan(0);
+    expect(observed.enemies.find((e:any)=>e.id==='annex-keeper').hp,'keeper stays alive before the guarded find').toBeGreaterThan(0);
+   }
+   const engagement=await state(page),guard=engagement.enemies.find((e:any)=>e.id==='stair-guard');
+   if(guard.hp>0){
+    expect(clearSegment(c,engagement,engagement.position,guard.position),'observed coffer guard engagement is collision-clear').toBe(true);
+    expect(distance(engagement.position,guard.position),'coffer guard enters the existing visible-threat window').toBeLessThan(220);
+    await evidence(page,'annex-coffer-guard-clear-engagement');await clearThreats(page);
+   }
+  }
+  expect((await state(page)).enemies.find((e:any)=>e.id==='stair-guard').hp,'required coffer guard is actually defeated, not merely out of sight').toBe(0);
+  expect((await state(page)).enemies.find((e:any)=>e.id==='annex-keeper').hp,'poleaxe remains available before the keeper is defeated').toBeGreaterThan(0);
+ }
  if(!(await state(page)).looted.includes('keeper-cache')){
   const bossBefore=(await state(page)).enemies.find((e:any)=>e.id==='annex-keeper');expect(bossBefore.hp,'poleaxe is discoverable before final captain is defeated').toBeGreaterThan(0);await areaLoot(page,'keeper-cache');const found=await state(page);expect(found.owned).toContain('poleaxe');expect(found.equipment.owned).toContain('marcher-chest');expect(found.enemies.find((e:any)=>e.id==='annex-keeper').hp).toBeGreaterThan(0);
   await inventory(page);await page.getByRole('button',{name:'Weapons',exact:true}).click({timeout:5_000});await page.locator('[data-focus="weapon-poleaxe"]').click({timeout:5_000});const equipButton=page.getByRole('button',{name:'Equip weapon',exact:true});await expect(equipButton).toBeEnabled();await equipButton.click({timeout:5_000});await closeInventory(page);expect((await state(page)).equipped).toBe('poleaxe');
@@ -179,3 +207,4 @@ test('fresh QA native campaign earns all1620XP, finds all gear and physically re
   await walkTo(page,c.LOCATIONS.smith);expect(c.atForge(await state(page))).toBe(true);expect(await page.evaluate(()=>Object.keys(localStorage).filter(k=>!k.startsWith('virelden-underworks-qa-')).map(k=>[k,localStorage.getItem(k)]).sort())).toEqual(normalBefore);expect(errors).toEqual([]);await checkpointEvidence(page,'full-campaign-reloaded-and-forge-reached');console.log('NATIVE_CAMPAIGN_COMPLETE '+JSON.stringify({deaths:metrics.deaths,wallSeconds:(Date.now()-metrics.started)/1000,attackInputs:metrics.attackInputs,damagingSamples:metrics.damagingSamples,observedDamage:metrics.observedDamage,xp:(await state(page)).progression.xp}));
  }catch(error){try{await evidence(page,'failure');}catch{/* retain original startup failure */}throw error;}
 });
+

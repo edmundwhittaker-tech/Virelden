@@ -472,8 +472,8 @@ const DATA=[
      "y": 580
     },
     "stance": {
-     "x": 796.25,
-     "y": 623.75
+     "x": 801.25,
+     "y": 618.75
     },
     "requiresDefeated": [
      "east-patrol"
@@ -1084,8 +1084,8 @@ const DATA=[
      "y": 360
     },
     "stance": {
-     "x": 846.25,
-     "y": 403.75
+     "x": 851.25,
+     "y": 398.75
     },
     "requiresDefeated": [
      "gallery-lookout"
@@ -1226,3 +1226,4 @@ export const SERVICE_STAIR_GROUND={left:-28,right:28,back:-29,front:18} as const
 export const AREA_IDS:readonly AreaId[]=['station','cistern-viaduct','record-annex'];
 export const STATION_EXPEDITION_PORT={id:'upper-watch-stair',position:{x:380,y:-1840},stance:{x:380,y:-1800},target:'cistern-viaduct' as const,targetArrival:{x:120,y:800},requiresDefeated:['upper-captain']};
 export const AREA_NAMES:Readonly<Record<AreaId,string>>={station:'Station Underworks','cistern-viaduct':'Cistern Viaduct','record-annex':'Record Annex'};
+

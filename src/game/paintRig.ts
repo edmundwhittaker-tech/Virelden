@@ -42,10 +42,11 @@ export function paintRig(ctx:CanvasRenderingContext2D,atlas:CanvasImageSource,po
   const [px,py]=asset.pivot,[dx,dy]=asset.distal,sourceAngle=Math.atan2(dy-py,dx-px),sourceLength=Math.hypot(dx-px,dy-py);
   // Mirror image pixels and its source vector, not only joint coordinates.
   const mir=options.flipped?-1:1,angle=part.angle-Math.atan2(dy-py,(dx-px)*mir),scale=part.length/sourceLength;
-  ctx.save();ctx.translate(part.start.x,part.start.y);ctx.rotate(angle);ctx.scale(scale*mir,scale);
+  ctx.save();ctx.translate(part.start.x,part.start.y);ctx.rotate(part.angle);ctx.scale(scale,(part.artSpan??part.length)/sourceLength);ctx.rotate(-Math.atan2(dy-py,(dx-px)*mir));ctx.scale(mir,1);
   const sx=asset.frame%4*256,sy=Math.floor(asset.frame/4)*256;
   ctx.drawImage(override?.atlas??atlas,sx,sy,256,256,-px,-py,256,256);ctx.restore();
  }
  if(options.showBones){ctx.lineWidth=.5;for(const p of Object.values(pose.parts)){ctx.strokeStyle='#f6b759';ctx.beginPath();ctx.moveTo(p.start.x,p.start.y);ctx.lineTo(p.end.x,p.end.y);ctx.stroke();ctx.fillStyle='#f6b759';ctx.fillRect(p.start.x-1,p.start.y-1,2,2);}}
  ctx.restore();
 }
+

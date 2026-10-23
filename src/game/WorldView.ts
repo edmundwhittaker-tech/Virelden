@@ -14,6 +14,7 @@ import {WALLS,LOOT,LOCATIONS,WEAPONS,invulnerable,leverInteraction,type Adventur
 import {SCENERY,groundDepth} from '../core/scenery.js';
 import {LEVEL_SECTIONS,CHECKPOINTS,FINISH,STATION_GATE} from '../core/level.js';
 import {facingForInput} from '../core/facing.js';
+import {playerPoseFrame} from '../core/playerPose.js';
 import type {Facing} from '../core/facing.js';
 import courtUrl from '../assets/environment-v1/slate-court.webp';
 import pillarUrl from '../assets/environment-v1/gothic-pillar.webp';
@@ -165,17 +166,11 @@ export class WorldView{
     this.enemyObjects.forEach((objects,i)=>objects.forEach(object=>(object as Phaser.GameObjects.Image).setVisible(i<s.enemies.length)));
     this.labels.forEach((label,i)=>label.setVisible(i<s.enemies.length));
     this.archerObjects.forEach(objects=>objects.forEach(object=>(object as Phaser.GameObjects.Image).setVisible(false)));
-    const attackFacing=s.attack.phase==='idle'?facing:s.attack.facing;this.actorFacing=attackFacing;
-    const attackState=s.attack,id=attackState.phase==='idle'?s.equipped:attackState.weapon,profile=WEAPON_CATALOG[id];
-    const duration=attackState.phase==='windup'?profile.windup:attackState.phase==='active'?profile.active:profile.recovery;
-    const progress=attackState.phase==='idle'?0:Math.max(0,Math.min(1,1-attackState.timer/duration));
-    const interaction=leverInteraction(s);if(interaction){
-      const foot=project(s.position),lever=project(interaction.lever),pull=interaction.pull;
-      this.actor.draw({position:foot,view:'rear',flipped:false,motion:'interact',time:s.time,handTarget:{x:lever.x-13+pull*23-foot.x,y:lever.y-43+pull*13-foot.y}});
-    }else this.actor.draw({position:project(s.position),view:attackFacing.startsWith('north')?'rear':'front',flipped:attackFacing.endsWith('west'),motion:s.rollTimer>0?'roll':attackState.phase!=='idle'?'attack':moving?'walk':'idle',time:s.time,phase:attackState.phase==='idle'?undefined:attackState.phase,progress:s.rollTimer>0?1-s.rollTimer/.38:progress,weapon:id,weaponMotion:profile.motion,weaponHands:profile.hands,weaponReach:profile.range,aim:attackState.phase==='idle'?s.aim:attackState.aim});
+    const frame=playerPoseFrame(s,leverInteraction(s),moving);this.actorFacing=frame.facing;
+    this.actor.draw({...frame.input,position:project(s.position)},frame.pose);
     if(s.areaId==='station')this.stationGate.draw(s);
     const rolling=s.rollTimer>0;
-    this.actor.effects(s.hurtTimer>0?0xf2aaa0:invulnerable(s)?0xb9d9df:0xffffff,0,invulnerable(s)?.6:1,rolling?.92:1);
+    this.actor.effects(s.hurtTimer>0?0xf2aaa0:invulnerable(s)?0xb9d9df:0xffffff,0,invulnerable(s)?.6:1);
     const actors=[s.position,...s.enemies.filter(e=>e.hp>0).map(e=>e.position)].map(project);
     for(const o of this.occluders){const p=project(o.position);o.image.setAlpha(actors.some(a=>a.y<p.y-1&&a.y>p.y-o.image.displayHeight*o.image.originY-12&&Math.abs(a.x-p.x)<o.image.displayWidth*.48+12)?.32:1);}
     for(const w of this.wallViews)w.g.setAlpha(actors.some(a=>a.x>w.left-15&&a.x<w.right+15&&a.y<w.g.depth-1&&a.y>w.top-12)?.4:1);
@@ -235,4 +230,5 @@ export class WorldView{
   scenerySnapshot(){if(this.activeArea!=='station')return this.expeditionViews.get(this.activeArea)?.snapshot().props??[];return this.occluders.map(o=>({id:o.id,world:{x:o.position.x,y:o.position.y},foot:project(o.position),depth:o.image.depth,width:o.image.displayWidth,height:o.image.displayHeight,originY:o.image.originY,alpha:o.image.alpha,radius:o.radius}));}
   characterSnapshot(){const snapshot=this.actor.snapshot();return {...snapshot,direction:this.actorFacing,rig:snapshot.rig&&snapshot.motion==='interact'?{...snapshot.rig,phase:'pull',pose:'lever-reach'}:snapshot.rig};}
 }
+
 

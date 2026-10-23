@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Directional candidate — isolated native study</title><style>body{margin:0;background:#141a1d;color:#ddd;font:13px system-ui}main{width:720px;margin:10px auto}h1{font-size:18px}canvas{display:block}select{margin:6px;padding:5px}p{line-height:1.4}</style></head><body><main><h1>Same directional candidate / two equipped armour fits</h1><label>Screen heading <select id="heading"><option>east</option><option>north-east</option><option>north</option><option>north-west</option><option>west</option><option>south-west</option><option>south</option><option>south-east</option></select></label><div id="game"></div><p>Native88px,720×300. Both panels use the SAME heading and72px-cycle candidate: Ward+sword / mixed armour+two-hand poleaxe. Scripted collision-free resolved travel at150screenpx/s, tracking camera and matching textured floor. Idle→450px travel→stop. Not real-controller, turning, action or release acceptance.</p></main><script type="module">
+import Phaser from 'phaser';
+import {ModularKnightSprite} from '/src/game/ModularKnightSprite.ts';
+import {WEAPON_CATALOG} from '/src/core/weaponCatalog.ts';
+import {facingForInput} from '/src/core/facing.ts';
+import {playerJogFrame} from '/src/core/playerMotion.ts';
+import {createDirectionalJog,advanceDirectionalJog,directionalJogPose} from '/src/core/playerGait.ts';
+import {playerGaitPose} from '/src/core/playerGaitPose.ts';
+import floorUrl from '/src/assets/environment-v1/slate-court.webp';
+const STEP=1/60,DURATION=4.4,START=.35,TRAVEL_SECONDS=3;
+const HEADINGS={east:{x:1,y:0},'north-east':{x:Math.SQRT1_2,y:-Math.SQRT1_2},north:{x:0,y:-1},'north-west':{x:-Math.SQRT1_2,y:-Math.SQRT1_2},west:{x:-1,y:0},'south-west':{x:-Math.SQRT1_2,y:Math.SQRT1_2},south:{x:0,y:1},'south-east':{x:Math.SQRT1_2,y:Math.SQRT1_2}};
+const LOADOUTS=[{weapon:'sword',equipment:{helmet:'ward',chest:'ward',gauntlets:'ward',legs:'ward'}},{weapon:'poleaxe',equipment:{helmet:'delver',chest:'marcher',gauntlets:'ward',legs:'delver'}}];
+let ready=false,time=0,accumulator=0,playing=false,recording=false,frames=0,samples=[],actors=[],floors=[],state;
+const heading=()=>document.querySelector('#heading').value;
+const direction=()=>HEADINGS[heading()];
+function frameForHeading(){return playerJogFrame(facingForInput(direction(),'east'));}
+function rootAt(t){const travel=Math.max(0,Math.min(TRAVEL_SECONDS,t-START))*150,d=direction();return{x:d.x*travel,y:d.y*travel};}
+function position(i){const r=rootAt(time),camera=r;return{x:180+i*360+r.x-camera.x,y:225+r.y-camera.y};}
+function inputs(i){const w=WEAPON_CATALOG[LOADOUTS[i].weapon],frame=state.frame;return{position:position(i),view:frame.view,flipped:frame.flipped,motion:state.mode==='idle'?'idle':'walk',time,weapon:w.id,weaponHands:w.hands,weaponReach:w.range,weaponMotion:w.motion,aim:direction()};}
+function snapshot(){return{ready,time,heading:heading(),direction:direction(),root:rootAt(time),camera:rootAt(time),model:directionalJogPose(state),actors:actors.map(a=>a.snapshot()),loadouts:LOADOUTS,width:720,height:300,scale:1,simulationStep:STEP,movementSpeed:150,cycleDistance:72,scriptedCollisionFreeRoot:true,inputControllerExercised:false,turnsExercised:false,liveGameChanged:false,candidateControllerGaitIntegrated:true,soleMeaning:'Model ankle minus4px projected height; source-alpha sole contact not proved by socket agreement'};}
+function draw(){if(!ready)return;const camera=rootAt(time);floors.forEach(f=>f.setTilePosition(camera.x,camera.y));actors.forEach((a,i)=>a.draw(inputs(i)));if(recording)samples.push({wall:performance.now(),...snapshot()});}
+function reset(){state=createDirectionalJog({x:0,y:0},frameForHeading());time=0;accumulator=0;playing=false;draw();}
+function step(){time=Math.min(DURATION,time+STEP);advanceDirectionalJog(state,rootAt(time),STEP,frameForHeading());}
+class DirectionalScene extends Phaser.Scene{
+ preload(){ModularKnightSprite.preload(this);this.load.image('directional-floor',floorUrl);}
+ create(){const patch=this.textures.createCanvas('directional-floor-patch',128,128);patch.context.drawImage(this.textures.get('directional-floor').getSourceImage(),448,192,128,128,0,0,128,128);patch.refresh();floors=[0,360].map(x=>this.add.tileSprite(x,0,360,300,'directional-floor-patch').setOrigin(0).setDepth(-1000).setAlpha(.6));this.add.line(0,0,360,0,360,300,0x82785e).setOrigin(0).setDepth(2000);actors=LOADOUTS.map((loadout,i)=>{const actor=new ModularKnightSprite(this,input=>playerGaitPose(input,state));if(!actor.setEquipment(loadout.equipment))throw Error('Required isolated loadout artwork unavailable');return actor;});this.add.text(10,8,'WARD · SWORD',{fontSize:'11px',color:'#ddd'}).setDepth(3000);this.add.text(370,8,'MIX · TWO-HAND POLEAXE',{fontSize:'11px',color:'#ddd'}).setDepth(3000);ready=true;reset();}
+ update(_t,delta){if(!ready)return;frames++;if(playing){accumulator+=Math.min(.1,delta/1000);while(accumulator>=STEP&&time<DURATION){step();accumulator-=STEP;}if(time>=DURATION)playing=false;}draw();}
+}
+document.querySelector('#heading').addEventListener('change',reset);
+window.directionalGaitHarness={get ready(){return ready;},configure({heading:h}){if(!Object.hasOwn(HEADINGS,h))throw Error('Unknown screen heading');document.querySelector('#heading').value=h;reset();return snapshot();},render(t){reset();while(time+STEP<=t+1e-8&&time<DURATION)step();draw();return snapshot();},play(){playing=true;},pause(){playing=false;},snapshot,startRecording(){samples=[];frames=0;recording=true;},stopRecording(){recording=false;return{samples,frames,duration:time};}};
+new Phaser.Game({type:Phaser.CANVAS,parent:'game',width:720,height:300,backgroundColor:'#252b2d',banner:false,scene:[DirectionalScene],fps:{target:60,smoothStep:false},render:{antialias:true,roundPixels:false},audio:{noAudio:true}});
+</script></body></html>
