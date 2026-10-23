@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Complete enemy sprites — isolated native fixture</title><style>body{margin:0;background:#171d21;color:#ded6c4;font:14px system-ui}h1,p{margin:12px}canvas{max-width:100%;height:auto;display:block}</style></head><body><h1>Complete enemy sprites — isolated fixture</h1><p id="status">Loading. Gallery: arrows rotate all authored phase samples. Arena: WASD move, F attack, Space roll. No saves are read or written.</p><div id="game"></div><script type="module">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Complete enemy sprites — isolated native fixture</title><style>body{margin:0;background:#171d21;color:#ded6c4;font:14px system-ui}h1,p{margin:12px}canvas{max-width:100%;height:auto;display:block}</style></head><body><h1>Complete enemy sprites — isolated fixture</h1><p id="status">Loading. Gallery: arrows rotate all authored phase samples. Arena starts paused: P begin/pause, WASD move, F attack, Space roll. No saves are read or written.</p><div id="game"></div><script type="module">
 import Phaser from 'phaser';
 import {WholeEnemySprite} from '/src/game/WholeEnemySprite.ts';
 import {WorldView} from '/src/game/WorldView.ts';
@@ -25,7 +25,8 @@ class Fixture extends Phaser.Scene{
  preload(){if(arena)WorldView.preload(this);else WholeEnemySprite.preload(this);}
  create(){scene=this;keys=this.input.keyboard.addKeys('W,A,S,D');
   if(arena){
-   state=createAdventure('wayfarer');if(q.get('fresh')==='1')paused=true;else{state.gatePhase='open';state.position={x:125,y:-1670};state.enemies.forEach(e=>{if(e.id!=='upper-captain')e.hp=0;});}view=new WorldView(this);
+   // Begin the seeded arena paused so native input owns its first simulation step.
+   paused=true;state=createAdventure('wayfarer');if(q.get('fresh')!=='1'){state.gatePhase='open';state.position={x:125,y:-1670};state.enemies.forEach(e=>{if(e.id!=='upper-captain')e.hp=0;});}view=new WorldView(this);
    this.input.keyboard.on('keydown-F',()=>attack(state));this.input.keyboard.on('keydown-SPACE',()=>roll(state));this.input.keyboard.on('keydown-P',()=>{paused=!paused;});
    this.input.on('pointermove',pointer=>{const p=project(state.position),x=pointer.worldX-p.x,y=pointer.worldY-p.y,n=Math.hypot(x,y);if(n>5)state.aim={x:x/n,y:y/n};});
   }else{

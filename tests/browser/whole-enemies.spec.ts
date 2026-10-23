@@ -39,8 +39,10 @@ async function walkTo(page:Page,goal:{x:number;y:number}){
 test('basic-body giant follows actual upper-watch passage, preserves foot depth and resolves unchanged outgoing damage edge',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await mkdir('test-results/whole-enemies',{recursive:true});
  await page.goto('/tests/fixtures/whole-enemies.html?mode=arena');await page.waitForFunction(()=>(window as any).wholeEnemyFixtureSnapshot?.().ready);await page.locator('canvas').focus();
- const initial=await snapshot(page),boss=initial.state.enemies.find((e:any)=>e.id==='upper-captain');expect(boss.position).toEqual({x:320,y:-1760});expect(boss.maxHp).toBe(260);
+ const initial=await snapshot(page),boss=initial.state.enemies.find((e:any)=>e.id==='upper-captain');expect(boss.position).toEqual({x:320,y:-1760});expect(boss.maxHp).toBe(260);expect(initial.paused).toBe(true);
  await page.locator('canvas').screenshot({path:'test-results/whole-enemies/actual-upper-watch-initial.png'});
+ // Start ordinary AI with the same native pause control used later by this test.
+ await page.keyboard.press('KeyP');await expect.poll(async()=>(await snapshot(page)).paused).toBe(false);
  for(const goal of [{x:125,y:-1780},{x:125,y:-1670},{x:125,y:-1480}])await walkTo(page,goal);
  await page.waitForFunction(()=>{const s=(window as any).wholeEnemyFixtureSnapshot();return s.state.enemies.find((e:any)=>e.id==='upper-captain').position.y>-1570;},undefined,{timeout:8_000,polling:'raf'});
  await page.waitForFunction(()=>(window as any).wholeEnemyFixtureSnapshot().history.some((h:any,i:number,a:any[])=>i>0&&h.heroHp<a[i-1].heroHp),undefined,{timeout:4_000,polling:'raf'});
@@ -89,7 +91,8 @@ test('each missing required enemy sheet fails clearly instead of silently drawin
  const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
  for(const [asset,key] of sheets){
   errors.length=0;const pattern=`**/src/assets/${asset}*`;let blocked=0;
-  await page.route(pattern,route=>{if(route.request().resourceType()==='image'){blocked++;return route.abort('failed');}return route.continue();});
+  // Phaser loads textures as XHR blobs by default; Vite's script import must continue.
+  await page.route(pattern,route=>{const type=route.request().resourceType();if(type==='image'||type==='xhr'){blocked++;return route.abort('failed');}return route.continue();});
   await page.goto('/tests/fixtures/whole-enemies.html?appearance=maw_skeleton');
   await expect.poll(()=>blocked).toBeGreaterThan(0);
   await expect.poll(()=>errors).toContain(`Required enemy artwork could not load (${key}). Please reload.`);

@@ -68,6 +68,17 @@ export class EquipmentPanel {
   const footer = element('footer', 'equipment-footer', 'New idle/walk sprites use one outfit; equipped stats still apply. Attacks, rolls and lever pulls temporarily use earlier animations. Tab to move · Enter / Space to choose · Esc to return');
   this.dialog.append(header, this.body, this.live, footer); this.root.append(this.dialog); options.host.append(this.root);
   const signal = this.abort.signal;
+  // Native focus may leave a control flush with a fractional scrollport edge.
+  // Correct it after the browser's own focus scroll, keeping its outline clear
+  // of the fixed feedback/footer even when the disclosure wraps on short views.
+  this.body.addEventListener('focusin', event => {
+   const target = event.target;
+   if (!(target instanceof HTMLElement)) return;
+   queueMicrotask(() => {
+    if (this.destroyed || document.activeElement !== target || !this.body.contains(target)) return;
+    this.keepFocusVisible(target);
+   });
+  }, {signal});
   this.root.addEventListener('keydown', event => this.keydown(event), {signal});
   // Stop gameplay listeners, but retain native button activation and pointer behaviour.
   for (const name of ['keyup', 'pointerdown', 'pointerup', 'click'] as const) this.root.addEventListener(name, event => event.stopPropagation(), {signal});
@@ -139,6 +150,13 @@ export class EquipmentPanel {
    img.remove(); frame.classList.add('equipment-thumbnail-empty'); frame.textContent = '—';
    frame.title = `${name}: preview unavailable`;
   }, {once: true}); frame.append(img); return frame;
+ }
+ private keepFocusVisible(target: HTMLElement): void {
+  const viewport = this.body.getBoundingClientRect(), control = target.getBoundingClientRect(), clearance = 12;
+  const top = viewport.top + this.body.clientTop + clearance;
+  const bottom = viewport.top + this.body.clientTop + this.body.clientHeight - clearance;
+  if (control.bottom > bottom) this.body.scrollTop += Math.ceil(control.bottom - bottom);
+  else if (control.top < top) this.body.scrollTop -= Math.ceil(top - control.top);
  }
  private firstFocus(): HTMLElement {return this.root.querySelector<HTMLElement>(FOCUSABLE) ?? this.dialog;}
  private keydown(event: KeyboardEvent): void {
