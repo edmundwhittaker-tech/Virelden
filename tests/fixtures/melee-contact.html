@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Registered melee contact fixture</title><style>body{margin:0;background:#12181c;color:#e0d9ca;font:14px system-ui}main{width:640px;margin:24px auto}h1{font-size:20px}p{line-height:1.5}canvas{display:block;outline:1px solid #73694e}small{color:#a9b3b6}</style></head><body><main><h1>Registered melee contact — isolated renderer fixture</h1><p id="status">Loading actual player, weapon and raider textures…</p><div id="game"></div><p>Press <strong>F</strong> to attack. This fixed-target test pauses on the first actual damage or end of active motion. No saved expedition is read or changed.</p><small>Actual Adventure simulation and production renderers. A focused rendering test, not an earned gameplay route.</small></main><script type="module">
 import Phaser from 'phaser';
-import {ModularKnightSprite} from '/src/game/ModularKnightSprite.ts';
+import {WholeCharacterPlayerSprite as ModularKnightSprite} from '/src/game/WholeCharacterPlayerSprite.ts';
 import {KnightSprite} from '/src/game/KnightSprite.ts';
 import {createAdventure,attack,tick,adventureCanStand} from '/src/core/adventure.ts';
 import {WEAPON_CATALOG,WEAPON_IDS} from '/src/core/weaponCatalog.ts';

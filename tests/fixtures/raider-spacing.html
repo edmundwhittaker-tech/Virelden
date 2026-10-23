@@ -6,7 +6,7 @@
 <small>Actual Adventure movement/contact and production renderers, with one fixed simulation step per painted frame. Captures are taken after Phaser renders. This isolated fixed-target fixture is not an earned expedition route. F submits this fixture’s stored or pointer-derived aim directly to Adventure; production Scene keyboard-facing is outside this isolated test. No saved expedition is read or written.</small></main>
 <script type="module">
 import Phaser from 'phaser';
-import {ModularKnightSprite} from '/src/game/ModularKnightSprite.ts';
+import {WholeCharacterPlayerSprite as ModularKnightSprite} from '/src/game/WholeCharacterPlayerSprite.ts';
 import {KnightSprite} from '/src/game/KnightSprite.ts';
 import {createAdventure,attack,tick,adventureCanStand} from '/src/core/adventure.ts';
 import {WEAPON_CATALOG} from '/src/core/weaponCatalog.ts';

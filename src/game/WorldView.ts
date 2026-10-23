@@ -5,7 +5,7 @@ import {SIZE,PILLARS,project,type Point} from '../core/game.js';
 import {StationGateView} from './StationGateView.js';
 import {ArcherView,drawArrow} from './ArcherView.js';
 import {KnightSprite} from './KnightSprite.js';
-import {ModularKnightSprite} from './ModularKnightSprite.js';
+import {WholeCharacterPlayerSprite} from './WholeCharacterPlayerSprite.js';
 import {WARD_MANIFEST,DELVER_MANIFEST,MARCHER_MANIFEST} from './paintRig.js';
 import {createWeaponThumbnail} from './WeaponArt.js';
 import {ARMOR,ARMOR_SLOTS,type Equipment,type ArmorItem} from '../core/equipment.js';
@@ -31,7 +31,7 @@ function poly(g:Graphics,points:Point[],color:number,stroke=0x465052){
 }
 /** Textured, depth-sorted ward and the preserved directional character renderer. */
 export class WorldView{
-  private actor:ModularKnightSprite;
+  private actor:WholeCharacterPlayerSprite;
   private activeArea:AreaId='station';
   private stationObjects:Phaser.GameObjects.GameObject[]=[];
   private stationVisibility=new Map<Phaser.GameObjects.GameObject,boolean>();
@@ -58,7 +58,7 @@ export class WorldView{
   private enemyPositions:Point[]=[];
   private wallViews:{g:Graphics|Phaser.GameObjects.Image;left:number;right:number;top:number;bottom:number}[]=[];
   private occluders:{id:string;image:Phaser.GameObjects.Image;position:Point;radius:number|null}[]=[];
-  static preload(scene:Phaser.Scene){ExpeditionWorldView.preload(scene);ModularKnightSprite.preload(scene);StationGateView.preload(scene);ArcherView.preload(scene);for(const [key,url] of Object.entries({'ward-floor':courtUrl,'ward-masonry':masonryUrl,'ward-pillar':pillarUrl,'ward-rubble':rubbleUrl,'ward-mud':mudUrl,'ward-coffer':cofferUrl,'ward-forge':forgeUrl,'ward-lantern':lanternUrl}))scene.load.image(key,url);}
+  static preload(scene:Phaser.Scene){ExpeditionWorldView.preload(scene);WholeCharacterPlayerSprite.preload(scene);StationGateView.preload(scene);ArcherView.preload(scene);for(const [key,url] of Object.entries({'ward-floor':courtUrl,'ward-masonry':masonryUrl,'ward-pillar':pillarUrl,'ward-rubble':rubbleUrl,'ward-mud':mudUrl,'ward-coffer':cofferUrl,'ward-forge':forgeUrl,'ward-lantern':lanternUrl}))scene.load.image(key,url);}
   constructor(scene:Phaser.Scene){
     this.scene=scene;const staticStart=scene.children.list.length;this.stationGate=new StationGateView(scene);
     const floor=scene.add.graphics().setDepth(-1000);
@@ -154,7 +154,7 @@ export class WorldView{
     this.attackEffects=scene.add.graphics();
     this.healthBars=scene.add.graphics().setDepth(1500);
     this.leverView=scene.add.graphics().setDepth(groundDepth(project(LOCATIONS.lever).y,50));
-    this.actor=new ModularKnightSprite(scene);
+    this.actor=new WholeCharacterPlayerSprite(scene);
     // Enemy pools grow to the active catalog, not a station-only fixed actor count.
   }
   draw(position:Point,moving:boolean,facing:Facing){
@@ -212,7 +212,7 @@ export class WorldView{
   enemyViewSnapshot(){return this.enemies.map((_,index)=>({index,id:this.enemyState[index]?.id??null,hp:this.enemyState[index]?.hp??null,knightVisible:this.enemyObjects[index].some(object=>(object as Phaser.GameObjects.Image).visible&&(object as Phaser.GameObjects.Image).alpha>0),archerVisible:this.archerObjects.get(index)?.some(object=>(object as Phaser.GameObjects.Image).visible)??false,labelVisible:this.labels[index].visible}));}
   expeditionSnapshot(){return this.activeArea==='station'?{areaId:'station',enemySlots:this.enemies.length,activeEnemyViews:this.enemyObjects.filter(objects=>(objects[0] as Phaser.GameObjects.Image)?.visible).length}:this.expeditionViews.get(this.activeArea)?.snapshot();}
   armorReady(item:ArmorItem){return this.actor.hasArmorVisual(item);}
-  commitEquipment(equipment:Equipment){return this.actor.setEquipment(Object.fromEntries(ARMOR_SLOTS.map(slot=>[slot,ARMOR[equipment.equipped[slot]].set])) as Parameters<ModularKnightSprite['setEquipment']>[0]);}
+  commitEquipment(equipment:Equipment){return this.actor.setEquipment(Object.fromEntries(ARMOR_SLOTS.map(slot=>[slot,ARMOR[equipment.equipped[slot]].set])) as Parameters<WholeCharacterPlayerSprite['setEquipment']>[0]);}
   weaponReady(item:WeaponProfile){return this.actor.hasWeaponVisual(item)&&(item.hands===1||this.supportHandVerified);}
   armorThumbnail(item:ArmorItem){
     const cached=this.thumbnails.get(item.id);if(cached)return {src:cached};

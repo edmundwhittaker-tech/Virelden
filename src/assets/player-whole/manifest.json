@@ -1,0 +1,229 @@
+{
+  "scope": "Local staged prototype. Approved front idle/walk whole-body art; existing renderer for missing rear/actions. Not a complete character replacement.",
+  "approvedWalkReference": "earlier-vs-revised-same-scale.mp4 SHA256 b0dc8bd987e4f389e3f89b3f7b4cd1b856a774f97a91d96e9d4bb7037d55e074",
+  "framesPerSecond": 8,
+  "frameOrder": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "runtimeCanvas": [
+    576,
+    576
+  ],
+  "fixedRoot": [
+    288,
+    480
+  ],
+  "uniformRuntimeScale": 0.25,
+  "guideRoot": [
+    320,
+    631.9967308044434
+  ],
+  "guideTo88pxCommonScale": 0.17467039426525557,
+  "bodyTransforms": "Approved root-aware complete PNGs copied byte-for-byte. Uniform runtime scaling plus whole-character horizontal mirroring only. No independently transformed parts.",
+  "fixedAppearance": "Approved starter Ward prototype; no Delver/Marcher/mixed-piece sprites supplied. Existing equipment stats, items, UI and saves unchanged.",
+  "carryAttachment": "Approximate measured gauntlet centres. One-handed carry only; poleaxe support grip is NOT held until the existing two-handed attack renderer is selected.",
+  "idle": {
+    "runtime": "approved-front/idle.png",
+    "sha256": "22a5c2e3fbad81617ba411d42a1618872471a10d8311c7eed18918403bb21f92",
+    "sourceSize": [
+      1145,
+      1374
+    ],
+    "provisionalFixedRoot": [
+      610,
+      1260
+    ],
+    "provisionalUniformScale": 0.075,
+    "needsNativeReview": true
+  },
+  "frontWalk": [
+    {
+      "frame": 1,
+      "approvedOriginal": "walk-01-v2.png",
+      "approvedOriginalSHA256": "65597ad4b444043938b638ddb8ad43963f63dabde7f57a8c27b834468e09ac4e",
+      "runtime": "approved-front/walk-01.png",
+      "runtimeSHA256": "67cfee69cfedcde7bed83fc623df9df72b12db683ac10d5b9cb4c5f5bd0adbde",
+      "sourceToGuide": {
+        "positiveUniformScale": 0.4446655269734569,
+        "translationXY": [
+          24.267267967661155,
+          71.6501556101978
+        ],
+        "rotationDegrees": 0
+      },
+      "sourceFixedRootEstimate": [
+        665.0678186033338,
+        1260.1529491349438
+      ],
+      "supportingSide": "Left",
+      "manualFitResidualRMSGuidePixels": 9.553462196626073
+    },
+    {
+      "frame": 2,
+      "approvedOriginal": "walk-02-v2.png",
+      "approvedOriginalSHA256": "eddf4d4e4268cd2fd3593ae9cc58c199b02adadb6ca0347bc1c704efba240e18",
+      "runtime": "approved-front/walk-02.png",
+      "runtimeSHA256": "662d6451789e3bae41136793e3480698e8100b77d944633acb03a8fa3fdc5e0a",
+      "sourceToGuide": {
+        "positiveUniformScale": 0.4352214127731485,
+        "translationXY": [
+          37.227349602342315,
+          82.31997809303576
+        ],
+        "rotationDegrees": 0
+      },
+      "sourceFixedRootEstimate": [
+        649.721365030925,
+        1262.9818675716604
+      ],
+      "supportingSide": "Left",
+      "manualFitResidualRMSGuidePixels": 8.91741794163298
+    },
+    {
+      "frame": 3,
+      "approvedOriginal": "walk-03-v2.png",
+      "approvedOriginalSHA256": "491ec56c76d6598a4e2c498cef8b0b059ff8ff08c28002dd5409c533feb3d5c6",
+      "runtime": "approved-front/walk-03.png",
+      "runtimeSHA256": "d5ea886e781f9c064945e3a950e44f0419979ce323590bcc0882b6dc77ef27a3",
+      "sourceToGuide": {
+        "positiveUniformScale": 0.4706923791438417,
+        "translationXY": [
+          18.753940730135525,
+          59.57792548642712
+        ],
+        "rotationDegrees": 0
+      },
+      "sourceFixedRootEstimate": [
+        640.0062389321262,
+        1216.1208268534285
+      ],
+      "supportingSide": "Left",
+      "manualFitResidualRMSGuidePixels": 8.097361166462104
+    },
+    {
+      "frame": 4,
+      "approvedOriginal": "walk-04-v2.png",
+      "approvedOriginalSHA256": "169d9df666ff1e9baa92812371314831723a09e0906fed8970ec9b42d6e9b123",
+      "runtime": "approved-front/walk-04.png",
+      "runtimeSHA256": "3286aa1605d560905792e6cf4cc47cb4456975cb3f119d76ed66b7879736c9af",
+      "sourceToGuide": {
+        "positiveUniformScale": 0.4581029307043025,
+        "translationXY": [
+          29.325129718902588,
+          87.07104440763564
+        ],
+        "rotationDegrees": 0
+      },
+      "sourceFixedRootEstimate": [
+        634.518687392382,
+        1189.5267414225466
+      ],
+      "supportingSide": "Left",
+      "manualFitResidualRMSGuidePixels": 7.058773833464176
+    },
+    {
+      "frame": 5,
+      "approvedOriginal": "walk-05-v2.png",
+      "approvedOriginalSHA256": "a534d86574634199c18ceb9e615cb40e1bb44a7b41f41c04e3fedf65d402c4e5",
+      "runtime": "approved-front/walk-05.png",
+      "runtimeSHA256": "59d5dd24559dcb8ff2bfdb428be8647f0cb83349e411fef7c54e85da90bf6e46",
+      "sourceToGuide": {
+        "positiveUniformScale": 0.4631727095231805,
+        "translationXY": [
+          29.933400355437755,
+          74.66358365184954
+        ],
+        "rotationDegrees": 0
+      },
+      "sourceFixedRootEstimate": [
+        626.2601264724238,
+        1203.2944422100086
+      ],
+      "supportingSide": "Right",
+      "manualFitResidualRMSGuidePixels": 7.155725402174112
+    },
+    {
+      "frame": 6,
+      "approvedOriginal": "walk-06-v2.png",
+      "approvedOriginalSHA256": "00b9daadd1f57bc80f0c76865823ecd2dbfcbd46e1869bfc1da8aa7e34a75eee",
+      "runtime": "approved-front/walk-06.png",
+      "runtimeSHA256": "ea7932127282100faf06f86a6e8301bb7ebaa314c0560064887b7afd80c62d40",
+      "sourceToGuide": {
+        "positiveUniformScale": 0.46183938729410035,
+        "translationXY": [
+          22.378264846634693,
+          85.57342774131442
+        ],
+        "rotationDegrees": 0
+      },
+      "sourceFixedRootEstimate": [
+        644.4269227384868,
+        1183.1457387482749
+      ],
+      "supportingSide": "Right",
+      "manualFitResidualRMSGuidePixels": 7.044319950513085
+    },
+    {
+      "frame": 7,
+      "approvedOriginal": "walk-07-v2.png",
+      "approvedOriginalSHA256": "9d31ddac374c33d37d2e795be15c9f97d8fad320952f0716fba773576eac15d9",
+      "runtime": "approved-front/walk-07.png",
+      "runtimeSHA256": "487c13be67928e2a8cc1c579b9166db91086f0ade5ab7fc49707fb815505fc22",
+      "sourceToGuide": {
+        "positiveUniformScale": 0.4602617485025151,
+        "translationXY": [
+          11.825194019114633,
+          70.22307878781237
+        ],
+        "rotationDegrees": 0
+      },
+      "sourceFixedRootEstimate": [
+        669.5642359669204,
+        1220.5525526385584
+      ],
+      "supportingSide": "Right",
+      "manualFitResidualRMSGuidePixels": 9.290363963827284
+    },
+    {
+      "frame": 8,
+      "approvedOriginal": "walk-08-v2.png",
+      "approvedOriginalSHA256": "72cb5098e55d82758f5e463c1de031bad1495e1fbca41e7ee8fbdc67dc6ef46e",
+      "runtime": "approved-front/walk-08.png",
+      "runtimeSHA256": "9de70dcc9583d0d547f91eaaa9ba225a0f2169bfbf36d2888cf9736babfc801b",
+      "sourceToGuide": {
+        "positiveUniformScale": 0.453238419113809,
+        "translationXY": [
+          17.228662249555214,
+          79.99231661577997
+        ],
+        "rotationDegrees": 0
+      },
+      "sourceFixedRootEstimate": [
+        668.0178135437772,
+        1217.9117897109559
+      ],
+      "supportingSide": "Right",
+      "manualFitResidualRMSGuidePixels": 11.006741480368973
+    }
+  ],
+  "missing": [
+    "matching rear idle and eight walk frames",
+    "matching cut/thrust/overhead/hook action body frames",
+    "matching roll frames",
+    "matching lever reach/pull/settle frames",
+    "complete Ward/Delver/Marcher appearance mapping",
+    "verified two-hand poleaxe carry/walk if desired"
+  ],
+  "limits": [
+    "Uniform root registration is approximate, not proved per-foot world locking.",
+    "Horizontal east/west use approved lower-right/front view approximation.",
+    "Artwork and silhouette pop at legacy action transitions must pass screenshot review before release."
+  ]
+}

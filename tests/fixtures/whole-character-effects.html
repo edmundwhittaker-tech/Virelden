@@ -1,0 +1,13 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Whole-character root/effects fixture</title><style>body{margin:0;background:#151b1d;color:#ddd;font:14px system-ui}main{margin:24px}canvas{outline:1px solid #776e57}</style></head><body><main><h1>Production whole-character root/effects</h1><p>Fixed local renderer fixture. No adventure or save state is mutated.</p><div id="game"></div></main><script type="module">
+import Phaser from 'phaser';
+import {WholeCharacterPlayerSprite} from '/src/game/WholeCharacterPlayerSprite.ts';
+const query=new URLSearchParams(location.search),flipped=query.get('flipped')==='1',walking=query.get('motion')==='walk',angle=Number(query.get('angle')||0),size=Number(query.get('size')||1);
+let actor,scene,ready=false,rendered=false;
+class Proof extends Phaser.Scene{
+ preload(){WholeCharacterPlayerSprite.preload(this);}
+ create(){scene=this;actor=new WholeCharacterPlayerSprite(this);this.add.ellipse(320,250,32,12,0x938974,.45).setDepth(-1);this.game.events.once(Phaser.Core.Events.POST_RENDER,()=>{rendered=true;});ready=true;}
+ update(){if(!ready)return;actor.draw({position:{x:320,y:250},view:'front',flipped,motion:walking?'walk':'idle',time:0,weapon:'sword',weaponHands:1,weaponReach:75});actor.effects(0xffffff,angle,.8,size);}
+}
+window.wholeCharacterEffectsSnapshot=()=>({ready:ready&&rendered,character:ready?actor.snapshot():null,flipped,walking,angle,size});
+new Phaser.Game({type:Phaser.CANVAS,parent:'game',width:640,height:400,backgroundColor:'#20262b',scene:[Proof],banner:false,render:{antialias:true,roundPixels:false},audio:{noAudio:true}});
+</script></body></html>
