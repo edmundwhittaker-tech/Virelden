@@ -1,0 +1,54 @@
+name: Neutral fit diagnostic (not release acceptance)
+on:
+  push:
+    branches: [qa/neutral-armour-fit-2026-10-22]
+permissions:
+  contents: read
+jobs:
+  actual-renderer-standing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run build
+      - name: Native browser with normal Canvas and requestAnimationFrame
+        run: npx playwright install --with-deps chromium
+      - name: Standing silhouettes and actual lever gauntlet contact
+        run: npx playwright test --config playwright.neutral-fit.config.ts
+      - name: Retain native standing evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neutral-fit-native-evidence
+          path: |
+            test-results/neutral-fit
+            test-results/fitted-lever
+          retention-days: 7
+  registered-weapon-contact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: All actual poleaxe image grips
+        run: npx playwright test --config playwright.poleaxe.config.ts
+      - name: All six weapons and physical legacy-NPC contacts
+        run: npx playwright test --config playwright.contact.config.ts
+      - name: Retain rendered contact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fitted-rig-weapon-contact-evidence
+          path: |
+            test-results/poleaxe-support
+            test-results/melee-contact
+          retention-days: 7

@@ -1,0 +1,8 @@
+{
+  "name": "virelden-encoding-tools",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@ffprobe-installer/linux-x64": "5.2.0"
+  }
+}

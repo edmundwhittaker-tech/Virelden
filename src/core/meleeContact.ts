@@ -25,12 +25,12 @@ export const HUMAN_BODY:readonly Capsule[]=Object.freeze([
  {a:{x:0,y:-79},b:{x:0,y:-75},radius:5},
  {a:{x:0,y:-28},b:{x:0,y:-10},radius:6},
 ]);
-export interface MeleeSweep {readonly weapon:WeaponId;readonly aim:Point;readonly facing:Facing;readonly from:number;readonly to:number}
+export interface MeleeSweep {readonly weapon:WeaponId;readonly aim:Point;readonly facing:Facing;readonly from:number;readonly to:number;readonly poseAt?:(progress:number)=>RigPose}
 export interface MeleeFrame {readonly progress:number;readonly pose:RigPose;readonly capsules:readonly Capsule[]}
 const clamp=(p:number)=>Math.max(0,Math.min(1,Number.isFinite(p)?p:0));
-export function meleeFrame(weapon:WeaponId,aim:Point,facing:Facing,progress:number):MeleeFrame{
+export function meleeFrame(weapon:WeaponId,aim:Point,facing:Facing,progress:number,sharedPose?:RigPose):MeleeFrame{
  const w=WEAPON_CATALOG[weapon],flipped=facing.endsWith('west'),p=clamp(progress);
- const pose=evaluateRig({motion:'attack',time:0,view:facing.startsWith('north')?'rear':'front',flipped,phase:'active',progress:p,weapon,aim,weaponMotion:w.motion,weaponHands:w.hands,weaponReach:w.range});
+ const pose=sharedPose??evaluateRig({motion:'attack',time:0,view:facing.startsWith('north')?'rear':'front',flipped,phase:'active',progress:p,weapon,aim,weaponMotion:w.motion,weaponHands:w.hands,weaponReach:w.range});
  const scale=pose.weaponLength/LENGTHS[weapon],c=Math.cos(pose.weaponAngle),s=Math.sin(pose.weaponAngle);
  const point=(x:number,y:number):Point=>{x*=scale;y*=scale*(flipped?-1:1);return {x:pose.hand.x+x*c-y*s,y:pose.hand.y+x*s+y*c};};
  return {progress:p,pose,capsules:PROXIES[weapon].map(([ax,ay,bx,by,radius])=>({a:point(ax,ay),b:point(bx,by),radius:radius*scale}))};
@@ -42,7 +42,7 @@ export function sampleMeleeSweep(input:MeleeSweep):readonly MeleeFrame[]{
  const from=clamp(input.from),to=Math.max(from,clamp(input.to)),w=WEAPON_CATALOG[input.weapon];
  const angle=w.motion.kind==='cut'?Math.abs(w.motion.endAngle-w.motion.startAngle):Math.abs(w.motion.endAngle);
  const steps=Math.min(80,Math.max(1,Math.ceil((to-from)*Math.max(angle,.1)/.04)));
- return Array.from({length:from===to?1:steps+1},(_,i)=>meleeFrame(input.weapon,input.aim,input.facing,from+(to-from)*i/steps));
+ return Array.from({length:from===to?1:steps+1},(_,i)=>{const p=from+(to-from)*i/steps;return meleeFrame(input.weapon,input.aim,input.facing,p,input.poseAt?.(p));});
 }
 const cross=(a:Point,b:Point,c:Point)=>(b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x);
 function pointSegmentSquared(p:Point,a:Point,b:Point):number{const x=b.x-a.x,y=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*x+(p.y-a.y)*y)/(x*x+y*y||1)));return (p.x-a.x-x*t)**2+(p.y-a.y-y*t)**2;}
@@ -58,3 +58,4 @@ export function weaponTouchesBody(frame:MeleeFrame,targetFoot:Point):boolean{
   return segmentDistanceSquared(weapon.a,weapon.b,a,b)<=(weapon.radius+body.radius)**2;
  }));
 }
+

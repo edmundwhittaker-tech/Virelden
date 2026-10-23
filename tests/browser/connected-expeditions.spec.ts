@@ -33,7 +33,17 @@ async function seed(options:{area:ExpeditionId;living?:boolean;opened?:boolean;l
  if(options.area==='record-annex'){clearCurrent();c.captureArea(s);c.activateArea(s,'record-annex');}
  if(!options.living)clearCurrent(options.bossAlive);
  if(options.loot){for(const loot of c.EXPEDITIONS[s.areaId].loot){s.position={...loot.stance};expect(c.interact(s),'seed uses real guarded loot transaction').toBe(true);}}
- if(options.opened){const lever=c.EXPEDITIONS[s.areaId].shortcuts[0];s.position={...lever.stance};expect(c.interact(s),'seed uses real lever transaction').toBe(true);for(let i=0;i<Math.ceil((lever.animationSeconds+.9)*60);i++)c.tick(s,{x:0,y:0},1/60);expect(s.shortcut).toBe(true);}
+ if(options.opened){
+  const lever=c.EXPEDITIONS[s.areaId].shortcuts[0];s.position={...lever.stance};
+  expect(c.interact(s),'seed uses real lever transaction').toBe(true);
+  // Include the actual approach, settle, reach, pull, mechanism opening and release.
+  // This is only an already-explicit seed; never manufacture the completed flag.
+  const maxTicks=8*60;
+  for(let i=0;i<maxTicks&&(!s.shortcut||s.shortcutAnimation||s.leverAlignment);i++)c.tick(s,{x:0,y:0},1/60);
+  expect(s.shortcut,'real seeded mechanism completes within eight simulated seconds').toBe(true);
+  expect(s.shortcutAnimation,'mechanism opening has finished before serialization').toBeNull();
+  expect(s.leverAlignment,'actual hand release has ended before serialization').toBeNull();
+ }
  c.captureArea(s);c.activateArea(s,options.area);const raw=c.prepareCampaignSave(s);expect(raw,'complete seeded v4 validates').not.toBeNull();
  const restored=c.readCampaignSave(raw!);expect(restored?.areaId).toBe(options.area);expect(restored?.progression).toEqual(s.progression);return {raw:raw!,initial:restored!,catalog:c.EXPEDITIONS[options.area]};
 }
@@ -178,3 +188,4 @@ test('seeded v4 Annex shelves have grounded visible feet, truthful collision and
  for(const prop of rendered){const source=expected.find((p:any)=>p.id===prop.id);expect(prop.world).toEqual({x:source.x,y:source.y});expect(prop.footprint).toEqual({width:46,height:20});expect(prop.decorative).toBe(false);expect(prop.width).toBe(52);expect(prop.height).toBe(123);expect(prop.originY).toBe(.879905);expect(prop.foot).toEqual(projection(prop.world));expect(c.adventureCanStand(await state(page),prop.world)).toBe(false);}
  await walkTo(page,{x:550,y:600});await hold(page,['KeyW','KeyD'],250);const blocked=await state(page);expect(c.adventureCanStand(blocked,blocked.position)).toBe(true);expect(blocked.position.y).toBeGreaterThanOrEqual(554);expect(Math.abs(blocked.position.x-550)).toBeLessThan(35);await evidence(page,'annex-shelves-visible-ground-feet-and-native-collision');
 });
+

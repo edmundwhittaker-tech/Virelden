@@ -1,0 +1,68 @@
+name: Fitted motion comparison (not release acceptance)
+on:
+  push:
+    branches: [qa/fitted-projected-motion-2026-10-22]
+permissions:
+  contents: read
+jobs:
+  native-compact-motion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - run: npm run build
+      - name: Pure projected geometry (not art acceptance)
+        run: node --experimental-strip-types --test experiments/projected-fit/projectedLocomotion.test.mjs
+      - name: Authored east fixed-bone and exact relaxed-stop tests
+        run: |
+          npx tsc --strict --skipLibCheck --target ES2022 --module NodeNext --moduleResolution NodeNext --outDir .test-jog experiments/authored-jog/gameJog.ts
+          node --test experiments/authored-jog/gameJog.test.mjs
+      - run: npx playwright install chromium
+      - name: Revalidate neutral and real lever image transforms
+        run: npx playwright test --config playwright.neutral-fit.config.ts
+      - name: Revalidate all poleaxe primary/support image grips
+        run: npx playwright test --config playwright.poleaxe.config.ts
+      - name: Native clips and actual image-pivot plus settled-neutral registration
+        env:
+          FIT_MOTION_DEFER_TIMING: '1'
+        run: npx playwright test --config playwright.fit-motion.config.ts
+      - name: Preserve native pixels before system tooling download
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fitted-motion-early-capture-encoding-audit-pending
+          path: test-results/fit-motion
+          retention-days: 7
+      # Third-party npm repack, not an official/attested FFmpeg build.
+      # Use only with trusted locally captured media; never upload this tool.
+      - name: Install explicit encoded-frame timing tool
+        run: |
+          set -euo pipefail
+          test "$(uname -s)-$(uname -m)" = Linux-x86_64
+          npm ci --prefix .github/encoding-tools --ignore-scripts --no-audit --no-fund
+          probe_dir="$GITHUB_WORKSPACE/.github/encoding-tools/node_modules/@ffprobe-installer/linux-x64"
+          printf '%s  %s\n' \
+            '576c21674291ec1948d507ea8ab0d78eb6621a0be8c6f1a6db0f50c5fcb1e0f9' \
+            "$probe_dir/ffprobe" | sha256sum --check --strict
+          chmod u+x "$probe_dir/ffprobe"
+          export PATH="$probe_dir:$PATH"
+          printf '%s\n' "$probe_dir" >> "$GITHUB_PATH"
+          test "$(command -v ffprobe)" = "$probe_dir/ffprobe"
+          ffprobe -version
+      - name: Mandatory independent encoded-PTS cadence and gap audit
+        run: node experiments/projected-fit/auditEncoding.mjs test-results/fit-motion
+      - name: Preserve native motion evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fitted-motion-native-evidence
+          path: |
+            test-results/fit-motion
+            test-results/neutral-fit
+            test-results/fitted-lever
+            test-results/poleaxe-support
+          retention-days: 7

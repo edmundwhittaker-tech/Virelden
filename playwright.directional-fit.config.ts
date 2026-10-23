@@ -1,0 +1,3 @@
+import{defineConfig}from'@playwright/test';
+/** Eight scripted native headings, not gameplay/controller/turn acceptance. */
+export default defineConfig({testDir:'./experiments/directional-native',testMatch:'native.browser.spec.ts',workers:1,retries:0,timeout:120_000,use:{baseURL:'http://127.0.0.1:4188',viewport:{width:760,height:470},headless:true,trace:'off',video:'off',screenshot:'only-on-failure'},outputDir:'test-results/directional-fit',webServer:{command:'npm run dev -- --host 127.0.0.1 --port 4188 --strictPort',url:'http://127.0.0.1:4188',reuseExistingServer:!process.env.CI,timeout:30_000}});
