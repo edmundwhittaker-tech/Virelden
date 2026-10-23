@@ -1,13 +1,13 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Registered melee contact fixture</title><style>body{margin:0;background:#12181c;color:#e0d9ca;font:14px system-ui}main{width:640px;margin:24px auto}h1{font-size:20px}p{line-height:1.5}canvas{display:block;outline:1px solid #73694e}small{color:#a9b3b6}</style></head><body><main><h1>Registered melee contact — isolated renderer fixture</h1><p id="status">Loading actual player, weapon and raider textures…</p><div id="game"></div><p>Press <strong>F</strong> to attack. This fixed-target test pauses on the first actual damage or end of active motion. No saved expedition is read or changed.</p><small>Actual Adventure simulation and production renderers. A focused rendering test, not an earned gameplay route.</small></main><script type="module">
 import Phaser from 'phaser';
 import {WholeCharacterPlayerSprite as ModularKnightSprite} from '/src/game/WholeCharacterPlayerSprite.ts';
-import {KnightSprite} from '/src/game/KnightSprite.ts';
+import {WholeEnemySprite as KnightSprite} from '/src/game/WholeEnemySprite.ts';
 import {createAdventure,attack,tick,adventureCanStand} from '/src/core/adventure.ts';
 import {WEAPON_CATALOG,WEAPON_IDS} from '/src/core/weaponCatalog.ts';
 import {project,STEP} from '/src/core/game.ts';
 import {facingForInput} from '/src/core/facing.ts';
 import floorUrl from '/src/assets/environment-v1/slate-court.webp';
-const query=new URLSearchParams(location.search),id=WEAPON_IDS.includes(query.get('weapon'))?query.get('weapon'):'sword',direction=Math.max(0,Math.min(7,Number(query.get('direction'))||0)),side=['left','center','right'].includes(query.get('side'))?query.get('side'):'center';
+const query=new URLSearchParams(location.search),id=WEAPON_IDS.includes(query.get('weapon'))?query.get('weapon'):'sword',direction=Math.max(0,Math.min(7,Number(query.get('direction'))||0)),side=['left','center','right'].includes(query.get('side'))?query.get('side'):'center',giant=query.get('enemy')==='giant';
 const clean=x=>Math.abs(x)<1e-8?0:x,aim={x:clean(Math.cos(direction*Math.PI/4)),y:clean(Math.sin(direction*Math.PI/4))},w=WEAPON_CATALOG[id];
 const edge=side==='left'?-1:side==='right'?1:0,local=w.shape.kind==='sector'?{x:Math.cos(edge*.99*w.shape.halfAngle)*w.range*.98,y:Math.sin(edge*.99*w.shape.halfAngle)*w.range*.98}:{x:side==='center'?130:100,y:edge*16.5};
 const target={x:local.x*aim.x-local.y*aim.y,y:local.x*aim.y+local.y*aim.x},groundFor=(p,t)=>({x:p.x+t.x/1.6+t.y/.8,y:p.y+t.y/.8-t.x/1.6});
@@ -16,13 +16,13 @@ class ContactScene extends Phaser.Scene{
  preload(){ModularKnightSprite.preload(this);KnightSprite.preload(this);this.load.image('contact-floor',floorUrl);}
  create(){scene=this;state=createAdventure();state.gatePhase='open';let found=false;
  outer:for(let gy=-1800;gy<600;gy+=40)for(let gx=80;gx<580;gx+=40){const base={x:gx,y:gy},to=groundFor(base,target),n=Math.ceil(Math.hypot(to.x-base.x,to.y-base.y)/6);if(!adventureCanStand(state,base)||!adventureCanStand(state,to))continue;for(let i=1;i<n;i++)if(!adventureCanStand(state,{x:base.x+(to.x-base.x)*i/n,y:base.y+(to.y-base.y)*i/n}))continue outer;state.position=base;found=true;break outer;}
- if(!found)throw Error('No valid collision-free contact arrangement');state.aim={...aim};state.equipped=id;state.owned=[id];const position=groundFor(state.position,target);state.enemies=[{id:'audit',kind:'raider',position,home:position,hp:1000,maxHp:1000,phase:'stagger',timer:100,aim:{x:-1,y:0},reward:0}];
+ if(!found)throw Error('No valid collision-free contact arrangement');state.aim={...aim};state.equipped=id;state.owned=[id];const position=groundFor(state.position,target);state.enemies=[{id:giant?'upper-captain':'audit',kind:giant?'captain':'raider',position,home:position,hp:1000,maxHp:1000,phase:'stagger',timer:100,aim:{x:-1,y:0},reward:0}];
  this.add.tileSprite(0,0,640,400,'contact-floor').setOrigin(0).setScrollFactor(0).setDepth(-1000).setAlpha(.55);actor=new ModularKnightSprite(this);foe=new KnightSprite(this);const p=project(state.position);this.cameras.main.centerOn(p.x+target.x/2,p.y+target.y/2-43);
  this.input.keyboard.on('keydown-F',()=>{if(!started){started=attack(state);document.getElementById('status').textContent=`${id} · direction${direction} · ${side} · running`;}});
  this.game.canvas.tabIndex=0;this.game.canvas.focus();this.drawActors();ready=true;document.getElementById('status').textContent=`${id} · direction${direction} · ${side} · ready (F)`;
  }
  drawActors(){const a=state.attack,phase=a.phase,duration=phase==='windup'?w.windup:phase==='active'?w.active:w.recovery,progress=phase==='idle'?0:Math.max(0,Math.min(1,1-a.timer/duration)),facing=phase==='idle'?facingForInput(aim,'east'):a.facing;
- actor.draw({position:project(state.position),view:facing.startsWith('north')?'rear':'front',flipped:facing.endsWith('west'),motion:phase==='idle'?'idle':'attack',time:state.time,phase:phase==='idle'?undefined:phase,progress,weapon:id,aim:phase==='idle'?aim:a.aim,weaponMotion:w.motion,weaponHands:w.hands,weaponReach:w.range});actor.effects(0xffffff,0,1,1);foe.draw(state.enemies[0].position,false,'west');foe.effects(state.enemies[0].hp<1000?0xf0c5a0:0xa18b84,0,1,1);
+ actor.draw({position:project(state.position),view:facing.startsWith('north')?'rear':'front',flipped:facing.endsWith('west'),motion:phase==='idle'?'idle':'attack',time:state.time,phase:phase==='idle'?undefined:phase,progress,weapon:id,aim:phase==='idle'?aim:a.aim,weaponMotion:w.motion,weaponHands:w.hands,weaponReach:w.range});actor.effects(0xffffff,0,1,1);foe.draw(state.enemies[0],false,state.time);
  }
  update(_time,delta){if(!ready)return;if(started&&!done){accumulator+=Math.min(.1,delta/1000);while(accumulator>=STEP&&!done){tick(state,{x:0,y:0},STEP);accumulator-=STEP;if(state.enemies[0].hp<1000){done=true;result='hit';}else if(state.attack.phase==='recovery'||state.attack.phase==='idle'){done=true;result='miss';}}}this.drawActors();if(done)document.getElementById('status').textContent=`${id} · direction${direction} · ${side} · ${result} · ${1000-state.enemies[0].hp} damage`;}
 }

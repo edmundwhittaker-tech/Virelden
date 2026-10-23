@@ -25,8 +25,8 @@ test('screen-relative controls animate and opposite keys cancel',async({page})=>
  await page.keyboard.down('KeyA');await page.keyboard.down('KeyD');await page.waitForTimeout(60);before=await state(page);await page.waitForTimeout(120);expect((await state(page)).position).toEqual(before.position);await page.keyboard.up('KeyA');await page.keyboard.up('KeyD');
 });
 for(const [keys,direction,texture,flipped] of [
- [['KeyW','KeyD'],'north-east','modular-plate',false],
- [['KeyW','KeyA'],'north-west','modular-plate',true],
+ [['KeyW','KeyD'],'north-east','whole-character-approved-rear',false],
+ [['KeyW','KeyA'],'north-west','whole-character-approved-rear',true],
  [['KeyS','KeyD'],'south-east','whole-character-approved-front',false],
  [['KeyS','KeyA'],'south-west','whole-character-approved-front',true],
 ] as const){test(`full-plate walking and idle ${direction}`,async({page})=>{
@@ -36,10 +36,10 @@ for(const [keys,direction,texture,flipped] of [
  const walking=page.waitForFunction(direction=>{const c=window.vireldenDebug!().character;return c.direction===direction&&c.walking;},direction,{polling:'raf'});
  for(const k of keys)await page.keyboard.down(k);
  await walking;
- const walkingState=(await state(page)).character;expect(walkingState.flipped).toBe(flipped);expect(walkingState.texture.startsWith(texture)).toBe(true);if(direction.startsWith('south')){expect(walkingState.kind).toBe('whole-character-sprite');expect(walkingState.parts).toEqual(['whole-character']);}else expect(walkingState.coverage).toEqual({kind:'legacy-action-fallback',reason:'missing-rear-art'});
+ const walkingState=(await state(page)).character;expect(walkingState.flipped).toBe(flipped);expect(walkingState.frame).toBeGreaterThanOrEqual(0);expect(walkingState.frame).toBeLessThan(8);expect(walkingState.texture).toBe(`${texture}-walk-${walkingState.frame+1}`);expect(walkingState.kind).toBe('whole-character-sprite');expect(walkingState.parts).toEqual(['whole-character']);expect(walkingState.coverage).toEqual({kind:'whole-character'});
  for(const k of [...keys].reverse())await page.keyboard.up(k);
  await expect.poll(async()=>(await state(page)).character.walking).toBe(false);
- const idleState=(await state(page)).character;expect(idleState).toMatchObject({direction,frame:0});expect(idleState.texture).toBe(direction.startsWith('south')?'whole-character-approved-front-idle':texture);
+ const idleState=(await state(page)).character;expect(idleState).toMatchObject({direction,frame:0});expect(idleState.texture).toBe(`${texture}-idle`);
 });}
 test('attack and roll spend stamina, recover, and prevent chaining',async({page})=>{
  await open(page);await page.keyboard.press('KeyJ');await expect.poll(async()=>(await state(page)).stamina).toBeLessThan(90);

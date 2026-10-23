@@ -65,7 +65,7 @@ export class EquipmentPanel {
   const close = this.button('Close · Esc', 'close', () => this.close()); close.classList.add('equipment-close');
   header.append(heading, close); this.body = element('div', 'equipment-body');
   this.live = element('p', 'equipment-feedback'); this.live.setAttribute('role', 'status'); this.live.setAttribute('aria-live', 'polite'); this.live.setAttribute('aria-atomic', 'true');
-  const footer = element('footer', 'equipment-footer', 'Tab to move · Enter / Space to choose · Esc to return');
+  const footer = element('footer', 'equipment-footer', 'New idle/walk sprites use one outfit; equipped stats still apply. Attacks, rolls and lever pulls temporarily use earlier animations. Tab to move · Enter / Space to choose · Esc to return');
   this.dialog.append(header, this.body, this.live, footer); this.root.append(this.dialog); options.host.append(this.root);
   const signal = this.abort.signal;
   this.root.addEventListener('keydown', event => this.keydown(event), {signal});

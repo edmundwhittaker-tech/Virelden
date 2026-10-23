@@ -52,8 +52,8 @@ export function segmentDistanceSquared(a:Point,b:Point,c:Point,d:Point):number{
  if(abC*abD<0&&cdA*cdB<0)return 0;
  return Math.min(pointSegmentSquared(a,c,d),pointSegmentSquared(b,c,d),pointSegmentSquared(c,a,b),pointSegmentSquared(d,a,b));
 }
-export function weaponTouchesBody(frame:MeleeFrame,targetFoot:Point):boolean{
- return frame.capsules.some(weapon=>HUMAN_BODY.some(body=>{
+export function weaponTouchesBody(frame:MeleeFrame,targetFoot:Point,receivingBody:readonly Capsule[]=HUMAN_BODY):boolean{
+ return frame.capsules.some(weapon=>receivingBody.some(body=>{
   const a={x:targetFoot.x+body.a.x,y:targetFoot.y+body.a.y},b={x:targetFoot.x+body.b.x,y:targetFoot.y+body.b.y};
   return segmentDistanceSquared(weapon.a,weapon.b,a,b)<=(weapon.radius+body.radius)**2;
  }));

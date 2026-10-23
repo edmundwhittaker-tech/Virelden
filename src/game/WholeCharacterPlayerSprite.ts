@@ -8,21 +8,31 @@ import walk05 from '../assets/player-whole/approved-front/walk-05.png';
 import walk06 from '../assets/player-whole/approved-front/walk-06.png';
 import walk07 from '../assets/player-whole/approved-front/walk-07.png';
 import walk08 from '../assets/player-whole/approved-front/walk-08.png';
+import rearIdle from '../assets/player-whole/approved-rear/idle.png';
+import rearWalk01 from '../assets/player-whole/approved-rear/walk-01.png';
+import rearWalk02 from '../assets/player-whole/approved-rear/walk-02.png';
+import rearWalk03 from '../assets/player-whole/approved-rear/walk-03.png';
+import rearWalk04 from '../assets/player-whole/approved-rear/walk-04.png';
+import rearWalk05 from '../assets/player-whole/approved-rear/walk-05.png';
+import rearWalk06 from '../assets/player-whole/approved-rear/walk-06.png';
+import rearWalk07 from '../assets/player-whole/approved-rear/walk-07.png';
+import rearWalk08 from '../assets/player-whole/approved-rear/walk-08.png';
 import {ModularKnightSprite, type ArmorLoadout, type DrawFrame} from './ModularKnightSprite.js';
 import {evaluateRig, type RigPose} from '../core/modularRig.js';
-import {WHOLE_CHARACTER_WALK,FRONT_CARRY_HANDS,wholeCharacterCoverage,wholeCharacterWalkFrame,wholeCharacterHand,wholeCharacterOriginX,wholeCharacterEffectPoint} from '../core/wholeCharacterSprite.js';
+import {WHOLE_CHARACTER_WALK,FRONT_CARRY_HANDS,REAR_CARRY_HANDS,FRONT_IDLE_HAND,REAR_IDLE_HAND,wholeCharacterCoverage,wholeCharacterWalkFrame,wholeCharacterHand,wholeCharacterOriginX,wholeCharacterEffectPoint} from '../core/wholeCharacterSprite.js';
 import {WEAPON_ART, weaponTexture, weaponArtReady} from './WeaponArt.js';
 import {placeWeaponArt} from '../core/weaponPlacement.js';
 
-const IDLE_KEY='whole-character-approved-front-idle';
-const WALK_URLS=[walk01,walk02,walk03,walk04,walk05,walk06,walk07,walk08];
-const walkKey=(frame:number)=>`whole-character-approved-front-walk-${frame+1}`;
-// A single provisional uniform idle fit, not per-frame alpha-bottom grounding.
-// Its source is untouched; runtime/native transition QA must accept this fit.
-const IDLE={width:1145,height:1374,root:[610,1260] as const,scale:.075,hand:[385,740] as const};
+const IDLE_URLS={front:idleUrl,rear:rearIdle};
+const idleKey=(view:'front'|'rear')=>`whole-character-approved-${view}-idle`;
+const WALK_URLS={front:[walk01,walk02,walk03,walk04,walk05,walk06,walk07,walk08],rear:[rearWalk01,rearWalk02,rearWalk03,rearWalk04,rearWalk05,rearWalk06,rearWalk07,rearWalk08]};
+const walkKey=(view:'front'|'rear',frame:number)=>`whole-character-approved-${view}-walk-${frame+1}`;
+// Both approved idle images share the fixed registered root and uniform scale.
+// Rear family calibration is already baked into its PNG, never reapplied here.
+const IDLE={front:{width:576,height:576,root:WHOLE_CHARACTER_WALK.root,scale:WHOLE_CHARACTER_WALK.scale,hand:FRONT_IDLE_HAND},rear:{width:576,height:576,root:WHOLE_CHARACTER_WALK.root,scale:WHOLE_CHARACTER_WALK.scale,hand:REAR_IDLE_HAND}};
 
-/** Staged player-only renderer. Approved front idle/walk are whole bitmaps.
- * Missing rear/actions explicitly retain the existing renderer. Equipment rules,
+/** Staged player-only renderer. Approved front/rear idle/walk are whole bitmaps.
+ * Missing actions explicitly retain the existing renderer. Equipment rules,
  * attack poses/hit geometry, gate reach and save schemas are never changed here.
  * The local proof deliberately uses one fixed starter appearance; it does NOT
  * claim visible mixed armour or complete-set variants have been supplied. */
@@ -45,15 +55,17 @@ export class WholeCharacterPlayerSprite {
  private effectSize=1;
  static preload(scene:Phaser.Scene){
   ModularKnightSprite.preload(scene);
-  scene.load.image(IDLE_KEY,idleUrl);
-  WALK_URLS.forEach((url,frame)=>scene.load.image(walkKey(frame),url));
+  for(const view of ['front','rear'] as const){
+   scene.load.image(idleKey(view),IDLE_URLS[view]);
+   WALK_URLS[view].forEach((url,frame)=>scene.load.image(walkKey(view,frame),url));
+  }
  }
  constructor(private scene:Phaser.Scene){
-  for(const key of [IDLE_KEY,...WALK_URLS.map((_,frame)=>walkKey(frame))])
+  for(const key of (['front','rear'] as const).flatMap(view=>[idleKey(view),...WALK_URLS[view].map((_,frame)=>walkKey(view,frame))]))
    if(!scene.textures.exists(key))throw new Error('The approved whole-character player artwork could not load. Please reload.');
   this.fallback=new ModularKnightSprite(scene);
   this.shadow=scene.add.ellipse(0,0,32,12,0x02070a,.5).setVisible(false);
-  this.body=scene.add.image(0,0,IDLE_KEY).setVisible(false);
+  this.body=scene.add.image(0,0,idleKey('front')).setVisible(false);
   this.weapon=scene.add.image(0,0,weaponTexture('sword')).setVisible(false);
  }
  // Temporary legacy preflight keeps all twelve equipment items and six weapons
@@ -72,13 +84,13 @@ export class WholeCharacterPlayerSprite {
   this.body.setVisible(!this.activeFallback);this.shadow.setVisible(!this.activeFallback);this.weapon.setVisible(false);
   if(this.activeFallback){this.fallback.draw(input,this.pose);return;}
   this.fallback.setVisible(false);
-  const walking=input.motion==='walk';this.frame=walking?wholeCharacterWalkFrame(this.walkElapsed):0;
-  const root=walking?WHOLE_CHARACTER_WALK.root:IDLE.root,scale=walking?WHOLE_CHARACTER_WALK.scale:IDLE.scale;
-  const width=walking?WHOLE_CHARACTER_WALK.sourceSize:IDLE.width,height=walking?WHOLE_CHARACTER_WALK.sourceSize:IDLE.height;
-  this.body.setTexture(walking?walkKey(this.frame):IDLE_KEY).setOrigin(wholeCharacterOriginX(width,root[0],input.flipped),root[1]/height)
+  const walking=input.motion==='walk',idle=IDLE[input.view];this.frame=walking?wholeCharacterWalkFrame(this.walkElapsed):0;
+  const root=walking?WHOLE_CHARACTER_WALK.root:idle.root,scale=walking?WHOLE_CHARACTER_WALK.scale:idle.scale;
+  const width=walking?WHOLE_CHARACTER_WALK.sourceSize:idle.width,height=walking?WHOLE_CHARACTER_WALK.sourceSize:idle.height;
+  this.body.setTexture(walking?walkKey(input.view,this.frame):idleKey(input.view)).setOrigin(wholeCharacterOriginX(width,root[0],input.flipped),root[1]/height)
    .setPosition(input.position.x,input.position.y).setDepth(input.position.y).setScale(scale).setFlipX(input.flipped).setRotation(0).setAlpha(1).setTint(0xffffff);
   this.shadow.setPosition(input.position.x,input.position.y+1).setDepth(input.position.y-.1).setAlpha(.5);
-  this.hand=walking?wholeCharacterHand(this.frame,input.flipped):{x:(IDLE.hand[0]-IDLE.root[0])*IDLE.scale*(input.flipped?-1:1),y:(IDLE.hand[1]-IDLE.root[1])*IDLE.scale};
+  this.hand=walking?wholeCharacterHand(this.frame,input.flipped,input.view):{x:(idle.hand[0]-idle.root[0])*idle.scale*(input.flipped?-1:1),y:(idle.hand[1]-idle.root[1])*idle.scale};
   if(input.weapon&&weaponArtReady(this.scene,input.weapon)){
    const placement=placeWeaponArt(WEAPON_ART[input.weapon],this.hand,this.pose.weaponAngle,this.pose.weaponLength,input.flipped);
    if(placement)this.weapon.setTexture(weaponTexture(input.weapon)).setOrigin(placement.originX,placement.originY)
@@ -91,7 +103,7 @@ export class WholeCharacterPlayerSprite {
   if(this.activeFallback){this.fallback.effects(tint,angle,alpha,size);return;}
   // The body is one unwarped bitmap. No independent limb or armour transforms.
   this.effectAngle=angle*Math.PI/180;this.effectSize=size;
-  const baseScale=this.input?.motion==='walk'?WHOLE_CHARACTER_WALK.scale:IDLE.scale;
+  const baseScale=this.input?.motion==='walk'?WHOLE_CHARACTER_WALK.scale:IDLE[this.input?.view??'front'].scale;
   this.body.setTint(tint).setAngle(angle).setAlpha(alpha).setScale(baseScale*size);
   this.shadow.setAlpha(alpha*.5);
   if(this.input?.weapon&&this.pose){
@@ -107,12 +119,13 @@ export class WholeCharacterPlayerSprite {
  }
  snapshot(){
   const input=this.input,coverage=input?wholeCharacterCoverage(input):undefined;
-  if(this.activeFallback)return {...this.fallback.snapshot(),rendererStage:'temporary-existing-action-or-rear',coverage,fixedPrototypeAppearance:false};
+  if(this.activeFallback)return {...this.fallback.snapshot(),rendererStage:'temporary-existing-action',coverage,fixedPrototypeAppearance:false};
   const effectedHand=wholeCharacterEffectPoint(this.hand,this.effectAngle,this.effectSize),hand=input?{x:input.position.x+effectedHand.x,y:input.position.y+effectedHand.y}:{x:0,y:0};
-  const bodyRoot=this.renderedBodyPoint(input?.motion==='walk'?WHOLE_CHARACTER_WALK.root:IDLE.root),bodyHand=this.renderedBodyPoint(input?.motion==='walk'?FRONT_CARRY_HANDS[this.frame]:IDLE.hand);
+  const idle=IDLE[input?.view??'front'],hands=input?.view==='rear'?REAR_CARRY_HANDS:FRONT_CARRY_HANDS;
+  const bodyRoot=this.renderedBodyPoint(input?.motion==='walk'?WHOLE_CHARACTER_WALK.root:idle.root),bodyHand=this.renderedBodyPoint(input?.motion==='walk'?hands[this.frame]:idle.hand);
   const art=input?.weapon?WEAPON_ART[input.weapon]:undefined;
   const grip=art&&this.weapon.visible?this.weapon.getWorldTransformMatrix().transformPoint(art.grip[0]-this.weapon.displayOriginX,art.grip[1]-this.weapon.displayOriginY):null;
-  return {visible:!!input,kind:'whole-character-sprite',rendererStage:'approved-front-idle-walk',coverage,fixedPrototypeAppearance:true,appearance:'approved-starter-ward',missingAppearanceVariants:['delver','marcher','mixed-pieces'],equipment:{...this.equipment},texture:this.body.texture.key,frame:this.frame,walking:input?.motion==='walk',view:input?.view,flipped:input?.flipped,motion:input?.motion,phase:input?.phase,alpha:this.alpha,
+  return {visible:!!input,kind:'whole-character-sprite',rendererStage:'approved-front-rear-idle-walk',coverage,fixedPrototypeAppearance:true,appearance:'approved-starter-ward',missingAppearanceVariants:['delver','marcher','mixed-pieces'],equipment:{...this.equipment},texture:this.body.texture.key,frame:this.frame,walking:input?.motion==='walk',view:input?.view,flipped:input?.flipped,motion:input?.motion,phase:input?.phase,alpha:this.alpha,
    foot:input?{...input.position}:{x:0,y:0},hand,supportHand:null,parts:['whole-character'],layers:[{id:'whole-character',texture:this.body.texture.key,rotation:this.body.rotation,scaleX:this.body.scaleX,scaleY:this.body.scaleY,visible:this.body.visible}],
    registration:{primaryHand:bodyHand,primaryGrip:grip?{x:grip.x,y:grip.y}:null,supportHand:null,supportGrip:null},renderedHands:{primaryHand:bodyHand,supportHand:null},renderedParts:{},renderedBodyRoot:bodyRoot,
    rig:{phase:'idle',pose:input?.motion??'idle',weapon:input?.weapon??'sword',visible:this.weapon.visible,texture:this.weapon.texture.key,hand,grip:grip?{x:grip.x,y:grip.y}:hand,angle:this.weapon.rotation,depth:this.weapon.depth,length:this.pose?.weaponLength??0,attachment:'one-handed-carry-only',supportGripHeld:false},interaction:undefined};

@@ -10,11 +10,11 @@ for(const loadout of ['Vanguard','Wayfarer'])test(`whole-character ${loadout} id
  await page.goto('/?qa=1&debug=1');await page.getByRole('button',{name:`Choose ${loadout}`,exact:true}).click();await expect.poll(async()=>(await state(page)).paused).toBe(false);
  const initial=await state(page);expect(initial.character.kind).toBe('whole-character-sprite');expect(initial.character.fixedPrototypeAppearance).toBe(true);
  await page.evaluate(()=>{
-  const target=window as any;target.wholeSpriteProof={frames:{},done:false};const deadline=performance.now()+8000;
+  const target=window as any;target.wholeSpriteProof={frames:{},done:false};const deadline=performance.now()+12000;
   function sample(){
    const proof=target.wholeSpriteProof,s=window.vireldenDebug!(),c=s.character;
-   const key=`${c.kind}-${c.motion}-${s.attack.phase}-${c.frame}-${c.flipped?'left':'right'}`;
-   if(!proof.frames[key]&&Object.keys(proof.frames).length<40){
+   const key=`${c.kind}-${c.view}-${c.motion}-${s.attack.phase}-${c.frame}-${c.flipped?'left':'right'}`;
+   if(!proof.frames[key]&&Object.keys(proof.frames).length<80){
     const source=document.querySelector('canvas')!,bounds={x:Math.max(0,Math.min(source.width-320,Math.round(s.screen.x-160))),y:Math.max(0,Math.min(source.height-320,Math.round(s.screen.y-180))),width:320,height:320};
     const crop=document.createElement('canvas');crop.width=320;crop.height=320;crop.getContext('2d')!.drawImage(source,bounds.x,bounds.y,320,320,0,0,320,320);
     proof.frames[key]={png:crop.toDataURL(),bounds,state:s};
@@ -35,14 +35,18 @@ for(const loadout of ['Vanguard','Wayfarer'])test(`whole-character ${loadout} id
  const rolling=page.waitForFunction(()=>{const s=window.vireldenDebug!();return s.rollTimer>0&&s.character.motion==='roll'?s:null;},undefined,{polling:'raf'});
  await page.keyboard.press('Space');const roll=await (await rolling).jsonValue();expect(roll.character.coverage).toEqual({kind:'legacy-action-fallback',reason:'missing-action-art'});
  await expect.poll(async()=>(await state(page)).rollTimer).toBe(0);await expect.poll(async()=>(await state(page)).character.kind).toBe('whole-character-sprite');
+ const rearWalking=page.waitForFunction(()=>{const c=window.vireldenDebug!().character;return c.view==='rear'&&c.walking&&c.kind==='whole-character-sprite';},undefined,{polling:'raf'});
+ await page.keyboard.down('KeyW');await page.keyboard.down('KeyD');await rearWalking;await page.waitForTimeout(140);await page.keyboard.up('KeyD');await page.keyboard.up('KeyW');await expect.poll(async()=>(await state(page)).character.walking).toBe(false);expect((await state(page)).character.texture).toBe('whole-character-approved-rear-idle');
  const end=await state(page);expect(end.equipped).toBe(initial.equipped);expect(end.equipment).toEqual(initial.equipment);expect(end.levels).toEqual(initial.levels);
  const frames=await page.evaluate(()=>{(window as any).wholeSpriteProof.done=true;return (window as any).wholeSpriteProof.frames;}) as Record<string,{png:string;bounds:any;state:any}>;
- const observations=Object.values(frames);expect(observations.some(frame=>frame.state.character.kind==='whole-character-sprite'&&frame.state.character.motion==='walk')).toBe(true);expect(observations.some(frame=>frame.state.character.motion==='roll')).toBe(true);
+ const observations=Object.values(frames);expect(observations.some(frame=>frame.state.character.view==='rear'&&frame.state.character.kind==='whole-character-sprite'&&frame.state.character.motion==='walk')).toBe(true);expect(observations.some(frame=>frame.state.character.kind==='whole-character-sprite'&&frame.state.character.motion==='walk')).toBe(true);expect(observations.some(frame=>frame.state.character.motion==='roll')).toBe(true);
  const directory=`test-results/whole-character-${loadout.toLowerCase()}`;await mkdir(directory,{recursive:true});
  for(const [key,frame]of Object.entries(frames)){
   const c=frame.state.character;if(c.kind==='whole-character-sprite'){
-   expect(c.parts).toEqual(['whole-character']);expect(c.view).toBe('front');expect(c.layers[0].scaleX).toBe(c.layers[0].scaleY);
-   expect(c.renderedBodyRoot.x).toBeCloseTo(c.foot.x,5);expect(c.renderedBodyRoot.y).toBeCloseTo(c.foot.y,5);
+   expect(c.parts).toEqual(['whole-character']);expect(c.view).toBe(c.direction.startsWith('north')?'rear':'front');expect(c.texture).toBe(`whole-character-approved-${c.view}-${c.walking?`walk-${c.frame+1}`:'idle'}`);expect(c.layers[0].scaleX).toBe(c.layers[0].scaleY);
+   // Phaser's Float32 transform matrices round world coordinates by up to 0.0000276px in native evidence.
+   // Sub-millipixel registration still detects the former 5.625px off-centre flip error.
+   expect(Math.hypot(c.renderedBodyRoot.x-c.foot.x,c.renderedBodyRoot.y-c.foot.y)).toBeLessThan(.001);
    expect(Math.hypot(c.registration.primaryHand.x-c.registration.primaryGrip.x,c.registration.primaryHand.y-c.registration.primaryGrip.y)).toBeLessThan(.001);
    expect(c.rig.supportGripHeld).toBe(false);expect(c.supportHand).toBeNull();
   }

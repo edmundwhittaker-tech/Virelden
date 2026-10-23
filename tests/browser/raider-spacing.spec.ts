@@ -17,7 +17,7 @@ test('observed close overlap misses painted sword sweep; real-key retreat reache
   }
   await page.keyboard.press('KeyF');await page.waitForFunction(()=>{const s=(window as any).raiderSpacingSnapshot();return s.done&&s.captureNames.includes('result');},undefined,{timeout:10_000,polling:'raf'});
   const observed=await page.evaluate(()=>(window as any).raiderSpacingSnapshot(true));
-  expect(errors).toEqual([]);expect(observed.walkable).toBe(true);expect(observed.character.texture).toBe('modular-plate');expect(observed.character.parts).toHaveLength(15);expect(observed.character.rig.texture).toBe('ordinary-weapon-sword');expect(observed.enemy.texture).toBe('plate-knight-se-v1');
+  expect(errors).toEqual([]);expect(observed.walkable).toBe(true);expect(observed.character.texture).toBe('modular-plate');expect(observed.character.parts).toHaveLength(15);expect(observed.character.rig.texture).toBe('ordinary-weapon-sword');expect(observed.enemy.texture).toBe('whole-enemy-maw_skeleton');expect(observed.enemy.equipmentBaked).toBe(true);expect(observed.enemy.foot).toEqual(observed.enemyFoot);
   expect(observed.result).toBe(spaced?'hit':'miss');expect(observed.damage).toBe(spaced?30:0);expect(observed.foeHp).toBe(spaced?970:1000);expect(observed.attack.hit).toEqual(spaced?['audit']:[]);
   if(spaced){expect(observed.attack.contacts.audit).toBeGreaterThanOrEqual(0);expect(observed.attack.contacts.audit).toBeLessThanOrEqual(1);}else{expect(observed.attack.contacts).toEqual({});expect(observed.movementFrames).toBe(0);expect(observed.attack.phase).toBe('recovery');}
   expect(Object.keys(observed.captures).sort()).toEqual(['first-active','result']);
