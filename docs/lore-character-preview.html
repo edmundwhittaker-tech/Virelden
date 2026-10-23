@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Virelden enemy sprite preview</title>
+<style>body{margin:24px;background:#171f22;color:#e0e0d7;font:15px system-ui}select,button{font:inherit;margin:4px;padding:7px;background:#303a3e;color:inherit;border:1px solid #697170}canvas{display:block;margin-top:18px;max-width:100%;height:auto}p{max-width:850px}</style>
+<h1>Virelden · NPC and enemy sprites</h1><p>Whole-character artwork at game scale: 88 pixels from head to feet. Equipment is already included. Two authored views plus mirroring.</p>
+<label>Animation <select id="animation"><option>idle</option><option>walk</option><option>attack</option><option>hurt</option><option>death</option><option>dead</option></select></label>
+<label>Facing <select id="direction"><option>south-east</option><option>south-west</option><option>north-east</option><option>north-west</option></select></label><button id="restart">Restart</button><button id="pause">Pause</button>
+<div id="stage"></div><p>Suggested animation timing only; Winston's simulation owns combat phases. Source cells are 384 × 384 at 2×, displayed at 0.5 scale. Each frame includes the whole character, clothing and equipment.</p>
+<script type="module">
+import * as Phaser from '/node_modules/phaser/dist/phaser.esm.js';
+import {preloadCharacter,createCharacter} from '/tools/art/lore-sprite-player.mjs';
+const base='/src/assets/npc-enemy-sprites';
+const index=await fetch(base+'/manifest.json').then(r=>r.json());
+const manifests=await Promise.all(index.characters.map(c=>fetch(base+'/'+c.manifest).then(r=>r.json())));
+let actors=[],elapsed=0,paused=false,last=0;
+const animation=document.querySelector('#animation'),direction=document.querySelector('#direction');
+for(const el of [animation,direction])el.onchange=()=>{elapsed=0;};
+document.querySelector('#restart').onclick=()=>{elapsed=0;};
+document.querySelector('#pause').onclick=()=>{paused=!paused;document.querySelector('#pause').textContent=paused?'Resume':'Pause';};
+new Phaser.Game({type:Phaser.CANVAS,width:1000,height:280,parent:'stage',backgroundColor:'#222e31',banner:false,audio:{noAudio:true},scene:{
+ preload(){for(const m of manifests)preloadCharacter(this,m,base+'/'+m.id);},
+ create(){
+  for(let i=0;i<4;i++){
+    const x=125+i*250,y=194;this.add.ellipse(x,y+1,48,12,0x0e171a,.5);
+    this.add.line(0,0,x-6,y,x+6,y,0x728386).setOrigin(0);
+    const actor=createCharacter(this,manifests[i],x,y);actors.push(actor);
+    this.add.text(x,248,manifests[i].name,{fontFamily:'sans-serif',fontSize:'12px',color:'#d5d9d3'}).setOrigin(.5);
+  }
+  window.spritePreview={ready:true,manifests,actors,set:(a,d,t=0)=>{animation.value=a;direction.value=d;elapsed=t;paused=true;}};
+ },
+ update(t,dt){if(!paused)elapsed+=dt;for(const a of actors)a.update({animation:animation.value,direction:direction.value,elapsedMs:elapsed});last=t;}
+}});
+</script></html>

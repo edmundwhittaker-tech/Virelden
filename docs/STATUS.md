@@ -1,5 +1,14 @@
 # Project status — 22 October 2026
 
+## NPC/enemy sprite art — 23 October owner correction
+
+The four approved lore characters have been rebuilt as whole-character sprite artwork in `src/assets/npc-enemy-sprites/`: Valdren Warplate Bearer, Harbinger Road-Knight, Eryndor Magister and Keeper of the Pale Shepherd. Each has front/rear sheets with 24 frame cells, approximately 88px human height, idle/walk/attack-or-cast/hurt/death, and all equipment included. The previous modular/cutout source atlases, separate armour/body/equipment exports and rig-baking tools are removed from this art branch. See [sprite handoff](LORE_CHARACTER_SPRITES.md) and [development preview](lore-character-preview.html).
+
+The source art consists of complete character poses. Packing only crops/resizes/registers those figures; it uses no rig, bones or body-part assembly. The sprite-only preview and adapter use one sheet frame per character. Manifests record timings, fixed foot anchors, view mirroring and a single baked layer; equipment attachments are disabled. This is an unmerged art proposal, with no gameplay, main-player rig/equipment, save, gate, archer or production entrypoint changes. No deployment or new-enemy encounter acceptance is claimed.
+
+Locally verified for this replacement: all 192 frame cells have real alpha, nonempty pixels, no frame-edge clipping, valid timings and fixed foot metadata. Sprite-only Phaser checks passed all 24 animation/facing combinations for all four characters, exact selected frames, mirrored foot origins, first-active contact, looping and held death, with no part/equipment/rig loads. Game-size GIFs and Phaser captures were inspected. All 210 rule tests, strict TypeScript/production build and 34 existing native browser cases passed (9.6 minutes). CI/deployment and in-level acceptance of the new characters are not claimed.
+
+
 ## Published game
 
 The verified released reference is main [`a932dc5`](https://github.com/edmundwhittaker-tech/Virelden/commit/a932dc5e561fe21b54b7b1e49679e97e6eca11c5), playable at **https://edmundwhittaker-tech.github.io/Virelden/**. Earlier working releases, including `f080674`, remain in ordinary Git history for rollback.
@@ -26,4 +35,3 @@ All local places, gear and adversaries are prototype adaptations, not additions 
 - **Locally passed:** 210 rule tests and strict TypeScript/production build. New rules cover all six weapons at +0/+1/+2 through the real contact path, exact mark spending, armor and weapon changes, v4 reload, and the selected/equipped spending guard. Local Node was 24.19.0, rather than the repository's pinned 22.x CI runtime.
 - **Prepared, not executed locally:** eight isolated equipment DOM cases (including upgrade/selection checks at 1440px and 900px), and enhanced earned native exploration assertions for previews, purchases, equipment changes and reload. Test discovery succeeds; it is not browser execution or screenshot verification. Native local browser execution was previously denied and was not retried.
 - **Not CI verified or deployed:** this isolated patch has not been pushed, merged or published. The separately owned character release is not altered by this investigation.
-

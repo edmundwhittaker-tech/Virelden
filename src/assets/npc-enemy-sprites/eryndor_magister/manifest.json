@@ -1,0 +1,1659 @@
+{
+  "version": 2,
+  "id": "eryndor_magister",
+  "name": "Eryndor Magister",
+  "action": "cast",
+  "representation": "whole-character-frame-sprites",
+  "runtimeRigRequired": false,
+  "modularArmour": false,
+  "equipmentBaked": true,
+  "layerOrder": [
+    "complete-character"
+  ],
+  "humanHeightScreen": 88,
+  "runtimeScale": 0.5,
+  "frameSize": [
+    384,
+    384
+  ],
+  "foot": {
+    "x": 176,
+    "y": 304
+  },
+  "views": {
+    "front": {
+      "sprite": "sprite-front.webp",
+      "png": "sprite-front.png",
+      "source": "eryndor_magister-front.webp",
+      "standingBodyHeightSource": 236,
+      "sourceRootByColumn": [
+        148.0,
+        407.0,
+        650.0,
+        905.0
+      ],
+      "layout": {
+        "columns": 4,
+        "rows": 6,
+        "frameWidth": 384,
+        "frameHeight": 384,
+        "width": 1536,
+        "height": 2304
+      },
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durationsMs": [
+            250,
+            250,
+            250,
+            250
+          ],
+          "loop": true
+        },
+        "walk": {
+          "frames": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "durationsMs": [
+            92.5,
+            92.5,
+            92.5,
+            92.5,
+            92.5,
+            92.5,
+            92.5,
+            92.5
+          ],
+          "loop": true
+        },
+        "attack": {
+          "frames": [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "durationsMs": [
+            283.3333333333333,
+            283.3333333333333,
+            283.3333333333333,
+            200,
+            300.0,
+            300.0
+          ],
+          "loop": false
+        },
+        "hurt": {
+          "frames": [
+            18,
+            19
+          ],
+          "durationsMs": [
+            120,
+            180
+          ],
+          "loop": false
+        },
+        "death": {
+          "frames": [
+            20,
+            21,
+            22,
+            23
+          ],
+          "durationsMs": [
+            160,
+            180,
+            180,
+            200
+          ],
+          "loop": false
+        },
+        "dead": {
+          "frames": [
+            23
+          ],
+          "durationsMs": [
+            1000
+          ],
+          "loop": false
+        },
+        "cast": {
+          "frames": [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "durationsMs": [
+            283.3333333333333,
+            283.3333333333333,
+            283.3333333333333,
+            200,
+            300.0,
+            300.0
+          ],
+          "loop": false
+        }
+      },
+      "phaseFrames": {
+        "windup": [
+          12,
+          13,
+          14
+        ],
+        "active": [
+          15
+        ],
+        "recovery": [
+          16,
+          17
+        ]
+      },
+      "frames": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            384,
+            384
+          ],
+          "state": "idle",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 0,
+          "sourceBounds": [
+            81,
+            17,
+            212,
+            262
+          ],
+          "sourceGround": [
+            148.0,
+            258
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 1,
+          "rect": [
+            384,
+            0,
+            384,
+            384
+          ],
+          "state": "idle",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 1,
+          "sourceBounds": [
+            340,
+            9,
+            469,
+            260
+          ],
+          "sourceGround": [
+            407.0,
+            256
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 2,
+          "rect": [
+            768,
+            0,
+            384,
+            384
+          ],
+          "state": "idle",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 2,
+          "sourceBounds": [
+            588,
+            19,
+            715,
+            259
+          ],
+          "sourceGround": [
+            650.0,
+            255
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 3,
+          "rect": [
+            1152,
+            0,
+            384,
+            384
+          ],
+          "state": "idle",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 3,
+          "sourceBounds": [
+            844,
+            18,
+            974,
+            262
+          ],
+          "sourceGround": [
+            905.0,
+            258
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 4,
+          "rect": [
+            0,
+            384,
+            384,
+            384
+          ],
+          "state": "walk",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 4,
+          "sourceBounds": [
+            65,
+            274,
+            213,
+            512
+          ],
+          "sourceGround": [
+            148.0,
+            508
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 5,
+          "rect": [
+            384,
+            384,
+            384,
+            384
+          ],
+          "state": "walk",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 5,
+          "sourceBounds": [
+            325,
+            275,
+            466,
+            512
+          ],
+          "sourceGround": [
+            407.0,
+            508
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 6,
+          "rect": [
+            768,
+            384,
+            384,
+            384
+          ],
+          "state": "walk",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 6,
+          "sourceBounds": [
+            572,
+            265,
+            723,
+            511
+          ],
+          "sourceGround": [
+            650.0,
+            507
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 7,
+          "rect": [
+            1152,
+            384,
+            384,
+            384
+          ],
+          "state": "walk",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 7,
+          "sourceBounds": [
+            831,
+            264,
+            978,
+            510
+          ],
+          "sourceGround": [
+            905.0,
+            506
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 8,
+          "rect": [
+            0,
+            768,
+            384,
+            384
+          ],
+          "state": "walk",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 8,
+          "sourceBounds": [
+            64,
+            527,
+            214,
+            762
+          ],
+          "sourceGround": [
+            148.0,
+            758
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 9,
+          "rect": [
+            384,
+            768,
+            384,
+            384
+          ],
+          "state": "walk",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 9,
+          "sourceBounds": [
+            333,
+            527,
+            468,
+            759
+          ],
+          "sourceGround": [
+            407.0,
+            755
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 10,
+          "rect": [
+            768,
+            768,
+            384,
+            384
+          ],
+          "state": "walk",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 10,
+          "sourceBounds": [
+            593,
+            520,
+            737,
+            761
+          ],
+          "sourceGround": [
+            650.0,
+            757
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 11,
+          "rect": [
+            1152,
+            768,
+            384,
+            384
+          ],
+          "state": "walk",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 11,
+          "sourceBounds": [
+            837,
+            523,
+            978,
+            758
+          ],
+          "sourceGround": [
+            905.0,
+            754
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 12,
+          "rect": [
+            0,
+            1152,
+            384,
+            384
+          ],
+          "state": "attack",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 12,
+          "sourceBounds": [
+            73,
+            782,
+            214,
+            999
+          ],
+          "sourceGround": [
+            148.0,
+            995
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 13,
+          "rect": [
+            384,
+            1152,
+            384,
+            384
+          ],
+          "state": "attack",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 13,
+          "sourceBounds": [
+            287,
+            763,
+            487,
+            1005
+          ],
+          "sourceGround": [
+            407.0,
+            997
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 14,
+          "rect": [
+            768,
+            1152,
+            384,
+            384
+          ],
+          "state": "attack",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 14,
+          "sourceBounds": [
+            523,
+            753,
+            746,
+            1012
+          ],
+          "sourceGround": [
+            650.0,
+            1000
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 15,
+          "rect": [
+            1152,
+            1152,
+            384,
+            384
+          ],
+          "state": "attack",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 15,
+          "sourceBounds": [
+            783,
+            787,
+            1016,
+            1004
+          ],
+          "sourceGround": [
+            905.0,
+            1000
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 16,
+          "rect": [
+            0,
+            1536,
+            384,
+            384
+          ],
+          "state": "attack",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 16,
+          "sourceBounds": [
+            32,
+            1022,
+            320,
+            1248
+          ],
+          "sourceGround": [
+            148.0,
+            1243
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 17,
+          "rect": [
+            384,
+            1536,
+            384,
+            384
+          ],
+          "state": "attack",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 17,
+          "sourceBounds": [
+            337,
+            1012,
+            476,
+            1245
+          ],
+          "sourceGround": [
+            407.0,
+            1241
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 18,
+          "rect": [
+            768,
+            1536,
+            384,
+            384
+          ],
+          "state": "hurt",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 18,
+          "sourceBounds": [
+            551,
+            1011,
+            765,
+            1239
+          ],
+          "sourceGround": [
+            650.0,
+            1235
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 19,
+          "rect": [
+            1152,
+            1536,
+            384,
+            384
+          ],
+          "state": "hurt",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 19,
+          "sourceBounds": [
+            816,
+            1027,
+            983,
+            1247
+          ],
+          "sourceGround": [
+            905.0,
+            1243
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 20,
+          "rect": [
+            0,
+            1920,
+            384,
+            384
+          ],
+          "state": "death",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 20,
+          "sourceBounds": [
+            54,
+            1246,
+            237,
+            1493
+          ],
+          "sourceGround": [
+            148.0,
+            1490
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 21,
+          "rect": [
+            384,
+            1920,
+            384,
+            384
+          ],
+          "state": "death",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 21,
+          "sourceBounds": [
+            281,
+            1288,
+            500,
+            1478
+          ],
+          "sourceGround": [
+            407.0,
+            1475
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 22,
+          "rect": [
+            768,
+            1920,
+            384,
+            384
+          ],
+          "state": "death",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 22,
+          "sourceBounds": [
+            526,
+            1325,
+            766,
+            1495
+          ],
+          "sourceGround": [
+            650.0,
+            1492
+          ],
+          "uniformScale": 0.7457627118644068
+        },
+        {
+          "index": 23,
+          "rect": [
+            1152,
+            1920,
+            384,
+            384
+          ],
+          "state": "death",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 23,
+          "sourceBounds": [
+            776,
+            1308,
+            1000,
+            1471
+          ],
+          "sourceGround": [
+            905.0,
+            1468
+          ],
+          "uniformScale": 0.7457627118644068
+        }
+      ]
+    },
+    "rear": {
+      "sprite": "sprite-rear.webp",
+      "png": "sprite-rear.png",
+      "source": "eryndor_magister-rear.webp",
+      "standingBodyHeightSource": 223,
+      "sourceRootByColumn": [
+        153.5,
+        388.0,
+        637.5,
+        876.0
+      ],
+      "layout": {
+        "columns": 4,
+        "rows": 6,
+        "frameWidth": 384,
+        "frameHeight": 384,
+        "width": 1536,
+        "height": 2304
+      },
+      "animations": {
+        "idle": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durationsMs": [
+            250,
+            250,
+            250,
+            250
+          ],
+          "loop": true
+        },
+        "walk": {
+          "frames": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "durationsMs": [
+            92.5,
+            92.5,
+            92.5,
+            92.5,
+            92.5,
+            92.5,
+            92.5,
+            92.5
+          ],
+          "loop": true
+        },
+        "attack": {
+          "frames": [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "durationsMs": [
+            283.3333333333333,
+            283.3333333333333,
+            283.3333333333333,
+            200,
+            300.0,
+            300.0
+          ],
+          "loop": false
+        },
+        "hurt": {
+          "frames": [
+            18,
+            19
+          ],
+          "durationsMs": [
+            120,
+            180
+          ],
+          "loop": false
+        },
+        "death": {
+          "frames": [
+            20,
+            21,
+            22,
+            23
+          ],
+          "durationsMs": [
+            160,
+            180,
+            180,
+            200
+          ],
+          "loop": false
+        },
+        "dead": {
+          "frames": [
+            23
+          ],
+          "durationsMs": [
+            1000
+          ],
+          "loop": false
+        },
+        "cast": {
+          "frames": [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "durationsMs": [
+            283.3333333333333,
+            283.3333333333333,
+            283.3333333333333,
+            200,
+            300.0,
+            300.0
+          ],
+          "loop": false
+        }
+      },
+      "phaseFrames": {
+        "windup": [
+          12,
+          13,
+          14
+        ],
+        "active": [
+          15
+        ],
+        "recovery": [
+          16,
+          17
+        ]
+      },
+      "frames": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            384,
+            384
+          ],
+          "state": "idle",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 0,
+          "sourceBounds": [
+            96,
+            5,
+            229,
+            254
+          ],
+          "sourceGround": [
+            153.5,
+            250
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 1,
+          "rect": [
+            384,
+            0,
+            384,
+            384
+          ],
+          "state": "idle",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 1,
+          "sourceBounds": [
+            335,
+            7,
+            464,
+            254
+          ],
+          "sourceGround": [
+            388.0,
+            250
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 2,
+          "rect": [
+            768,
+            0,
+            384,
+            384
+          ],
+          "state": "idle",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 2,
+          "sourceBounds": [
+            582,
+            12,
+            709,
+            254
+          ],
+          "sourceGround": [
+            637.5,
+            250
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 3,
+          "rect": [
+            1152,
+            0,
+            384,
+            384
+          ],
+          "state": "idle",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 3,
+          "sourceBounds": [
+            818,
+            10,
+            949,
+            256
+          ],
+          "sourceGround": [
+            876.0,
+            252
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 4,
+          "rect": [
+            0,
+            384,
+            384,
+            384
+          ],
+          "state": "walk",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 4,
+          "sourceBounds": [
+            79,
+            253,
+            232,
+            512
+          ],
+          "sourceGround": [
+            153.5,
+            508
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 5,
+          "rect": [
+            384,
+            384,
+            384,
+            384
+          ],
+          "state": "walk",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 5,
+          "sourceBounds": [
+            307,
+            255,
+            470,
+            512
+          ],
+          "sourceGround": [
+            388.0,
+            508
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 6,
+          "rect": [
+            768,
+            384,
+            384,
+            384
+          ],
+          "state": "walk",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 6,
+          "sourceBounds": [
+            560,
+            254,
+            717,
+            512
+          ],
+          "sourceGround": [
+            637.5,
+            508
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 7,
+          "rect": [
+            1152,
+            384,
+            384,
+            384
+          ],
+          "state": "walk",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 7,
+          "sourceBounds": [
+            812,
+            253,
+            952,
+            513
+          ],
+          "sourceGround": [
+            876.0,
+            509
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 8,
+          "rect": [
+            0,
+            768,
+            384,
+            384
+          ],
+          "state": "walk",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 8,
+          "sourceBounds": [
+            78,
+            511,
+            233,
+            769
+          ],
+          "sourceGround": [
+            153.5,
+            765
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 9,
+          "rect": [
+            384,
+            768,
+            384,
+            384
+          ],
+          "state": "walk",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 9,
+          "sourceBounds": [
+            327,
+            511,
+            464,
+            767
+          ],
+          "sourceGround": [
+            388.0,
+            763
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 10,
+          "rect": [
+            768,
+            768,
+            384,
+            384
+          ],
+          "state": "walk",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 10,
+          "sourceBounds": [
+            562,
+            510,
+            711,
+            765
+          ],
+          "sourceGround": [
+            637.5,
+            761
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 11,
+          "rect": [
+            1152,
+            768,
+            384,
+            384
+          ],
+          "state": "walk",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 11,
+          "sourceBounds": [
+            808,
+            512,
+            962,
+            771
+          ],
+          "sourceGround": [
+            876.0,
+            767
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 12,
+          "rect": [
+            0,
+            1152,
+            384,
+            384
+          ],
+          "state": "attack",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 12,
+          "sourceBounds": [
+            89,
+            772,
+            228,
+            1017
+          ],
+          "sourceGround": [
+            153.5,
+            1013
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 13,
+          "rect": [
+            384,
+            1152,
+            384,
+            384
+          ],
+          "state": "attack",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 13,
+          "sourceBounds": [
+            324,
+            744,
+            463,
+            1020
+          ],
+          "sourceGround": [
+            388.0,
+            1016
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 14,
+          "rect": [
+            768,
+            1152,
+            384,
+            384
+          ],
+          "state": "attack",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 14,
+          "sourceBounds": [
+            564,
+            741,
+            731,
+            1017
+          ],
+          "sourceGround": [
+            637.5,
+            1013
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 15,
+          "rect": [
+            1152,
+            1152,
+            384,
+            384
+          ],
+          "state": "attack",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 15,
+          "sourceBounds": [
+            793,
+            768,
+            1013,
+            1025
+          ],
+          "sourceGround": [
+            876.0,
+            1021
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 16,
+          "rect": [
+            0,
+            1536,
+            384,
+            384
+          ],
+          "state": "attack",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 16,
+          "sourceBounds": [
+            70,
+            1011,
+            286,
+            1274
+          ],
+          "sourceGround": [
+            153.5,
+            1270
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 17,
+          "rect": [
+            384,
+            1536,
+            384,
+            384
+          ],
+          "state": "attack",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 17,
+          "sourceBounds": [
+            322,
+            1014,
+            467,
+            1269
+          ],
+          "sourceGround": [
+            388.0,
+            1265
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 18,
+          "rect": [
+            768,
+            1536,
+            384,
+            384
+          ],
+          "state": "hurt",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 18,
+          "sourceBounds": [
+            561,
+            1026,
+            745,
+            1262
+          ],
+          "sourceGround": [
+            637.5,
+            1258
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 19,
+          "rect": [
+            1152,
+            1536,
+            384,
+            384
+          ],
+          "state": "hurt",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 19,
+          "sourceBounds": [
+            780,
+            1052,
+            954,
+            1270
+          ],
+          "sourceGround": [
+            876.0,
+            1266
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 20,
+          "rect": [
+            0,
+            1920,
+            384,
+            384
+          ],
+          "state": "death",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 20,
+          "sourceBounds": [
+            80,
+            1263,
+            228,
+            1507
+          ],
+          "sourceGround": [
+            153.5,
+            1504
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 21,
+          "rect": [
+            384,
+            1920,
+            384,
+            384
+          ],
+          "state": "death",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 21,
+          "sourceBounds": [
+            288,
+            1281,
+            502,
+            1491
+          ],
+          "sourceGround": [
+            388.0,
+            1488
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 22,
+          "rect": [
+            768,
+            1920,
+            384,
+            384
+          ],
+          "state": "death",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 22,
+          "sourceBounds": [
+            533,
+            1327,
+            778,
+            1507
+          ],
+          "sourceGround": [
+            637.5,
+            1504
+          ],
+          "uniformScale": 0.7892376681614349
+        },
+        {
+          "index": 23,
+          "rect": [
+            1152,
+            1920,
+            384,
+            384
+          ],
+          "state": "death",
+          "foot": {
+            "x": 176,
+            "y": 304
+          },
+          "equipmentIncluded": true,
+          "sourceIndex": 23,
+          "sourceBounds": [
+            762,
+            1350,
+            1013,
+            1508
+          ],
+          "sourceGround": [
+            876.0,
+            1505
+          ],
+          "uniformScale": 0.7892376681614349
+        }
+      ]
+    }
+  },
+  "attachments": {
+    "supported": false,
+    "reason": "Weapons, hands, armour and clothing are already painted into each frame. No attachment or assembly pass."
+  },
+  "directionMap": {
+    "south-east": {
+      "view": "front",
+      "flipX": false
+    },
+    "south-west": {
+      "view": "front",
+      "flipX": true
+    },
+    "north-east": {
+      "view": "rear",
+      "flipX": false
+    },
+    "north-west": {
+      "view": "rear",
+      "flipX": true
+    },
+    "east": {
+      "view": "front",
+      "flipX": false
+    },
+    "west": {
+      "view": "front",
+      "flipX": true
+    },
+    "north": {
+      "view": "rear",
+      "flipX": false
+    },
+    "south": {
+      "view": "front",
+      "flipX": false
+    }
+  },
+  "directionLimit": "Two authored isometric views plus mirroring. East/west use the front three-quarter view. Mirroring reverses visual handedness.",
+  "timingAuthority": "Playback suggestions only. Simulation owns combat phases. Active progress zero selects source contact pose 15. No stats, AI, hitboxes or cast effects supplied."
+}

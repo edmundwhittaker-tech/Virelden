@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "representation": "whole-character-frame-sprites",
+  "runtimeRigRequired": false,
+  "modularArmour": false,
+  "characters": [
+    {
+      "id": "valdren_warplate_bearer",
+      "name": "Valdren Warplate Bearer",
+      "manifest": "valdren_warplate_bearer/manifest.json"
+    },
+    {
+      "id": "harbinger_road_knight",
+      "name": "Harbinger Road-Knight",
+      "manifest": "harbinger_road_knight/manifest.json"
+    },
+    {
+      "id": "eryndor_magister",
+      "name": "Eryndor Magister",
+      "manifest": "eryndor_magister/manifest.json"
+    },
+    {
+      "id": "pale_shepherd_keeper",
+      "name": "Keeper of the Pale Shepherd",
+      "manifest": "pale_shepherd_keeper/manifest.json"
+    }
+  ]
+}
