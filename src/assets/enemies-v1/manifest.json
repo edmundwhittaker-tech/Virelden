@@ -1,0 +1,5407 @@
+{
+  "version": 1,
+  "status": "art-only integration kit; no gameplay changes",
+  "coordinates": {
+    "units": "exported image pixels",
+    "origin": "top-left",
+    "x": "right",
+    "y": "down",
+    "rotation": "radians, clockwise on screen",
+    "worldFootRule": "worldFoot + (sourcePoint - frame.foot) * runtimeScale"
+  },
+  "camera": {
+    "projection": "elevated orthographic isometric, approximately 30 degrees",
+    "light": "upper-left"
+  },
+  "directions": {
+    "authored": [
+      "east",
+      "south-east",
+      "north-east"
+    ],
+    "mirrored": {
+      "west": "east",
+      "south-west": "south-east",
+      "north-west": "north-east"
+    },
+    "northSouth": "Use rear/front view retaining last horizontal side, matching existing knight.",
+    "mirrorRule": "Reflect the whole local rig about the world foot, including sockets/equipment; anatomical hand names stay unchanged.",
+    "limit": "Mirrored west views also mirror lighting and equipment handedness visually; no independent west art."
+  },
+  "enemies": {
+    "maw_skeleton": {
+      "id": "maw_skeleton",
+      "role": "basic enemy",
+      "body": "maw_skeleton-body.png",
+      "handsOverlay": "maw_skeleton-hands.png",
+      "frameSize": [
+        256,
+        320
+      ],
+      "columns": 6,
+      "rows": 3,
+      "runtimeScale": 0.5,
+      "idleBodyHeightScreen": 88,
+      "humanReferenceHeightScreen": 88,
+      "frames": [
+        {
+          "index": 0,
+          "direction": "east",
+          "pose": "idle",
+          "rect": [
+            0,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 136.86,
+              "y": 214.71,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 163.14,
+              "y": 210.14,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            44,
+            67,
+            193,
+            375
+          ],
+          "sourceScale": 0.5714285714285714,
+          "sourceFoot": [
+            118,
+            373
+          ],
+          "bodyTop": 125,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 136.86,
+                "y": 214.71
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": -0.17217475594123532,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 57.6743940887136,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "axe",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "direction": "east",
+          "pose": "step-a",
+          "rect": [
+            256,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 111.14,
+              "y": 228.29,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 164.86,
+              "y": 206,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            279,
+            66,
+            454,
+            373
+          ],
+          "sourceScale": 0.5714285714285714,
+          "sourceFoot": [
+            373,
+            371
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 111.14,
+                "y": 228.29
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": -0.3933098156475865,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 89.1608330408016,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "axe",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "direction": "east",
+          "pose": "step-b",
+          "rect": [
+            512,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 107.57,
+              "y": 227.29,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 165.29,
+              "y": 206.71,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            525,
+            73,
+            704,
+            374
+          ],
+          "sourceScale": 0.5714285714285714,
+          "sourceFoot": [
+            618,
+            372
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 107.57,
+                "y": 227.29
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": -0.34249703537824405,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 92.27915469390874,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "axe",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "direction": "east",
+          "pose": "windup",
+          "rect": [
+            768,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 119,
+              "y": 123.29,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 120.71,
+              "y": 100.43,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            766,
+            12,
+            937,
+            376
+          ],
+          "sourceScale": 0.5714285714285714,
+          "sourceFoot": [
+            851,
+            374
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 119,
+                "y": 123.29
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": -1.4961322312593728,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 53.92386747475216,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "axe",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "direction": "east",
+          "pose": "contact",
+          "rect": [
+            1024,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 174.71,
+              "y": 224.71,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 182.71,
+              "y": 227,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            1000,
+            94,
+            1213,
+            371
+          ],
+          "sourceScale": 0.5714285714285714,
+          "sourceFoot": [
+            1104,
+            369
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 174.71,
+                "y": 224.71
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": 0.278794871906194,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 39.321303984352454,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "axe",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "direction": "east",
+          "pose": "recovery",
+          "rect": [
+            1280,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 158.57,
+              "y": 222.71,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 168.29,
+              "y": 219.29,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            1257,
+            82,
+            1433,
+            369
+          ],
+          "sourceScale": 0.5714285714285714,
+          "sourceFoot": [
+            1344.5,
+            367
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 158.57,
+                "y": 222.71
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": -0.3383236225092611,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 41.30411568258044,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "axe",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 6,
+          "direction": "south-east",
+          "pose": "idle",
+          "rect": [
+            0,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 132.3,
+              "y": 218.95,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 165,
+              "y": 213.59,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            35,
+            416,
+            208,
+            712
+          ],
+          "sourceScale": 0.5945945945945946,
+          "sourceFoot": [
+            121,
+            710
+          ],
+          "bodyTop": 125,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 132.3,
+                "y": 218.95
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": -0.16246958082780938,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 64.13637880034568,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "axe",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 7,
+          "direction": "south-east",
+          "pose": "step-a",
+          "rect": [
+            256,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 68.7,
+              "y": 220.11,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 141.24,
+              "y": 205.84,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            289,
+            415,
+            446,
+            716
+          ],
+          "sourceScale": 0.5945945945945946,
+          "sourceFoot": [
+            406.5,
+            714
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 68.7,
+                "y": 220.11
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": -0.19423882046156715,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 104.93026782042658,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "axe",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 8,
+          "direction": "south-east",
+          "pose": "step-b",
+          "rect": [
+            512,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 89.05,
+              "y": 222.51,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 138.41,
+              "y": 209.43,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            527,
+            420,
+            688,
+            716
+          ],
+          "sourceScale": 0.5945945945945946,
+          "sourceFoot": [
+            656.5,
+            714
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 89.05,
+                "y": 222.51
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": -0.2590381584888822,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 82.06364655995495,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "axe",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 9,
+          "direction": "south-east",
+          "pose": "windup",
+          "rect": [
+            768,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 117.57,
+              "y": 126.51,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 138.38,
+              "y": 104.51,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            759,
+            365,
+            956,
+            711
+          ],
+          "sourceScale": 0.5945945945945946,
+          "sourceFoot": [
+            857,
+            709
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 117.57,
+                "y": 126.51
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": -0.8131882508288737,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 61.28293413789358,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "axe",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 10,
+          "direction": "south-east",
+          "pose": "contact",
+          "rect": [
+            1024,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 169.43,
+              "y": 234,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 180.73,
+              "y": 229.84,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            991,
+            447,
+            1209,
+            708
+          ],
+          "sourceScale": 0.5945945945945946,
+          "sourceFoot": [
+            1099.5,
+            706
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 169.43,
+                "y": 234
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": -0.3527443046557645,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 43.04141187735058,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "axe",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 11,
+          "direction": "south-east",
+          "pose": "recovery",
+          "rect": [
+            1280,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 148.92,
+              "y": 222.19,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 167.35,
+              "y": 222.19,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            1251,
+            429,
+            1434,
+            712
+          ],
+          "sourceScale": 0.5945945945945946,
+          "sourceFoot": [
+            1342,
+            710
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 148.92,
+                "y": 222.19
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 49.43000000000001,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "axe",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 12,
+          "direction": "north-east",
+          "pose": "idle",
+          "rect": [
+            0,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 157.46,
+              "y": 212.7,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 149,
+              "y": 206.04,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            31,
+            752,
+            209,
+            1043
+          ],
+          "sourceScale": 0.6048109965635738,
+          "sourceFoot": [
+            119.5,
+            1041
+          ],
+          "bodyTop": 125,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 157.46,
+                "y": 212.7
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": -2.4746844493504834,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 41.76694942869149,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "axe",
+              "layer": -2
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 13,
+          "direction": "north-east",
+          "pose": "step-a",
+          "rect": [
+            256,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 171.75,
+              "y": 208.49,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 157.84,
+              "y": 200.02,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            283,
+            752,
+            453,
+            1049
+          ],
+          "sourceScale": 0.6048109965635738,
+          "sourceFoot": [
+            366,
+            1047
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 171.75,
+                "y": 208.49
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": -2.594644181222574,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 47.28585275630355,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "axe",
+              "layer": -2
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 14,
+          "direction": "north-east",
+          "pose": "step-b",
+          "rect": [
+            512,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 178.93,
+              "y": 216.14,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 163.21,
+              "y": 207.07,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            524,
+            754,
+            695,
+            1049
+          ],
+          "sourceScale": 0.6048109965635738,
+          "sourceFoot": [
+            592,
+            1047
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 178.93,
+                "y": 216.14
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": -2.618277618716678,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 49.148920078065245,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "axe",
+              "layer": -2
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 15,
+          "direction": "north-east",
+          "pose": "windup",
+          "rect": [
+            768,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 187.39,
+              "y": 123.08,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 158.97,
+              "y": 95.26,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            782,
+            714,
+            945,
+            1066
+          ],
+          "sourceScale": 0.6048109965635738,
+          "sourceFoot": [
+            806.5,
+            1064
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 187.39,
+                "y": 123.08
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": -2.3668626487610833,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 70.76994845357484,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "axe",
+              "layer": -2
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 16,
+          "direction": "north-east",
+          "pose": "contact",
+          "rect": [
+            1024,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 228.73,
+              "y": 206.42,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 219.05,
+              "y": 199.76,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            1002,
+            771,
+            1213,
+            1056
+          ],
+          "sourceScale": 0.6048109965635738,
+          "sourceFoot": [
+            1028.5,
+            1054
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 228.73,
+                "y": 206.42
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": -2.5389546455949135,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 42.74980850907791,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "axe",
+              "layer": -2
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 17,
+          "direction": "north-east",
+          "pose": "recovery",
+          "rect": [
+            1280,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 165.51,
+              "y": 218.67,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 154.63,
+              "y": 211.42,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            1252,
+            769,
+            1426,
+            1046
+          ],
+          "sourceScale": 0.6048109965635738,
+          "sourceFoot": [
+            1338.5,
+            1044
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "axe",
+              "hand": "right",
+              "position": {
+                "x": 165.51,
+                "y": 218.67
+              },
+              "grip": {
+                "x": 31,
+                "y": 26
+              },
+              "rotation": -2.553802184107775,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "secondaryHand": "left",
+              "secondaryGrip": {
+                "x": 44.07428391920567,
+                "y": 26
+              },
+              "attachmentMode": "two hand points on one rigid shaft; second hand slides along grip rail",
+              "image": "axe.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "axe",
+              "layer": -2
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        }
+      ],
+      "sourceFile": "exec-dd977f6b-3bba-488d-8420-6cd09514e695.png",
+      "proportions": "Uniform scale within each direction.",
+      "animations": {
+        "idle": [
+          {
+            "pose": 0,
+            "durationMs": 1000
+          }
+        ],
+        "walk": [
+          {
+            "pose": 1,
+            "durationMs": 160
+          },
+          {
+            "pose": 0,
+            "durationMs": 104
+          },
+          {
+            "pose": 2,
+            "durationMs": 160
+          },
+          {
+            "pose": 0,
+            "durationMs": 104
+          }
+        ],
+        "attack": [
+          {
+            "pose": 3,
+            "durationMs": 650
+          },
+          {
+            "pose": 4,
+            "durationMs": 140
+          },
+          {
+            "pose": 5,
+            "durationMs": 500
+          }
+        ]
+      },
+      "timingAuthority": "Preview timings only. At integration use simulation phases; first active tick selects contact pose."
+    },
+    "headless_skeleton": {
+      "id": "headless_skeleton",
+      "role": "basic enemy",
+      "body": "headless_skeleton-body.png",
+      "handsOverlay": "headless_skeleton-hands.png",
+      "frameSize": [
+        256,
+        320
+      ],
+      "columns": 6,
+      "rows": 3,
+      "runtimeScale": 0.5,
+      "idleBodyHeightScreen": 79,
+      "humanReferenceHeightScreen": 88,
+      "frames": [
+        {
+          "index": 0,
+          "direction": "east",
+          "pose": "idle",
+          "rect": [
+            0,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 144.19,
+              "y": 205.15,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 171.58,
+              "y": 189.87,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            45,
+            49,
+            213,
+            349
+          ],
+          "sourceScale": 0.5266666666666666,
+          "sourceFoot": [
+            115,
+            347
+          ],
+          "bodyTop": 143,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 171.58,
+                "y": 189.87
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.35,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 144.19,
+                "y": 205.15
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 1.05,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "knife",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "direction": "east",
+          "pose": "step-a",
+          "rect": [
+            256,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 116.08,
+              "y": 224,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 157.69,
+              "y": 192.4,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            283,
+            49,
+            466,
+            346
+          ],
+          "sourceScale": 0.5266666666666666,
+          "sourceFoot": [
+            384.5,
+            344
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 157.69,
+                "y": 192.4
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.35,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 116.08,
+                "y": 224
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 1.05,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "knife",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "direction": "east",
+          "pose": "step-b",
+          "rect": [
+            512,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 169.27,
+              "y": 190.24,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 146.1,
+              "y": 208.67,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            521,
+            51,
+            715,
+            346
+          ],
+          "sourceScale": 0.5266666666666666,
+          "sourceFoot": [
+            621,
+            344
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 146.1,
+                "y": 208.67
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.35,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 169.27,
+                "y": 190.24
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 1.05,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "knife",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "direction": "east",
+          "pose": "windup",
+          "rect": [
+            768,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 99.12,
+              "y": 187.35,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 162.85,
+              "y": 186.29,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            771,
+            49,
+            951,
+            352
+          ],
+          "sourceScale": 0.5266666666666666,
+          "sourceFoot": [
+            867,
+            350
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 162.85,
+                "y": 186.29
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.35,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 99.12,
+                "y": 187.35
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": -1.4,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "knife",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "direction": "east",
+          "pose": "contact",
+          "rect": [
+            1024,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 217.1,
+              "y": 181.33,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 140.73,
+              "y": 208.19,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            975,
+            65,
+            1277,
+            343
+          ],
+          "sourceScale": 0.5266666666666666,
+          "sourceFoot": [
+            1091.5,
+            341
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 140.73,
+                "y": 208.19
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.35,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 217.1,
+                "y": 181.33
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "knife",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "direction": "east",
+          "pose": "recovery",
+          "rect": [
+            1280,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 139.25,
+              "y": 210.41,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 159.26,
+              "y": 184.08,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            1278,
+            50,
+            1432,
+            351
+          ],
+          "sourceScale": 0.5266666666666666,
+          "sourceFoot": [
+            1359.5,
+            349
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 159.26,
+                "y": 184.08
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 139.25,
+                "y": 210.41
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.8,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "knife",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 6,
+          "direction": "south-east",
+          "pose": "idle",
+          "rect": [
+            0,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 117.08,
+              "y": 207.75,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 168.37,
+              "y": 188.59,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            42,
+            391,
+            215,
+            696
+          ],
+          "sourceScale": 0.5180327868852459,
+          "sourceFoot": [
+            124,
+            694
+          ],
+          "bodyTop": 143,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 168.37,
+                "y": 188.59
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.35,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 117.08,
+                "y": 207.75
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 1.05,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "knife",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 7,
+          "direction": "south-east",
+          "pose": "step-a",
+          "rect": [
+            256,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 77.2,
+              "y": 221.3,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 138.33,
+              "y": 187.1,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            283,
+            390,
+            454,
+            698
+          ],
+          "sourceScale": 0.5180327868852459,
+          "sourceFoot": [
+            419.5,
+            696
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 138.33,
+                "y": 187.1
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.35,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 77.2,
+                "y": 221.3
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 1.05,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "knife",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 8,
+          "direction": "south-east",
+          "pose": "step-b",
+          "rect": [
+            512,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 94.37,
+              "y": 212.97,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 139.96,
+              "y": 189.14,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            514,
+            390,
+            689,
+            697
+          ],
+          "sourceScale": 0.5180327868852459,
+          "sourceFoot": [
+            655.5,
+            695
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 139.96,
+                "y": 189.14
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.35,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 94.37,
+                "y": 212.97
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 1.05,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "knife",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 9,
+          "direction": "south-east",
+          "pose": "windup",
+          "rect": [
+            768,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 81.83,
+              "y": 186.7,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 149.17,
+              "y": 191.88,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            752,
+            393,
+            942,
+            707
+          ],
+          "sourceScale": 0.5180327868852459,
+          "sourceFoot": [
+            887.5,
+            705
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 149.17,
+                "y": 191.88
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.35,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 81.83,
+                "y": 186.7
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": -1.4,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "knife",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 10,
+          "direction": "south-east",
+          "pose": "contact",
+          "rect": [
+            1024,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 212.12,
+              "y": 180.56,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 123.54,
+              "y": 210.61,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            973,
+            404,
+            1268,
+            696
+          ],
+          "sourceScale": 0.5180327868852459,
+          "sourceFoot": [
+            1094.5,
+            694
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 123.54,
+                "y": 210.61
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.35,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 212.12,
+                "y": 180.56
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.38,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "knife",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 11,
+          "direction": "south-east",
+          "pose": "recovery",
+          "rect": [
+            1280,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 151.82,
+              "y": 203.68,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 183.42,
+              "y": 186.59,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            1278,
+            393,
+            1427,
+            702
+          ],
+          "sourceScale": 0.5180327868852459,
+          "sourceFoot": [
+            1305.5,
+            700
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 183.42,
+                "y": 186.59
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.38,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 151.82,
+                "y": 203.68
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.8,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "knife",
+              "layer": 2
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 12,
+          "direction": "north-east",
+          "pose": "idle",
+          "rect": [
+            0,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 163.91,
+              "y": 181.58,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 108.95,
+              "y": 186.86,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            35,
+            740,
+            209,
+            1039
+          ],
+          "sourceScale": 0.5284280936454849,
+          "sourceFoot": [
+            121.5,
+            1037
+          ],
+          "bodyTop": 143,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 108.95,
+                "y": 186.86
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.35,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 163.91,
+                "y": 181.58
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 1.05,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -2
+            },
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 13,
+          "direction": "north-east",
+          "pose": "step-a",
+          "rect": [
+            256,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 177.72,
+              "y": 191.09,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 116.42,
+              "y": 193.73,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            284,
+            738,
+            468,
+            1037
+          ],
+          "sourceScale": 0.5284280936454849,
+          "sourceFoot": [
+            355,
+            1035
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 116.42,
+                "y": 193.73
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.35,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 177.72,
+                "y": 191.09
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 1.05,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -2
+            },
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 14,
+          "direction": "north-east",
+          "pose": "step-b",
+          "rect": [
+            512,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 174.89,
+              "y": 194.03,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 110.95,
+              "y": 197.2,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            520,
+            740,
+            705,
+            1031
+          ],
+          "sourceScale": 0.5284280936454849,
+          "sourceFoot": [
+            604,
+            1029
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 110.95,
+                "y": 197.2
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.35,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 174.89,
+                "y": 194.03
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 1.05,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -2
+            },
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 15,
+          "direction": "north-east",
+          "pose": "windup",
+          "rect": [
+            768,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 173.47,
+              "y": 191.56,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 101.08,
+              "y": 179.93,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            763,
+            741,
+            958,
+            1039
+          ],
+          "sourceScale": 0.5284280936454849,
+          "sourceFoot": [
+            852.5,
+            1037
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 101.08,
+                "y": 179.93
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.35,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 173.47,
+                "y": 191.56
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": -1.4,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -2
+            },
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 16,
+          "direction": "north-east",
+          "pose": "contact",
+          "rect": [
+            1024,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 228.79,
+              "y": 167.38,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 128.39,
+              "y": 195.39,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            981,
+            755,
+            1272,
+            1039
+          ],
+          "sourceScale": 0.5284280936454849,
+          "sourceFoot": [
+            1064.5,
+            1037
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 128.39,
+                "y": 195.39
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.35,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 228.79,
+                "y": 167.38
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": -0.38,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -2
+            },
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 17,
+          "direction": "north-east",
+          "pose": "recovery",
+          "rect": [
+            1280,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 165.32,
+              "y": 180.52,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 105.61,
+              "y": 191.62,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            1262,
+            741,
+            1434,
+            1041
+          ],
+          "sourceScale": 0.5284280936454849,
+          "sourceFoot": [
+            1344,
+            1039
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "knife",
+              "hand": "left",
+              "position": {
+                "x": 105.61,
+                "y": 191.62
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": -0.38,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -1,
+              "image": "knife.png"
+            },
+            {
+              "equipment": "knife",
+              "hand": "right",
+              "position": {
+                "x": 165.32,
+                "y": 180.52
+              },
+              "grip": {
+                "x": 8,
+                "y": 4
+              },
+              "rotation": 0.8,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "image": "knife.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "knife",
+              "layer": -2
+            },
+            {
+              "name": "knife",
+              "layer": -1
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        }
+      ],
+      "sourceFile": "exec-c31636bd-69c1-457d-8e3a-92c69ad6a0bc.png",
+      "proportions": "Normal human torso and limbs; missing skull is not compensated by stretching.",
+      "animations": {
+        "idle": [
+          {
+            "pose": 0,
+            "durationMs": 1000
+          }
+        ],
+        "walk": [
+          {
+            "pose": 1,
+            "durationMs": 110
+          },
+          {
+            "pose": 0,
+            "durationMs": 71.5
+          },
+          {
+            "pose": 2,
+            "durationMs": 110
+          },
+          {
+            "pose": 0,
+            "durationMs": 71.5
+          }
+        ],
+        "attack": [
+          {
+            "pose": 3,
+            "durationMs": 300
+          },
+          {
+            "pose": 4,
+            "durationMs": 100
+          },
+          {
+            "pose": 5,
+            "durationMs": 250
+          }
+        ]
+      },
+      "timingAuthority": "Preview timings only. At integration use simulation phases; first active tick selects contact pose."
+    },
+    "iron_giant": {
+      "id": "iron_giant",
+      "role": "mini-boss",
+      "body": "iron_giant-body.png",
+      "handsOverlay": "iron_giant-hands.png",
+      "frameSize": [
+        256,
+        320
+      ],
+      "columns": 6,
+      "rows": 3,
+      "runtimeScale": 1,
+      "idleBodyHeightScreen": 176,
+      "humanReferenceHeightScreen": 88,
+      "frames": [
+        {
+          "index": 0,
+          "direction": "east",
+          "pose": "idle",
+          "rect": [
+            0,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 109.33,
+              "y": 222.01,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 158.63,
+              "y": 198.16,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            50,
+            36,
+            206,
+            368
+          ],
+          "sourceScale": 0.5301204819277109,
+          "sourceFoot": [
+            130,
+            366
+          ],
+          "bodyTop": 125,
+          "equipment": [
+            {
+              "equipment": "shield-side",
+              "hand": "left",
+              "position": {
+                "x": 158.63,
+                "y": 198.16
+              },
+              "grip": {
+                "x": 42,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 3,
+              "image": "shield-side.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 109.33,
+                "y": 222.01
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": -1.5707963267948966,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "trident",
+              "layer": 2
+            },
+            {
+              "name": "shield-side",
+              "layer": 3
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "direction": "east",
+          "pose": "step-a",
+          "rect": [
+            256,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 109.88,
+              "y": 227.13,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 164.48,
+              "y": 210.7,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            261,
+            37,
+            476,
+            364
+          ],
+          "sourceScale": 0.5301204819277109,
+          "sourceFoot": [
+            375,
+            362
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "shield-side",
+              "hand": "left",
+              "position": {
+                "x": 164.48,
+                "y": 210.7
+              },
+              "grip": {
+                "x": 42,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 3,
+              "image": "shield-side.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 109.88,
+                "y": 227.13
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": -1.5707963267948966,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "trident",
+              "layer": 2
+            },
+            {
+              "name": "shield-side",
+              "layer": 3
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "direction": "east",
+          "pose": "step-b",
+          "rect": [
+            512,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 120.54,
+              "y": 226.6,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 169.31,
+              "y": 208.58,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            487,
+            39,
+            713,
+            366
+          ],
+          "sourceScale": 0.5301204819277109,
+          "sourceFoot": [
+            603,
+            364
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "shield-side",
+              "hand": "left",
+              "position": {
+                "x": 169.31,
+                "y": 208.58
+              },
+              "grip": {
+                "x": 42,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 3,
+              "image": "shield-side.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 120.54,
+                "y": 226.6
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": -1.5707963267948966,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "trident",
+              "layer": 2
+            },
+            {
+              "name": "shield-side",
+              "layer": 3
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "direction": "east",
+          "pose": "windup",
+          "rect": [
+            768,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 87.86,
+              "y": 153.04,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 160.48,
+              "y": 185.37,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            735,
+            39,
+            946,
+            370
+          ],
+          "sourceScale": 0.5301204819277109,
+          "sourceFoot": [
+            855,
+            368
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "shield-side",
+              "hand": "left",
+              "position": {
+                "x": 160.48,
+                "y": 185.37
+              },
+              "grip": {
+                "x": 42,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 3,
+              "image": "shield-side.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 87.86,
+                "y": 153.04
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": -2,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "trident",
+              "layer": 2
+            },
+            {
+              "name": "shield-side",
+              "layer": 3
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "direction": "east",
+          "pose": "contact",
+          "rect": [
+            1024,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 202.94,
+              "y": 170.82,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 138.8,
+              "y": 208.99,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            980,
+            46,
+            1248,
+            369
+          ],
+          "sourceScale": 0.5301204819277109,
+          "sourceFoot": [
+            1085.5,
+            367
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "shield-side",
+              "hand": "left",
+              "position": {
+                "x": 138.8,
+                "y": 208.99
+              },
+              "grip": {
+                "x": 42,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 3,
+              "image": "shield-side.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 202.94,
+                "y": 170.82
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "trident",
+              "layer": 2
+            },
+            {
+              "name": "shield-side",
+              "layer": 3
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "direction": "east",
+          "pose": "recovery",
+          "rect": [
+            1280,
+            0,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 128,
+              "y": 197.39,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 162.99,
+              "y": 198.45,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            1266,
+            45,
+            1436,
+            370
+          ],
+          "sourceScale": 0.5301204819277109,
+          "sourceFoot": [
+            1348.5,
+            368
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "shield-side",
+              "hand": "left",
+              "position": {
+                "x": 162.99,
+                "y": 198.45
+              },
+              "grip": {
+                "x": 42,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 3,
+              "image": "shield-side.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 128,
+                "y": 197.39
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": -0.8,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "trident",
+              "layer": 2
+            },
+            {
+              "name": "shield-side",
+              "layer": 3
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 6,
+          "direction": "south-east",
+          "pose": "idle",
+          "rect": [
+            0,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 101.7,
+              "y": 214.9,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 166.14,
+              "y": 193.23,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            34,
+            392,
+            225,
+            717
+          ],
+          "sourceScale": 0.5415384615384615,
+          "sourceFoot": [
+            136,
+            715
+          ],
+          "bodyTop": 125,
+          "equipment": [
+            {
+              "equipment": "shield-front",
+              "hand": "left",
+              "position": {
+                "x": 166.14,
+                "y": 193.23
+              },
+              "grip": {
+                "x": 64,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 3,
+              "image": "shield-front.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 101.7,
+                "y": 214.9
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": -1.5707963267948966,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "trident",
+              "layer": 2
+            },
+            {
+              "name": "shield-front",
+              "layer": 3
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 7,
+          "direction": "south-east",
+          "pose": "step-a",
+          "rect": [
+            256,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 78.62,
+              "y": 216.52,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 145.23,
+              "y": 202.98,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            286,
+            393,
+            478,
+            719
+          ],
+          "sourceScale": 0.5415384615384615,
+          "sourceFoot": [
+            429,
+            717
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "shield-front",
+              "hand": "left",
+              "position": {
+                "x": 145.23,
+                "y": 202.98
+              },
+              "grip": {
+                "x": 64,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 3,
+              "image": "shield-front.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 78.62,
+                "y": 216.52
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": -1.5707963267948966,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "trident",
+              "layer": 2
+            },
+            {
+              "name": "shield-front",
+              "layer": 3
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 8,
+          "direction": "south-east",
+          "pose": "step-b",
+          "rect": [
+            512,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 78.57,
+              "y": 213.27,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 143.56,
+              "y": 199.73,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            494,
+            392,
+            716,
+            717
+          ],
+          "sourceScale": 0.5415384615384615,
+          "sourceFoot": [
+            671.5,
+            715
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "shield-front",
+              "hand": "left",
+              "position": {
+                "x": 143.56,
+                "y": 199.73
+              },
+              "grip": {
+                "x": 64,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 3,
+              "image": "shield-front.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 78.57,
+                "y": 213.27
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": -1.5707963267948966,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "trident",
+              "layer": 2
+            },
+            {
+              "name": "shield-front",
+              "layer": 3
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 9,
+          "direction": "south-east",
+          "pose": "windup",
+          "rect": [
+            768,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 134.2,
+              "y": 143.62,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 185.11,
+              "y": 191.28,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            744,
+            400,
+            936,
+            718
+          ],
+          "sourceScale": 0.5415384615384615,
+          "sourceFoot": [
+            774,
+            716
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "shield-front",
+              "hand": "left",
+              "position": {
+                "x": 185.11,
+                "y": 191.28
+              },
+              "grip": {
+                "x": 64,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 3,
+              "image": "shield-front.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 134.2,
+                "y": 143.62
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": -2,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "trident",
+              "layer": 2
+            },
+            {
+              "name": "shield-front",
+              "layer": 3
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 10,
+          "direction": "south-east",
+          "pose": "contact",
+          "rect": [
+            1024,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 185.3,
+              "y": 175.95,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 147.94,
+              "y": 197.07,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            971,
+            409,
+            1213,
+            723
+          ],
+          "sourceScale": 0.5415384615384615,
+          "sourceFoot": [
+            1089.5,
+            721
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "shield-front",
+              "hand": "left",
+              "position": {
+                "x": 147.94,
+                "y": 197.07
+              },
+              "grip": {
+                "x": 64,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 3,
+              "image": "shield-front.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 185.3,
+                "y": 175.95
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": 0.38,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "trident",
+              "layer": 2
+            },
+            {
+              "name": "shield-front",
+              "layer": 3
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 11,
+          "direction": "south-east",
+          "pose": "recovery",
+          "rect": [
+            1280,
+            320,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 127.82,
+              "y": 193.4,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 168.98,
+              "y": 192.86,
+              "visible": true,
+              "annotation": "visible fist centre"
+            }
+          },
+          "sourceBounds": [
+            1251,
+            394,
+            1437,
+            722
+          ],
+          "sourceScale": 0.5415384615384615,
+          "sourceFoot": [
+            1343.5,
+            720
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "shield-front",
+              "hand": "left",
+              "position": {
+                "x": 168.98,
+                "y": 192.86
+              },
+              "grip": {
+                "x": 64,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 3,
+              "image": "shield-front.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 127.82,
+                "y": 193.4
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": -0.8,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": 2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "trident",
+              "layer": 2
+            },
+            {
+              "name": "shield-front",
+              "layer": 3
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 12,
+          "direction": "north-east",
+          "pose": "idle",
+          "rect": [
+            0,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 176.15,
+              "y": 198.1,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 100.24,
+              "y": 194.16,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            46,
+            730,
+            231,
+            1043
+          ],
+          "sourceScale": 0.5623003194888179,
+          "sourceFoot": [
+            132,
+            1041
+          ],
+          "bodyTop": 125,
+          "equipment": [
+            {
+              "equipment": "shield-back",
+              "hand": "left",
+              "position": {
+                "x": 100.24,
+                "y": 194.16
+              },
+              "grip": {
+                "x": 64,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -3,
+              "image": "shield-back.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 176.15,
+                "y": 198.1
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": -1.5707963267948966,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "shield-back",
+              "layer": -3
+            },
+            {
+              "name": "trident",
+              "layer": -2
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 13,
+          "direction": "north-east",
+          "pose": "step-a",
+          "rect": [
+            256,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 173.03,
+              "y": 210.78,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 99.36,
+              "y": 197.29,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            276,
+            731,
+            485,
+            1040
+          ],
+          "sourceScale": 0.5623003194888179,
+          "sourceFoot": [
+            381,
+            1038
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "shield-back",
+              "hand": "left",
+              "position": {
+                "x": 99.36,
+                "y": 197.29
+              },
+              "grip": {
+                "x": 64,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -3,
+              "image": "shield-back.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 173.03,
+                "y": 210.78
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": -1.5707963267948966,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "shield-back",
+              "layer": -3
+            },
+            {
+              "name": "trident",
+              "layer": -2
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 14,
+          "direction": "north-east",
+          "pose": "step-b",
+          "rect": [
+            512,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 179.58,
+              "y": 215.47,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 109.3,
+              "y": 201.41,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            492,
+            731,
+            713,
+            1036
+          ],
+          "sourceScale": 0.5623003194888179,
+          "sourceFoot": [
+            602.5,
+            1034
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "shield-back",
+              "hand": "left",
+              "position": {
+                "x": 109.3,
+                "y": 201.41
+              },
+              "grip": {
+                "x": 64,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -3,
+              "image": "shield-back.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 179.58,
+                "y": 215.47
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": -1.5707963267948966,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "shield-back",
+              "layer": -3
+            },
+            {
+              "name": "trident",
+              "layer": -2
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 15,
+          "direction": "north-east",
+          "pose": "windup",
+          "rect": [
+            768,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 198.28,
+              "y": 178.11,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 124.62,
+              "y": 165.73,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            748,
+            732,
+            946,
+            1048
+          ],
+          "sourceScale": 0.5623003194888179,
+          "sourceFoot": [
+            796,
+            1046
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "shield-back",
+              "hand": "left",
+              "position": {
+                "x": 124.62,
+                "y": 165.73
+              },
+              "grip": {
+                "x": 64,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -3,
+              "image": "shield-back.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 198.28,
+                "y": 178.11
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": -2,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "shield-back",
+              "layer": -3
+            },
+            {
+              "name": "trident",
+              "layer": -2
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 16,
+          "direction": "north-east",
+          "pose": "contact",
+          "rect": [
+            1024,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 208.2,
+              "y": 151.87,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 132.29,
+              "y": 193.48,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            989,
+            736,
+            1253,
+            1047
+          ],
+          "sourceScale": 0.5623003194888179,
+          "sourceFoot": [
+            1090.5,
+            1045
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "shield-back",
+              "hand": "left",
+              "position": {
+                "x": 132.29,
+                "y": 193.48
+              },
+              "grip": {
+                "x": 64,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -3,
+              "image": "shield-back.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 208.2,
+                "y": 151.87
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": -0.38,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "shield-back",
+              "layer": -3
+            },
+            {
+              "name": "trident",
+              "layer": -2
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        },
+        {
+          "index": 17,
+          "direction": "north-east",
+          "pose": "recovery",
+          "rect": [
+            1280,
+            640,
+            256,
+            320
+          ],
+          "foot": {
+            "x": 128,
+            "y": 300
+          },
+          "hands": {
+            "right": {
+              "x": 171.03,
+              "y": 199.29,
+              "visible": true,
+              "annotation": "visible fist centre"
+            },
+            "left": {
+              "x": 101.3,
+              "y": 192.54,
+              "visible": false,
+              "annotation": "occluded anatomical hand target"
+            }
+          },
+          "sourceBounds": [
+            1258,
+            735,
+            1445,
+            1041
+          ],
+          "sourceScale": 0.5623003194888179,
+          "sourceFoot": [
+            1351,
+            1039
+          ],
+          "bodyTop": null,
+          "equipment": [
+            {
+              "equipment": "shield-back",
+              "hand": "left",
+              "position": {
+                "x": 101.3,
+                "y": 192.54
+              },
+              "grip": {
+                "x": 64,
+                "y": 54
+              },
+              "rotation": 0,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -3,
+              "image": "shield-back.png"
+            },
+            {
+              "equipment": "trident",
+              "hand": "right",
+              "position": {
+                "x": 171.03,
+                "y": 199.29
+              },
+              "grip": {
+                "x": 70,
+                "y": 21
+              },
+              "rotation": -0.8,
+              "scale": {
+                "x": 1,
+                "y": 1
+              },
+              "layer": -2,
+              "image": "trident.png"
+            }
+          ],
+          "layerOrder": [
+            {
+              "name": "shield-back",
+              "layer": -3
+            },
+            {
+              "name": "trident",
+              "layer": -2
+            },
+            {
+              "name": "body",
+              "layer": 0
+            },
+            {
+              "name": "hands-overlay",
+              "layer": 5
+            }
+          ]
+        }
+      ],
+      "sourceFile": "exec-5a37497f-cbf1-4a12-b820-ef214db73fda.png",
+      "proportions": "Uniform scale within each direction.",
+      "animations": {
+        "idle": [
+          {
+            "pose": 0,
+            "durationMs": 1000
+          }
+        ],
+        "walk": [
+          {
+            "pose": 1,
+            "durationMs": 240
+          },
+          {
+            "pose": 0,
+            "durationMs": 156
+          },
+          {
+            "pose": 2,
+            "durationMs": 240
+          },
+          {
+            "pose": 0,
+            "durationMs": 156
+          }
+        ],
+        "attack": [
+          {
+            "pose": 3,
+            "durationMs": 950
+          },
+          {
+            "pose": 4,
+            "durationMs": 220
+          },
+          {
+            "pose": 5,
+            "durationMs": 850
+          }
+        ]
+      },
+      "timingAuthority": "Preview timings only. At integration use simulation phases; first active tick selects contact pose."
+    }
+  },
+  "equipment": {
+    "axe": {
+      "image": "axe.png",
+      "size": [
+        176,
+        68
+      ],
+      "grip": {
+        "x": 31,
+        "y": 26
+      },
+      "sourceBounds": [
+        20,
+        105,
+        571,
+        319
+      ],
+      "axis": "right",
+      "secondaryGripRail": {
+        "start": {
+          "x": 38,
+          "y": 26
+        },
+        "end": {
+          "x": 137,
+          "y": 26
+        }
+      }
+    },
+    "knife": {
+      "image": "knife.png",
+      "size": [
+        40,
+        9
+      ],
+      "grip": {
+        "x": 8,
+        "y": 4
+      },
+      "sourceBounds": [
+        588,
+        174,
+        889,
+        244
+      ],
+      "axis": "right",
+      "secondaryGripRail": null
+    },
+    "trident": {
+      "image": "trident.png",
+      "size": [
+        272,
+        41
+      ],
+      "grip": {
+        "x": 70,
+        "y": 21
+      },
+      "sourceBounds": [
+        899,
+        145,
+        1522,
+        239
+      ],
+      "axis": "right",
+      "secondaryGripRail": null
+    },
+    "shield-front": {
+      "image": "shield-front.png",
+      "size": [
+        96,
+        152
+      ],
+      "grip": {
+        "x": 64,
+        "y": 54
+      },
+      "sourceBounds": [
+        125,
+        366,
+        459,
+        935
+      ],
+      "axis": "upright",
+      "secondaryGripRail": null
+    },
+    "shield-back": {
+      "image": "shield-back.png",
+      "size": [
+        96,
+        152
+      ],
+      "grip": {
+        "x": 64,
+        "y": 54
+      },
+      "sourceBounds": [
+        601,
+        369,
+        938,
+        935
+      ],
+      "axis": "upright",
+      "secondaryGripRail": null
+    },
+    "shield-side": {
+      "image": "shield-side.png",
+      "size": [
+        64,
+        152
+      ],
+      "grip": {
+        "x": 42,
+        "y": 54
+      },
+      "sourceBounds": [
+        1125,
+        337,
+        1390,
+        969
+      ],
+      "axis": "upright",
+      "secondaryGripRail": null
+    }
+  },
+  "equipmentSource": "exec-8a9b396c-0a3c-41e7-90d0-00e816e1f184.png",
+  "animations": {
+    "poseColumns": {
+      "idle": 0,
+      "step-a": 1,
+      "step-b": 2,
+      "windup": 3,
+      "contact": 4,
+      "recovery": 5
+    },
+    "loop": [
+      "idle",
+      "walk"
+    ],
+    "clamp": [
+      "attack"
+    ],
+    "limits": "Three body attack poses; low-frame-count walk uses two step extremes and idle as a passing pose. No authored hurt/fall/death/roll or shield-bash cycle in this pack."
+  },
+  "provenance": "Built-in imagegen artwork; mechanical connected-component crop, uniform per-view resize, alpha PNG packing; manually annotated hand targets. No mesh/Spine binary or gameplay code.",
+  "layerContract": {
+    "worldDepth": "All local layers share the same world foot depth; use small local depth offsets or a depth-sorted container.",
+    "behindBody": "Rear-facing equipment and far knife",
+    "body": 0,
+    "foregroundEquipment": "Front-facing held weapon/shield",
+    "fingerOcclusion": 5,
+    "integration": "Use ONLY this equipment set with these bodies. Do not also render KnightSprite weapons or baked equipment reference sheets."
+  },
+  "handAnnotations": "Visible fist centres manually checked. Occluded hands are explicit anatomical targets; inspect visibility per frame. Hand patches occlude grips after held equipment."
+}

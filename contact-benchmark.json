@@ -1,0 +1,154 @@
+{
+  "node": "v24.19.0",
+  "platform": "linux",
+  "description": "Local Node microbenchmark, 20 warmups +100 measured; 4-actor sum is arithmetic estimate, not native parallel/world-frame proof.",
+  "results": [
+    {
+      "name": "51quad-enemy-far-miss",
+      "weaponPolygons": 51,
+      "shieldPolygons": 0,
+      "medianMs": 0.06153299999999717,
+      "p95Ms": 1.1980760000000004,
+      "maxMs": 3.1522530000000017,
+      "fourActorMedianMs": 0.2461319999999887,
+      "result": {
+        "kind": "none",
+        "toi": 1,
+        "diagnostics": {
+          "work": 51,
+          "pairTests": 51,
+          "candidatePairs": 0,
+          "polynomials": 0,
+          "rootIntervals": 0,
+          "refinements": 0
+        }
+      }
+    },
+    {
+      "name": "51quad-enemy-start-overlap",
+      "weaponPolygons": 51,
+      "shieldPolygons": 0,
+      "medianMs": 0.29658800000001406,
+      "p95Ms": 0.6104400000000112,
+      "maxMs": 0.9437629999999899,
+      "fourActorMedianMs": 1.1863520000000563,
+      "result": {
+        "kind": "body",
+        "toi": 0,
+        "diagnostics": {
+          "work": 75,
+          "pairTests": 51,
+          "candidatePairs": 18,
+          "polynomials": 0,
+          "rootIntervals": 0,
+          "refinements": 0
+        }
+      }
+    },
+    {
+      "name": "51quad-enemy-2px-body-crossing",
+      "weaponPolygons": 51,
+      "shieldPolygons": 0,
+      "medianMs": 0.5639109999999903,
+      "p95Ms": 0.8813690000000065,
+      "maxMs": 1.2582969999999989,
+      "fourActorMedianMs": 2.255643999999961,
+      "result": {
+        "kind": "body",
+        "toi": 0.9099999999999682,
+        "diagnostics": {
+          "work": 491,
+          "pairTests": 51,
+          "candidatePairs": 1,
+          "polynomials": 20,
+          "rootIntervals": 1,
+          "refinements": 42
+        }
+      }
+    },
+    {
+      "name": "51quad-enemy-100px-tunnelling",
+      "weaponPolygons": 51,
+      "shieldPolygons": 0,
+      "medianMs": 6.319437999999991,
+      "p95Ms": 9.063551000000189,
+      "maxMs": 13.932187999999996,
+      "fourActorMedianMs": 25.277751999999964,
+      "result": {
+        "kind": "body",
+        "toi": 0.3331999999999198,
+        "diagnostics": {
+          "work": 5263,
+          "pairTests": 51,
+          "candidatePairs": 15,
+          "polynomials": 300,
+          "rootIntervals": 120,
+          "refinements": 59
+        }
+      }
+    },
+    {
+      "name": "player-tip-15px-translation-to-shield",
+      "weaponPolygons": 1,
+      "shieldPolygons": 41,
+      "medianMs": 0.6040699999998651,
+      "p95Ms": 1.976509999999962,
+      "maxMs": 2.862586000000192,
+      "fourActorMedianMs": 2.4162799999994604,
+      "result": {
+        "kind": "shield",
+        "toi": 0.7199999999999136,
+        "diagnostics": {
+          "work": 587,
+          "pairTests": 42,
+          "candidatePairs": 1,
+          "polynomials": 48,
+          "rootIntervals": 4,
+          "refinements": 42
+        }
+      }
+    },
+    {
+      "name": "player-tip-20px-rotation-chord-to-shield",
+      "weaponPolygons": 1,
+      "shieldPolygons": 41,
+      "medianMs": 1.1031830000001719,
+      "p95Ms": 3.0556480000000192,
+      "maxMs": 3.5665780000001632,
+      "fourActorMedianMs": 4.4127320000006875,
+      "result": {
+        "kind": "shield",
+        "toi": 0.7283391188356063,
+        "diagnostics": {
+          "work": 767,
+          "pairTests": 42,
+          "candidatePairs": 1,
+          "polynomials": 48,
+          "rootIntervals": 3,
+          "refinements": 44
+        }
+      }
+    },
+    {
+      "name": "player-to-41quad-giant-shield",
+      "weaponPolygons": 1,
+      "shieldPolygons": 41,
+      "medianMs": 0.9476290000000063,
+      "p95Ms": 2.0386839999998756,
+      "maxMs": 4.673958000000084,
+      "fourActorMedianMs": 3.790516000000025,
+      "result": {
+        "kind": "shield",
+        "toi": 0.31399999999996453,
+        "diagnostics": {
+          "work": 1124,
+          "pairTests": 42,
+          "candidatePairs": 2,
+          "polynomials": 68,
+          "rootIntervals": 32,
+          "refinements": 65
+        }
+      }
+    }
+  ]
+}
